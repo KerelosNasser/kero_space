@@ -2,7 +2,7 @@
 
 ## Overview
 
-The "Omniscient Layer" is powered by four persistent background agents, each operating as an independent Android Service or system-level component. These agents are the sensory nervous system of ALEF — they observe, classify, and pipe behavioral data into the Isar cache continuously, regardless of whether the Flutter UI is active.
+The "Omniscient Layer" is powered by four persistent background agents, each operating as an independent Android Service or system-level component. These agents are the sensory nervous system of Kero Space — they observe, classify, and pipe behavioral data into the Isar cache continuously, regardless of whether the Flutter UI is active.
 
 All agents are architecturally **push-based**: they emit events into named platform channels, which the Flutter EventChannel listeners receive and forward to the relevant BLoC.
 
@@ -10,12 +10,12 @@ All agents are architecturally **push-based**: they emit events into named platf
 ┌─────────────────────────────────────────────────────────────────┐
 │                    AGENT ARCHITECTURE                           │
 │                                                                 │
-│  Agent 1: AccessibilityAgent  ──→  alef/accessibility channel  │
-│  Agent 2: UsageGuardAgent     ──→  alef/usage_stats channel    │
-│  Agent 3: ScreenEventAgent    ──→  alef/screen_events channel  │
-│  Agent 4: WakeWordAgent       ──→  alef/wake_word channel      │
+│  Agent 1: AccessibilityAgent  ──→  kero_space/accessibility     │
+│  Agent 2: UsageGuardAgent     ──→  kero_space/usage_stats       │
+│  Agent 3: ScreenEventAgent    ──→  kero_space/screen_events     │
+│  Agent 4: WakeWordAgent       ──→  kero_space/wake_word         │
 │                                                                 │
-│  All agents bound to AlefForegroundService (persistent)         │
+│  All agents bound to KeroSpaceForegroundService (persistent)    │
 │  Foreground notification: minimal, non-dismissible              │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -29,7 +29,7 @@ The `AccessibilityAgent` is an `AccessibilityService` implementation that monito
 
 ### Android Component
 ```
-Class: AlefAccessibilityService extends AccessibilityService
+Class: KeroSpaceAccessibilityService extends AccessibilityService
 Declaration: AndroidManifest.xml
   android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
   <meta-data android:name="android.accessibilityservice"
@@ -165,8 +165,8 @@ A `BroadcastReceiver` that captures every screen state transition event from the
 
 ### Android Component
 ```
-Class: AlefScreenReceiver extends BroadcastReceiver
-Registration: Dynamic (registered in AlefForegroundService.onCreate())
+Class: KeroSpaceScreenReceiver extends BroadcastReceiver
+Registration: Dynamic (registered in KeroSpaceForegroundService.onCreate())
   — NOT declared in manifest (runtime-registered receivers catch screen events reliably)
 
 Intents Listened:
@@ -230,14 +230,14 @@ Model: OpenWakeWord (ONNX Runtime on Android) or Porcupine offline SDK
 │      │                                                     │
 │      ▼                                                     │
 │  ONNX Runtime → WakeWord Model                             │
-│  (e.g., "hey alef" custom model trained on ~500 samples)   │
+│  (e.g., "hey kero" custom model trained on ~500 samples)   │
 │      │                                                     │
 │      ▼                                                     │
 │  Confidence score > threshold (0.85)?                      │
 │      │ NO  → discard frame, continue                       │
 │      │ YES ↓                                               │
 │      ▼                                                     │
-│  Emit WakeWordDetectedEvent to alef/wake_word channel      │
+│  Emit WakeWordDetectedEvent to kero_space/wake_word channel│
 │      │                                                     │
 │      ▼                                                     │
 │  Transition to CommandCapture mode:                        │
@@ -279,20 +279,20 @@ TranscriptionReceived(text)
 
 ## Agent Lifecycle Management
 
-### AlefForegroundService
+### KeroSpaceForegroundService
 All agents are coordinated under a single foreground service:
 
 ```
-AlefForegroundService (extends Service)
+KeroSpaceForegroundService (extends Service)
   onCreate()
-    → binds AlefAccessibilityService (via Intent check)
-    → registers AlefScreenReceiver (BroadcastReceiver)
+    → binds KeroSpaceAccessibilityService (via Intent check)
+    → registers KeroSpaceScreenReceiver (BroadcastReceiver)
     → starts WakeWordService (bound service)
     → schedules UsageStatsWorker (WorkManager)
     → shows persistent notification (non-dismissible)
 
   onDestroy()  [called only if system kills service]
-    → unregisters AlefScreenReceiver
+    → unregisters KeroSpaceScreenReceiver
     → stops WakeWordService
     → cancels pending WorkManager tasks (they re-enqueue on next boot)
 
@@ -301,9 +301,9 @@ AlefForegroundService (extends Service)
 
 ### Boot Persistence
 ```
-AlefBootReceiver extends BroadcastReceiver
+KeroSpaceBootReceiver extends BroadcastReceiver
   Intent: ACTION_BOOT_COMPLETED, ACTION_MY_PACKAGE_REPLACED
-  Action: startForegroundService(AlefForegroundService)
+  Action: startForegroundService(KeroSpaceForegroundService)
 ```
 
 ### Battery Optimization Exemption

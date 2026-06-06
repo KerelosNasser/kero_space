@@ -1,8 +1,10 @@
 # design.md — UI/UX Philosophy & Visual System
 
+![Kero Space Logo](file:///C:/Users/keron/.gemini/antigravity-ide/brain/2dfa2d70-6002-4d06-ae89-d67797c2b90e/kero_space_minimal_logo_1780785663495.png)
+
 ## 1. Design Philosophy: "Operational Density with Cognitive Calm"
 
-ALEF's interface serves a user who is simultaneously a developer, a teacher, a freelancer, an investor, and a spiritual practitioner. The design must communicate high-information density without producing decision fatigue.
+Kero Space's interface serves a user who is simultaneously a developer, a teacher, a freelancer, an investor, and a spiritual practitioner. The design must communicate high-information density without producing decision fatigue.
 
 The visual language is **Dark Utilitarian Precision** — think mission control, not wellness app. Every pixel justifies its existence. Color is semantic, not decorative. Animation is purposeful, not playful.
 
@@ -19,24 +21,26 @@ The visual language is **Dark Utilitarian Precision** — think mission control,
 ### Color Tokens (CSS-style naming for documentation clarity)
 
 ```
---bg-primary:      #0A0D12   // Near-black background
---bg-surface:      #111620   // Card/surface layer
---bg-elevated:     #181F2E   // Modals, overlays
---bg-overlay:      #1E2838   // Overlay blocker background
+--bg-primary:      #0B0F17   // Deep Matte Obsidian (neutral, low-strain charcoal)
+--bg-surface:      #121824   // Quiet Slate Layer (distinct card elevation, high visual clarity)
+--bg-elevated:     #1E293B   // Steel Grey Elevated (dialogs, context dropdowns)
+--bg-overlay:      rgba(11, 15, 23, 0.75) // Frosted Obsidian Overlay (with high blur backdrop)
 
---accent-cyan:     #00D4FF   // Primary interactive / active states
---accent-amber:    #FFB020   // Financial / wealth domain
---accent-emerald:  #00C896   // Health / positive metrics
---accent-violet:   #9B6DFF   // Church / spiritual domain
---accent-red:      #FF4757   // Alerts, blocking states, critical
---accent-slate:    #4A90A4   // Telemetry / neutral data
+--accent-cyan:     #0284C7   // Sky Blue (clean interaction, links, active state)
+--accent-gold:     #F59E0B   // Amber Gold (wealth, balance sheets, EGX metrics)
+--accent-mint:     #10B981   // Sage Emerald (health Connect sync, daily macros)
+--accent-violet:   #6366F1   // Indigo Violet (Coptic liturgical calendar, prayer logs)
+--accent-rose:     #EF4444   // Muted Crimson (active blocker, lockout, error states)
+--accent-slate:    #64748B   // Cool Slate (telemetry logs, neutral labels)
 
---text-primary:    #E8EDF5   // Main readable text
---text-secondary:  #7A8A9E   // Labels, descriptions
---text-disabled:   #3A4555   // Muted / inactive
+--text-primary:    #F8FAFC   // Pure Snow White (optimal contrast)
+--text-secondary:  #64748B   // Slate Grey (subtle descriptions, settings subtext)
+--text-disabled:   #334155   // Midnight Charcoal (disabled state fields)
 
---chart-grid:      #1C2535   // Chart gridlines
---divider:         #1E2838   // Section separators
+--glass-border:    rgba(255, 255, 255, 0.05) // Micro-thin slate edge border
+--border-glow:     rgba(99, 102, 241, 0.12)  // Indigo focus glow
+--chart-grid:      #1E293B   // Subdued grid separation
+--divider:         #1E293B   // Clean horizontal rule divider
 ```
 
 ### Typography
@@ -55,6 +59,10 @@ The visual language is **Dark Utilitarian Precision** — think mission control,
 | Label/Caption | 11sp | 400 | DM Sans |
 | Monospace Data | 13sp | 400 | JetBrains Mono |
 
+### Implementation Guidelines
+- **Single-File Theming:** To simplify code edits and ensure uniform branding, all color variables, HSL values, visual decoration constants, and text stylings are declared strictly in a single source file: `lib/core/app_theme.dart`.
+- **Shared Component Directory:** All refactored, reusable widget components (e.g., custom cards, input text-fields, loading states, standard buttons, charts) must reside in a single directory: `lib/shared/widgets/`. Feature-specific widgets must be placed locally only if they cannot be generalized.
+
 ---
 
 ## 3. Dashboard Architecture — The Command Center
@@ -65,7 +73,7 @@ The home screen is a scrollable **Widget Grid** — not a tab bar. Each domain h
 
 ```
 ┌────────────────────────────────────────┐
-│  ⏱  ALEF           [Date]  [Profile]  │  ← Top bar
+│  ⏱  KERO SPACE      [Date]  [Profile]  │  ← Top bar
 ├─────────────────────┬──────────────────┤
 │  TODAY'S FOCUS      │   HEALTH RING    │  ← Hero row
 │  3 tasks pending    │  7,240 steps     │
@@ -153,10 +161,10 @@ Minimizes cognitive friction while offering positive reinforcement loops to supp
 ## 4. fl_chart — Multi-Axis Correlation Dashboards
 
 ### Design Principle for Charts
-Every chart in ALEF is **cross-domain capable**. The user should be able to overlay:
-- Freelance earnings (amber line) on the same time axis as
+Every chart in Kero Space is **cross-domain capable**. The user should be able to overlay:
+- Freelance earnings (gold line) on the same time axis as
 - EGX portfolio value (cyan line) and
-- Daily calorie surplus/deficit (emerald/red bars)
+- Daily calorie surplus/deficit (mint/rose bars)
 
 This correlation view answers the question: *"Was I eating worse during my high-stress earning periods?"*
 
@@ -169,11 +177,11 @@ Y-axis Left: EGP value (portfolio + cash)
 Y-axis Right: Caloric balance (kcal surplus/deficit)
 Overlay Lines:
   - Portfolio value: solid cyan, 2px stroke
-  - Monthly earnings: dashed amber, 2px stroke
-  - Running expense total: dotted red, 1px stroke
+  - Monthly earnings: dashed gold, 2px stroke
+  - Running expense total: dotted rose, 1px stroke
 Background Bars:
-  - Daily caloric balance: emerald (surplus) / red (deficit) bars, 40% opacity
-Grid: Horizontal only, #1C2535 (--chart-grid), 1px
+  - Daily caloric balance: mint (surplus) / rose (deficit) bars, 40% opacity
+Grid: Horizontal only, #131B2A (--chart-grid), 1px
 Tooltip: Custom tooltip showing all 4 values at touched X position
 ```
 
@@ -188,7 +196,7 @@ LineChartData(
   ),
   lineTouchData: LineTouchData(
     touchTooltipData: LineTouchTooltipData(
-      tooltipBgColor: Color(0xFF1E2838),
+      tooltipBgColor: Color(0xFF121722),
       getTooltipItems: multiAxisTooltipBuilder,
     ),
   ),
@@ -196,9 +204,9 @@ LineChartData(
 ```
 
 #### 4.2 — Health Dashboard (`BarChart` + `RadarChart`)
-- **Weekly Steps Bar Chart:** 7 bars (Mon–Sun), emerald fill, today's bar highlighted with cyan outline
+- **Weekly Steps Bar Chart:** 7 bars (Mon–Sun), mint fill, today's bar highlighted with cyan outline
 - **Sleep Stage Radar:** 4 axes (Deep, REM, Light, Awake), violet fill at 60% opacity, comparing this week vs last week
-- **Heart Rate Trend:** `LineChart` with 24h granularity, gradient fill from `--accent-emerald` to transparent
+- **Heart Rate Trend:** `LineChart` with 24h granularity, gradient fill from `--accent-mint` to transparent
 
 #### 4.3 — Telemetry Dashboard (`PieChart` + `BarChart`)
 - **App Usage Pie:** Top 8 apps by screen time, each with a unique tinted slice

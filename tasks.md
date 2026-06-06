@@ -19,7 +19,7 @@ Establish the monorepo, CI pipeline, and Docker backend skeleton so every subseq
 - [ ] **0.1** Initialize Flutter project with package structure:
   ```
   lib/
-    core/           # DI, routing, theme, error handling
+    core/           # DI, routing, theme (strictly in lib/core/app_theme.dart)
     features/
       telemetry/   # BLoC, data, domain, presentation
       productivity/
@@ -27,7 +27,8 @@ Establish the monorepo, CI pipeline, and Docker backend skeleton so every subseq
       finance/
       church/
       voice/
-    shared/          # Widget library, chart wrappers, Isar helpers
+    shared/          # Common helpers, charts, and shared widgets
+      widgets/       # Single folder containing ALL refactored, reusable UI components
   ```
   Use `very_good_cli` or manual structure following Clean Architecture conventions.
 
@@ -43,12 +44,12 @@ Establish the monorepo, CI pipeline, and Docker backend skeleton so every subseq
   - `go_router` — declarative navigation
   - `freezed`, `json_serializable` — code generation
 
-- [ ] **0.3** Implement `AppTheme` with full token system (all colors, typography scale, spacing constants defined in `design.md`). No hardcoded colors anywhere else in the codebase.
+- [ ] **0.3** Implement `AppTheme` strictly within a single file `lib/core/app_theme.dart` containing all color tokens, typography scales, light/dark mode definitions, and visual decorations. No hardcoded colors are allowed anywhere else in the codebase.
 
 - [ ] **0.4** Configure `go_router` with all top-level routes. Stub all feature screens with `PlaceholderScreen(featureName)`.
 
 - [ ] **0.5** Set up Docker backend skeleton:
-  - `docker-compose.yml` with `alef-api`, `alef-postgres`, `alef-redis`, `alef-caddy` services
+  - `docker-compose.yml` with `kero-space-api`, `kero-space-postgres`, `kero-space-redis`, `kero-space-caddy` services
   - PostgreSQL init script with all table schemas (with `updated_at` triggers)
   - Caddy with self-signed TLS config
   - API server stub (Dart Shelf or Rust Actix) returning `200 OK` on `/health`
@@ -122,20 +123,20 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 
 ### Tasks
 
-- [ ] **2.1** Implement `AlefForegroundService` in Kotlin:
-  - Persistent notification with "ALEF Active" status
+- [ ] **2.1** Implement `KeroSpaceForegroundService` in Kotlin:
+  - Persistent notification with "Kero Space Active" status
   - `START_STICKY` restart policy
-  - `AlefBootReceiver` for boot persistence
+  - `KeroSpaceBootReceiver` for boot persistence
 
-- [ ] **2.2** Implement `AlefScreenReceiver`:
-  - Register in `AlefForegroundService.onCreate()`
-  - Emit `{type, timestamp}` JSON to `alef/screen_events` EventChannel
+- [ ] **2.2** Implement `KeroSpaceScreenReceiver`:
+  - Register in `KeroSpaceForegroundService.onCreate()`
+  - Emit `{type, timestamp}` JSON to `kero_space/screen_events` EventChannel
   - Write `ScreenEvent` to Isar via `ContentValues` (Kotlin-side Isar write)
   - **Validate:** Lock/unlock device 10 times, verify 10 UNLOCK events appear in Flutter BLoC state
 
-- [ ] **2.3** Implement `AlefAccessibilityService`:
+- [ ] **2.3** Implement `KeroSpaceAccessibilityService`:
   - Config XML with event types as specified in `agents.md`
-  - Emit filtered click events to `alef/accessibility` EventChannel
+  - Emit filtered click events to `kero_space/accessibility` EventChannel
   - **Validate:** Open Instagram, verify `TypeWindowStateChanged` event is received in Flutter with correct `packageName`
 
 - [ ] **2.4** Implement Overlay Window (`OverlayManager`):
@@ -157,10 +158,10 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 - [ ] **2.7** Implement `WakeWordService`:
   - `AudioRecord` setup at 16kHz, 16-bit PCM
   - ONNX Runtime integration with a placeholder model (use a pre-trained "hey siri" style model for testing)
-  - Emit detection event to `alef/wake_word` EventChannel
+  - Emit detection event to `kero_space/wake_word` EventChannel
   - **Validate:** Model detects test phrase at least 90% of the time from 1 meter in quiet room
 
-- [ ] **2.8** Wire all channels to Dart `EventChannel`/`MethodChannel` counterparts and abstract as `AlefPlatformService` interface (injected via GetIt).
+- [ ] **2.8** Wire all channels to Dart `EventChannel`/`MethodChannel` counterparts and abstract as `KeroSpacePlatformService` interface (injected via GetIt).
 
 **DoD:** All 4 agents operating simultaneously. Device runs for 4 hours with no ANR, no crash, battery drain < 8% above baseline.
 
@@ -176,7 +177,7 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 - [ ] **3.3** Multi-tiered task dependency rendering (tree view with `flutter_fancy_tree_view` or custom `CustomPainter`)
 - [ ] **3.4** Daily checklist view with carry-forward logic (incomplete tasks from yesterday auto-appear)
 - [ ] **3.5** Notes CRUD with rich text support (`flutter_quill`)
-- [ ] **3.6** Samsung Calendar platform channel (`alef/calendar`):
+- [ ] **3.6** Samsung Calendar platform channel (`kero_space/calendar`):
   - Kotlin reads from `CalendarContract.Events` ContentProvider
   - Returns events as JSON to Flutter
 - [ ] **3.7** Google Calendar OAuth2 integration:
@@ -185,7 +186,7 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
   - `GoogleCalendarRepository` implementation using raw `dio` HTTP calls to Calendar REST API v3
   - **No Google Sign-In SDK** — private OAuth client only
 - [ ] **3.8** Unified `CalendarBloc` merging Samsung + Google events into a single sorted stream
-- [ ] **3.9** Calendar UI: month view + day view using `table_calendar` (customized to match ALEF theme)
+- [ ] **3.9** Calendar UI: month view + day view using `table_calendar` (customized to match Kero Space theme)
 - [ ] **3.10** Implement dynamic Coptic Orthodox Fasting Calendar Computus algorithm to automatically calculate and highlight shifting fasts (Great Lent, Apostles' Fast, Jonah's Fast, weekly Wednesday/Friday fasts) based on Orthodox Pascha calculation.
 - [ ] **3.11** ADHD visual adjustments: dynamic task carry-forward visual styling, breathing cyan gradient on active pinned focus tasks, custom light haptic triggers, and particle Canvas splash on check-offs.
 
@@ -337,11 +338,11 @@ Surface all telemetry data collected by the agents into actionable, glanceable v
   - Tiny model (~75MB) bundled in assets
   - Transcription runs in background isolate (no UI freeze)
 - [ ] **8.5** Wake word custom model training documentation:
-  - README with instructions for recording 500 samples of "hey alef" and training with OpenWakeWord
+  - README with instructions for recording 500 samples of "hey kero" and training with OpenWakeWord
   - Script for model export to ONNX format
   - Integration testing checklist
 
-**DoD:** "Hey Alef, log 150g rice" → HealthBloc receives `LogMeal(name: 'rice', grams: 150)` and executes. "Hey Alef, add task review contracts" → task appears in task list. False positive rate < 1 per hour.
+**DoD:** "Hey Kero, log 150g rice" → HealthBloc receives `LogMeal(name: 'rice', grams: 150)` and executes. "Hey Kero, add task review contracts" → task appears in task list. False positive rate < 1 per hour.
 
 ---
 
@@ -350,7 +351,7 @@ Surface all telemetry data collected by the agents into actionable, glanceable v
 
 ### Tasks
 
-- [ ] **9.1** Implement Windows platform channel (`alef/win_process`):
+- [ ] **9.1** Implement Windows platform channel (`kero_space/win_process`):
   - Dart FFI binding to `user32.dll` `GetForegroundWindow` + `GetWindowText`
   - Poll every 5 seconds, emit process change events to `ProcessEventBloc`
 - [ ] **9.2** Adaptive layout: implement `AdaptiveLayout` widget that switches between mobile (bottom nav) and desktop (left rail) based on `MediaQuery.size.width > 800`

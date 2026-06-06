@@ -2,7 +2,7 @@
 
 ## 1. High-Level Architecture Overview
 
-ALEF is structured around three concentric layers:
+Kero Space is structured around three concentric layers:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -15,6 +15,10 @@ ALEF is structured around three concentric layers:
 ```
 
 The architecture strictly enforces **Dependency Inversion** — the domain layer knows nothing about Flutter, Isar, HTTP, or platform channels. Every external capability is injected via abstract repository interfaces.
+
+### Theme & Component Organization Policies
+- **Single-File Theming:** To simplify editing and maintenance, all design tokens, HSL values, visual theme configurations, and font alignments are defined strictly inside `lib/core/app_theme.dart`. No other file in the application is permitted to construct or hardcode `Color` objects.
+- **Shared Component Repository:** All refactored, reusable UI components (custom cards, inputs, buttons, loading state shimmers) must reside in a single directory: `lib/shared/widgets/`. Local feature presentation folders (`lib/features/[name]/presentation/widgets/`) should contain only feature-specific layouts that cannot be abstracted.
 
 ---
 
@@ -138,23 +142,23 @@ Flutter communicates with Android/Windows OS capabilities through **MethodChanne
 
 | Channel Name | Channel Type | Purpose |
 |---|---|---|
-| `alef/accessibility` | EventChannel | Streams `AccessibilityEvent` payloads (click coords, package name, view text) from the AccessibilityService |
-| `alef/usage_stats` | MethodChannel | Queries `UsageStatsManager` for per-app foreground time by day/week |
-| `alef/screen_events` | EventChannel | Streams `Intent.ACTION_SCREEN_ON/OFF`, `ACTION_USER_PRESENT` broadcast events |
-| `alef/overlay` | MethodChannel | Commands: `showOverlay(config)`, `dismissOverlay()` — manages `TYPE_APPLICATION_OVERLAY` window |
-| `alef/health_connect` | MethodChannel | Reads steps, heart rate, sleep from Health Connect `HealthDataStore` |
-| `alef/calendar` | MethodChannel | CRUD on Samsung/Android `CalendarContract` ContentProvider |
-| `alef/wake_word` | EventChannel | Streams wake-word detection events from background audio service |
+| `kero_space/accessibility` | EventChannel | Streams `AccessibilityEvent` payloads (click coords, package name, view text) from the AccessibilityService |
+| `kero_space/usage_stats` | MethodChannel | Queries `UsageStatsManager` for per-app foreground time by day/week |
+| `kero_space/screen_events` | EventChannel | Streams `Intent.ACTION_SCREEN_ON/OFF`, `ACTION_USER_PRESENT` broadcast events |
+| `kero_space/overlay` | MethodChannel | Commands: `showOverlay(config)`, `dismissOverlay()` — manages `TYPE_APPLICATION_OVERLAY` window |
+| `kero_space/health_connect` | MethodChannel | Reads steps, heart rate, sleep from Health Connect `HealthDataStore` |
+| `kero_space/calendar` | MethodChannel | CRUD on Samsung/Android `CalendarContract` ContentProvider |
+| `kero_space/wake_word` | EventChannel | Streams wake-word detection events from background audio service |
 
 ### Windows Platform Channels
 
 | Channel Name | Channel Type | Purpose |
 |---|---|---|
-| `alef/win_process` | EventChannel | Foreground window title/process tracking via `GetForegroundWindow` Win32 API |
-| `alef/win_calendar` | MethodChannel | Outlook/Windows Calendar COM interop (optional) |
+| `kero_space/win_process` | EventChannel | Foreground window title/process tracking via `GetForegroundWindow` Win32 API |
+| `kero_space/win_calendar` | MethodChannel | Outlook/Windows Calendar COM interop (optional) |
 
 ### Channel Security Model
-- All channels are restricted to the ALEF app's package signature — no external app can invoke them
+- All channels are restricted to the Kero Space app's package signature — no external app can invoke them
 - AccessibilityService is declared with `android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"` ensuring only the system can bind it
 
 ---
@@ -165,10 +169,10 @@ Flutter communicates with Android/Windows OS capabilities through **MethodChanne
 
 ```
 services:
-  alef-api:        # Dart Shelf or Rust Actix REST API
-  alef-postgres:   # PostgreSQL 16 — primary data store
-  alef-redis:      # Redis 7 — sync queue, rate limiting
-  alef-caddy:      # Caddy 2 — TLS termination + reverse proxy (local cert)
+  kero-space-api:        # Dart Shelf or Rust Actix REST API
+  kero-space-postgres:   # PostgreSQL 16 — primary data store
+  kero-space-redis:      # Redis 7 — sync queue, rate limiting
+  kero-space-caddy:      # Caddy 2 — TLS termination + reverse proxy (local cert)
 ```
 
 ### API Design

@@ -4,18 +4,18 @@
 
 Modern personal productivity, health, and financial tools are fundamentally broken from a privacy standpoint. Every calendar sync, every health metric, every financial transaction, and every behavioral pattern you generate is harvested, sold, and monetized by third-party cloud platforms. You are not the customer — you are the product.
 
-**ALEF** (Adaptive Lifelong Ecosystem Framework) was designed around a single non-negotiable axiom:
+**Kero Space** was designed around a single non-negotiable axiom:
 
 > *Your data is yours. It lives on your hardware. It leaves only when you explicitly command it.*
 
-ALEF is a unified personal intelligence system that replaces a fragmented ecosystem of SaaS apps (Notion, MyFitnessPal, Google Calendar, personal finance apps, habit trackers) with a single, self-hosted, zero-cloud alternative. The system runs natively on Android and Windows from a single Flutter codebase, with all persistence managed by a private Docker backend and a local Isar cache.
+Kero Space is a unified personal intelligence system that replaces a fragmented ecosystem of SaaS apps (Notion, MyFitnessPal, Google Calendar, personal finance apps, habit trackers) with a single, self-hosted, zero-cloud alternative. The system runs natively on Android and Windows from a single Flutter codebase, with all persistence managed by a private Docker backend and a local Isar cache.
 
 ---
 
 ## 2. The Zero-Cloud Privacy Philosophy
 
 ### Threat Model
-ALEF assumes:
+Kero Space assumes:
 - **Cloud providers are adversaries** for the purpose of personal data protection.
 - **Network transmission = exposure risk** unless encrypted end-to-end with keys you control.
 - **App permissions are attack surfaces** — every sensor, every API, every background service must justify its existence.
@@ -40,7 +40,7 @@ ALEF assumes:
 - **Mindless Scrolling Blocker:** System overlay intercepting blacklisted app launches, enforcing dynamic Decision Break timers, and offering custom ADHD cognitive reset tasks.
 - **System-Wide Click Logger:** Background accessibility service logging tap and click telemetry locally with built-in PII redaction.
 - **Screen & Unlock Logger:** Monitors device usage cycles (wake, sleep, unlock frequency).
-- **Always-Listening Wake-Word Engine ("Ears"):** Local, offline neural wake-word activation ("Hey Alef") for hands-free tech operations.
+- **Always-Listening Wake-Word Engine ("Ears"):** Local, offline neural wake-word activation ("Hey Kero") for hands-free tech operations.
 
 ---
 
@@ -84,7 +84,7 @@ ALEF assumes:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    ALEF ECOSYSTEM                   │
+│                 KERO SPACE ECOSYSTEM                │
 │                                                     │
 │  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
 │  │ Flutter  │  │  Isar    │  │  Docker Backend  │  │
