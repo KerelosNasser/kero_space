@@ -1,402 +1,215 @@
-# Pillar — Design System
+# design.md — UI/UX Philosophy & Visual System
 
-> Visual language, motion grammar, component catalogue, and accessibility
-> contract for every user-facing surface. This file is the *how* at the
-> user-facing level.
+## 1. Design Philosophy: "Operational Density with Cognitive Calm"
 
----
+ALEF's interface serves a user who is simultaneously a developer, a teacher, a freelancer, an investor, and a spiritual practitioner. The design must communicate high-information density without producing decision fatigue.
 
-## 1. Visual Philosophy
+The visual language is **Dark Utilitarian Precision** — think mission control, not wellness app. Every pixel justifies its existence. Color is semantic, not decorative. Animation is purposeful, not playful.
 
-**"Calm instrument."** Kero is a private dashboard, not a social feed.
-The aesthetic borrows from high-end audio gear (Teenage Engineering,
-Braun), medical instrumentation (Withings, OMROM), and Coptic iconography
-(geometric, gold-accented, never garish). The product is dense with data
-and yet quiet on the eye.
-
-### 1.1 Three rules
-
-1. **One accent per screen.** Charts may use the data palette; everything
-   else uses a single foreground accent.
-2. **No drop shadows on data.** Shadows are reserved for floating surfaces
-   (FAB, modal sheets). Charts use stroke weight, not depth.
-3. **Negative space is data.** Whitespace groups and prioritises; we never
-   fill a viewport for the sake of filling it.
-
-### 1.2 Anti-patterns (rejected at review)
-
-- Neon-on-black "trader dashboards".
-- Stock photos of sunsets/sandals.
-- Glassmorphism over charts (kills legibility).
-- Gradients used for decoration rather than to convey state.
-- Confetti, fireworks, bouncing emojis.
+### Core Tenets
+1. **Glanceability First** — The most critical metric in any view must be readable in under 400ms.
+2. **Progressive Disclosure** — Summary cards expand to detail. Detail views drill to raw data. Never show everything at once.
+3. **Semantic Color System** — Colors mean things and never deviate from their meaning.
+4. **Motion as Feedback** — Animations confirm state transitions, not embellish them.
 
 ---
 
-## 2. Color System
-
-### 2.1 Dark theme (default)
-
-| Token             | Hex       | Usage                                         |
-| ----------------- | --------- | --------------------------------------------- |
-| `surface.0`       | `#0E1116` | App background                                |
-| `surface.1`       | `#161A22` | Cards, list rows                              |
-| `surface.2`       | `#1F2530` | Elevated surfaces (sheets, popovers)          |
-| `surface.3`       | `#2A3140` | Hover/pressed states                          |
-| `border.subtle`   | `#2A3140` | 1px dividers                                  |
-| `border.strong`   | `#3A4252` | 2px focus, section breaks                     |
-| `text.primary`    | `#E6EAF2` | Body                                          |
-| `text.secondary`  | `#9AA3B2` | Captions, metadata                            |
-| `text.muted`      | `#5E6675` | Disabled                                      |
-| `accent.kero`     | `#C8A24A` | Primary accent (Kero gold, Coptic-inspired)   |
-| `accent.kero.dim` | `#8A6E2C` | Accent on dark surfaces                       |
-| `semantic.good`   | `#3DBA86` | Streak kept, budget under, gain               |
-| `semantic.warn`   | `#E0A93B` | Approaching threshold                         |
-| `semantic.bad`    | `#D85060` | Over budget, streak broken, loss              |
-| `data.series.1`   | `#7AA2F7` | Earnings                                      |
-| `data.series.2`   | `#9ECE6A` | Steps                                         |
-| `data.series.3`   | `#E0A93B` | Screen time                                   |
-| `data.series.4`   | `#BB9AF7` | Mass attendance                               |
-| `data.series.5`   | `#7DCFFF` | EGX portfolio                                 |
-| `data.series.6`   | `#F7768E` | Calories                                      |
-
-### 2.2 Light theme
-
-| Token             | Hex       |
-| ----------------- | --------- |
-| `surface.0`       | `#FAF7F0` |  (warm off-white, parchment-inspired) |
-| `surface.1`       | `#FFFFFF` |
-| `surface.2`       | `#F2EEE4` |
-| `surface.3`       | `#E5DFD0` |
-| `border.subtle`   | `#E5DFD0` |
-| `border.strong`   | `#C8C0AB` |
-| `text.primary`    | `#1A1A1A` |
-| `text.secondary`  | `#5C5648` |
-| `text.muted`      | `#8A8474` |
-| `accent.kero`     | `#8A6E2C` |
-| `accent.kero.dim` | `#C8A24A` |
-
-Semantic and data colors are identical to dark; only surface/text differ.
-The parchment background is a 1-dB nudge toward warmth — it reduces
-blue-light fatigue during late-evening reviews.
-
-### 2.3 Colour-blind safety
-
-* All semantic states have a non-color cue: a leading icon and a textual
-  label.
-* Charts pair color with a unique line dash pattern (defined per series).
-* The 6-color data palette is verified to be distinguishable for the three
-  common forms of CVD (deuteranopia, protanopia, tritanopia) via the
-  `colorblind` simulator in the design QA suite.
-
----
-
-## 3. Typography
-
-We use **Inter** for UI text and **JetBrains Mono** for numeric / tabular
-content. Both are OFL and bundled in the app to avoid network fetches.
-
-| Role             | Family          | Size / Weight / Line-height               |
-| ---------------- | --------------- | ----------------------------------------- |
-| `display.l`      | Inter           | 40 / 600 / 48                             |
-| `display.m`      | Inter           | 28 / 600 / 36                             |
-| `title.l`        | Inter           | 22 / 600 / 28                             |
-| `title.m`        | Inter           | 18 / 600 / 24                             |
-| `body.l`         | Inter           | 16 / 400 / 24                             |
-| `body.m`         | Inter           | 14 / 400 / 20                             |
-| `caption`        | Inter           | 12 / 500 / 16                             |
-| `overline`       | Inter           | 10 / 600 / 14, +0.08em tracking, UPPER     |
-| `numeric.xl`     | JetBrains Mono  | 32 / 500 / 36, `tabular-nums`             |
-| `numeric.l`      | JetBrains Mono  | 20 / 500 / 24, `tabular-nums`             |
-| `numeric.m`      | JetBrains Mono  | 14 / 500 / 20, `tabular-nums`             |
-
-Tabular figures are mandatory in any column of numbers. Proportional
-figures are used in body prose.
-
----
-
-## 4. Spacing & Layout
-
-### 4.1 Spacing scale (4-pt grid)
-
-`4, 8, 12, 16, 20, 24, 32, 40, 56, 72, 96`
-
-Use the named tokens: `space.xs` (4), `space.s` (8), `space.m` (12),
-`space.l` (16), `space.xl` (20), `space.2xl` (24), `space.3xl` (32),
-`space.4xl` (40), `space.5xl` (56), `space.6xl` (72), `space.7xl` (96).
-
-### 4.2 Layout
-
-* **Phone**: single column, max content width 600 dp, side gutters 16 dp.
-* **Tablet (≥ 720 dp)**: two-column "rail + content" with persistent
-  navigation rail on the left.
-* **Windows desktop (≥ 960 dp)**: three-pane layout — `Sidebar` (240 dp)
-  + `Content` (fluid) + `Inspector` (320 dp, collapsible). Inspector is
-  context-aware (e.g. opens on row click in ledger).
-
-### 4.3 Touch targets
-
-* Minimum 48 × 48 dp on touch, 32 × 32 dp on pointer.
-* Pointer hover states on Windows are mandatory for any actionable element.
-
----
-
-## 5. Motion Grammar
-
-### 5.1 Principles
-
-1. **Interruptible.** Any animation can be cancelled by a new input; the
-   state resolves to the new target, never to an in-between.
-2. **Bounded.** No animation exceeds 400 ms except page-route transitions
-   (≤ 320 ms).
-3. **Reduced-motion respected.** When the system reports
-   `prefers-reduced-motion`, all transforms are replaced with opacity
-   crossfades, and chart updates skip the interpolation step.
-4. **Choreographed, not orchestrated.** A staggered list enters with
-   24 ms × index delay, capped at 5 elements. We never stagger 50 cards.
-
-### 5.2 Durations
-
-| Token             | ms  | Usage                                                |
-| ----------------- | --- | ---------------------------------------------------- |
-| `dur.instant`     | 80  | State flips (toggle, checkbox)                       |
-| `dur.fast`        | 160 | Hover, focus, ripple                                 |
-| `dur.standard`    | 240 | Modal rise, sheet slide, FAB morph                   |
-| `dur.slow`        | 320 | Page route, chart axis reveal                        |
-| `dur.slowest`     | 480 | Rive state-machine transitions only                  |
-
-### 5.3 Easings
-
-| Token             | Curve                                                | Usage                       |
-| ----------------- | ---------------------------------------------------- | --------------------------- |
-| `ease.standard`   | `cubic-bezier(0.2, 0, 0, 1)`                         | Default                     |
-| `ease.emphasized` | `cubic-bezier(0.2, 0, 0, 1)` (decel only)             | Enter from below            |
-| `ease.exit`       | `cubic-bezier(0.4, 0, 1, 1)` (accel only)            | Exit to above               |
-| `ease.spring`     | Custom `Spring` with `stiffness 180, damping 22`     | Rive / mascot interactions  |
-| `ease.linear`     | `linear`                                             | Indeterminate progress only |
-
-### 5.4 Chart-specific motion
-
-* `fl_chart` is configured with `duration: 240 ms` for all data updates.
-* A line chart with 10 000 points uses `LineChart`'s built-in viewport
-  with `clipData: FlClipData.all()` to keep the canvas paint bounded.
-* Pan and zoom use Flutter's `InteractiveViewer`-style gestures baked
-  into `fl_chart`'s `LineTouchData`; no custom gesture recogniser.
-
-### 5.5 Rive state machines
-
-* `mascot.riv` — Kero bird (Coptic iconography: geometric, gold-bordered)
-  with states: `idle`, `listening`, `thinking`, `celebrating`, `resting`.
-  Triggered by the Omniscient Layer's wake-word engine.
-* `streak_grid.riv` — 30-day grid; each cell has states `empty`,
-  `kept`, `missed`, `future`. Tied to the Spiritual pillar's `streaks`
-  collection.
-* `decision_shield.riv` — full-screen overlay with a slow radial breathing
-  animation (0.06 Hz) during the Decision Break countdown.
-
----
-
-## 6. Component Catalogue
-
-The design system ships as `package:kero_design` and exposes:
-
-### 6.1 Primitives
-
-| Component           | Notes                                                                   |
-| ------------------- | ----------------------------------------------------------------------- |
-| `KeroScaffold`      | Wraps `Scaffold`; injects theme, locale, accessibility scale.           |
-| `KeroCard`          | Surface.1 background, 12 dp radius, 1 px subtle border.                  |
-| `KeroSection`       | Title + optional action + child. Vertical rhythm 16 dp.                 |
-| `KeroButton`        | Three intents: `primary`, `secondary`, `tertiary`. One icon slot.       |
-| `KeroIconButton`    | 40 × 40 dp, tooltip-mandatory, focus ring 2 dp.                         |
-| `KeroTextField`     | 48 dp height, floating label, error in `semantic.bad`, mono mode.       |
-| `KeroChip`          | 24 dp height, selectable, with optional leading dot.                    |
-| `KeroSwitch`        | 52 × 32 dp; haptic on toggle.                                           |
-| `KeroSlider`        | 200 dp min, snap points supported, live value tooltip.                  |
-| `KeroSegmented`     | 2–4 options, spring-driven selection.                                   |
-| `KeroBottomSheet`   | `showModalBottomSheet` wrapper; 24 dp top radius, drag handle.          |
-| `KeroDialog`        | `Dialog` with `surface.2`, max 480 dp wide.                             |
-| `KeroTooltip`       | 250 ms hover delay; arrow; never on chart data points (use marker).     |
-| `KeroToast`         | 3 s; bottom-anchored; action slot.                                      |
-| `KeroEmptyState`    | 240 × 240 illustration + title + body + primary CTA.                   |
-| `KeroErrorState`    | Same as empty + "Copy diagnostics" CTA.                                |
-| `KeroSkeleton`      | Shimmer disabled by default; static surface.2 block.                   |
-
-### 6.2 Composed
-
-| Component           | Notes                                                                   |
-| ------------------- | ----------------------------------------------------------------------- |
-| `KeroStatTile`      | Title + `numeric.l` value + delta arrow + sparkline.                    |
-| `KeroTimeSeries`    | Wraps `fl_chart.LineChart`; tooltip, brush, zoom.                       |
-| `KeroBarSeries`     | Wraps `fl_chart.BarChart`; stacking + per-bar action.                   |
-| `KeroHeatMap`       | Calendar heatmap (28-day or 365-day).                                   |
-| `KeroStreakGrid`    | Rive-backed; binds to a `streaks` stream.                              |
-| `KeroLedgerRow`     | Debit / credit / currency-aware, mono numerals, two-line meta.          |
-| `KeroMoneyInput`    | `KeroTextField` with `MoneyTextInputFormatter`, currency dropdown.      |
-| `KeroMassBadge`     | Sunday-pill, streak-aware.                                              |
-| `KeroFocusShield`   | Rive-backed full-screen blocker (used by Decision Break).               |
-| `KeroVoiceSheet`    | Bottom sheet with Rive mascot + live transcript.                        |
-
-### 6.3 Pillar-specific screens (signature)
-
-| Screen              | Signature elements                                                  |
-| ------------------- | ------------------------------------------------------------------- |
-| **Today**           | Time-aware greeting, top 3 priorities, today's Mass, today's spend |
-| **Focus**           | Decision Break settings, app blacklist editor, today-by-the-hour    |
-| **Ledger**          | Three-pane (accounts / journal / inspector), running balance chart  |
-| **EGX**             | Holdings table, sector donut, performance ribbon, dividend calendar |
-| **Body**            | Macro ring, meal log timeline, wearable vitals strip                |
-| **Sanctuary**       | Streak grid, ministry kanban, encrypted confessional entry         |
-| **Insights**        | Cross-pillar "Week in Review" with correlation scatter              |
-
----
-
-## 7. Dashboard Aesthetic (Analytics Pillar)
-
-### 7.1 Information density
-
-* **Per-screen budget**: ≤ 6 distinct chart surfaces, ≤ 4 active filters,
-  ≤ 1 hero number.
-* **Chart canvas height**: 200 dp on phone, 280 dp on tablet, 320 dp on
-  Windows.
-* **Axis labels**: 8 dp caption size, 50 % opacity, never italic.
-
-### 7.2 Interactions
-
-| Gesture         | Effect                                                |
-| --------------- | ----------------------------------------------------- |
-| Tap data point  | Inspector opens with full row context                 |
-| Long-press      | Pin annotation; crosshair mode                        |
-| Pinch           | Zoom X axis (preserves Y range)                       |
-| Pan X           | Scroll viewport                                       |
-| Two-finger pan  | Pan both axes (rare; Windows trackpad only)           |
-| Hover (Windows) | Tooltip with virtualized row link                     |
-
-### 7.3 Cross-axis correlation
-
-* The Insights screen uses a **scatter** with `fl_chart.ScatterChart` and
-  a selectable X variable (steps, sleep, screen time, mood) vs selectable
-  Y variable (productivity score, spend, mood). Pearson r is shown in the
-  Inspector; a regression line overlays in `data.series.1` with 1-px
-  stroke.
-
-### 7.4 Empty / loading / error
-
-* **Loading**: chart skeleton with `dur.standard` opacity pulse (NOT a
-  shimmer — the brief forbids theatrical motion).
-* **Empty**: honest copy ("No EGX holdings yet. Add a lot to begin.") +
-  a single CTA.
-* **Error**: copy + "Retry" + "Copy diagnostics". Never a stack trace
-  on the surface.
-
----
-
-## 8. Accessibility
-
-### 8.1 Targets
-
-* **WCAG 2.2 AA** on the six primary screens and every Composed component.
-* **Color contrast**: ≥ 4.5:1 for body text, ≥ 3:1 for ≥ 18-pt text and
-  any non-text UI element.
-* **Focus order**: matches reading order; never tabs through invisible
-  items.
-* **Hit area**: every interactive element has a 48 × 48 dp hit area on
-  touch (we expand the hit area, not the visual).
-* **Screen reader**: every chart has a hidden semantic summary
-  ("Steps: 8,420, 12 % above 7-day average."). Tooltips are not the
-  source of truth.
-
-### 8.2 Motion sensitivity
-
-* Global `KeroMotionScope` watches the system setting. When reduced
-  motion is requested, all `dur.standard` and above collapse to 0 ms;
-  Rive animations fall back to the first frame; chart updates become
-  instant.
-
-### 8.3 Dynamic type
-
-* The text scale factor follows the system setting, clamped to `[0.85,
-  1.4]`. Beyond 1.4 the layout reflows to two columns where possible.
-* Chart numeric labels are pinned to fixed sizes; only titles and
-  captions scale.
-
-### 8.4 Internationalisation
-
-* English (en) and Modern Standard Arabic (ar) at v1.0. RTL is
-  first-class: every layout is RTL-tested, not retrofitted.
-* Date/number formatting uses `intl` with the user's locale; the EGX
-  ledger however **always** displays EGP as the default currency, with
-  conversion in the Inspector.
-
----
-
-## 9. Iconography
-
-* Base set: **Phosphor** (regular weight, 24 dp). OFL.
-* Custom additions:
-  * `kero_coptic_cross` — a Coptic cross used for the Spiritual pillar
-    tab and the Mass badge.
-  * `kero_decision_shield` — used only by the Omniscient Layer.
-* All icons ship as `IconData` (via `flutter_icons` codegen) so they
-  remain recolourable.
-
----
-
-## 10. Sound (optional, opt-in)
-
-A small palette of UI sounds, generated on-device via `flutter_soloud`:
-
-| Sound            | Trigger                                  | Duration |
-| ---------------- | ---------------------------------------- | -------- |
-| `tap_soft`       | Button press                             | 60 ms    |
-| `tap_metal`      | Primary CTA                              | 90 ms    |
-| `sheet_open`     | Bottom sheet rise                        | 180 ms   |
-| `streak_kept`    | Daily completion                         | 240 ms   |
-| `wake_ping`      | Wake word recognised                     | 120 ms   |
-| `chime_end`      | Decision Break countdown reaches zero    | 320 ms   |
-
-Sounds are **off by default**. The user enables them in
-`Settings > Feedback > Sounds`. No sound is ever played before
-authentication (i.e. on the lock screen).
-
----
-
-## 11. Theming API
-
-```dart
-final theme = KeroThemeData(
-  brightness: Brightness.dark,
-  accent: KeroAccent.gold,
-  density: KeroDensity.standard,
-  motion: KeroMotionScope.system,
-);
+## 2. Color & Typography System
+
+### Color Tokens (CSS-style naming for documentation clarity)
+
+```
+--bg-primary:      #0A0D12   // Near-black background
+--bg-surface:      #111620   // Card/surface layer
+--bg-elevated:     #181F2E   // Modals, overlays
+--bg-overlay:      #1E2838   // Overlay blocker background
+
+--accent-cyan:     #00D4FF   // Primary interactive / active states
+--accent-amber:    #FFB020   // Financial / wealth domain
+--accent-emerald:  #00C896   // Health / positive metrics
+--accent-violet:   #9B6DFF   // Church / spiritual domain
+--accent-red:      #FF4757   // Alerts, blocking states, critical
+--accent-slate:    #4A90A4   // Telemetry / neutral data
+
+--text-primary:    #E8EDF5   // Main readable text
+--text-secondary:  #7A8A9E   // Labels, descriptions
+--text-disabled:   #3A4555   // Muted / inactive
+
+--chart-grid:      #1C2535   // Chart gridlines
+--divider:         #1E2838   // Section separators
 ```
 
-`KeroAccent.gold` is the default. The other options are `KeroAccent.cobalt`
-(deep blue, medical-instrument feel) and `KeroAccent.obsidian`
-(monochrome with a single warm red accent). Switching accent re-tints the
-`accent.kero` token and the chart `data.series.*` palette is rotated to
-keep contrast.
+### Typography
+- **Display / Hero Numbers:** `JetBrains Mono` — monospaced for numerical data (portfolio value, calorie counts, step numbers). Numbers never reflow.
+- **Headings:** `DM Sans` — geometric, authoritative, narrow tracking.
+- **Body / Labels:** `DM Sans Regular` — consistent with headings, readable at small sizes.
+- **Arabic text** (if ever needed for church content): `IBM Plex Arabic`.
 
-`KeroDensity.compact` tightens the spacing scale by 25 % and is intended
-for power users on Windows.
-
----
-
-## 12. Design QA Checklist (per PR)
-
-A PR that touches `kero_design`, any screen, or the theme is **blocked**
-until all of the following are true:
-
-- [ ] Visual diff reviewed by the principal engineer on both themes.
-- [ ] RTL pass: every screen captured in `ar` locale.
-- [ ] Contrast audit with the `colorblind` and `a11y` packages.
-- [ ] Dynamic type pass at 0.85 ×, 1.0 ×, 1.4 ×.
-- [ ] Reduced-motion pass: animation timeline removed or replaced.
-- [ ] Screen-reader pass: VoiceOver (macOS) and TalkBack (Android).
-- [ ] Hit-area audit: all interactive elements ≥ 48 × 48 dp on touch.
-- [ ] Tab order audit on Windows with keyboard only.
+### Type Scale
+| Role | Size | Weight | Font |
+|---|---|---|---|
+| Hero Metric | 48sp | 300 | JetBrains Mono |
+| Section Header | 18sp | 600 | DM Sans |
+| Card Title | 14sp | 500 | DM Sans |
+| Body | 13sp | 400 | DM Sans |
+| Label/Caption | 11sp | 400 | DM Sans |
+| Monospace Data | 13sp | 400 | JetBrains Mono |
 
 ---
 
-*End of design.md. See `agents.md` for the BLoC and repository contracts.*
+## 3. Dashboard Architecture — The Command Center
+
+### Home Dashboard Layout
+
+The home screen is a scrollable **Widget Grid** — not a tab bar. Each domain has a **Snapshot Card** that shows its single most important metric right now.
+
+```
+┌────────────────────────────────────────┐
+│  ⏱  ALEF           [Date]  [Profile]  │  ← Top bar
+├─────────────────────┬──────────────────┤
+│  TODAY'S FOCUS      │   HEALTH RING    │  ← Hero row
+│  3 tasks pending    │  7,240 steps     │
+├─────────────────────┴──────────────────┤
+│  ████████████  SCREEN TIME  ─────────  │
+│  4h 12m  ▲23% vs yesterday            │
+├────────────────────────────────────────┤
+│  EGX PORTFOLIO   EARNINGS THIS MONTH   │
+│  ↑ +2.4%         EGP 12,400           │
+├────────────────────────────────────────┤
+│  MASS STREAK     NEXT CONFESSION       │
+│  ████░░░ 21d     14 days ago          │
+└────────────────────────────────────────┘
+```
+
+### Card Component Anatomy
+Every Snapshot Card follows the same structure:
+1. **Domain accent bar** (2px left border in domain color)
+2. **Domain label** (11sp, secondary text)
+3. **Hero metric** (48sp monospaced or 24sp DM Sans)
+4. **Delta indicator** (directional arrow + percentage change)
+5. **Micro-sparkline** (30-day trend, rendered via `fl_chart` `LineChart` with no axes)
+
+Tapping a card performs a **Hero transition** into the full domain dashboard.
+
+---
+
+## 4. fl_chart — Multi-Axis Correlation Dashboards
+
+### Design Principle for Charts
+Every chart in ALEF is **cross-domain capable**. The user should be able to overlay:
+- Freelance earnings (amber line) on the same time axis as
+- EGX portfolio value (cyan line) and
+- Daily calorie surplus/deficit (emerald/red bars)
+
+This correlation view answers the question: *"Was I eating worse during my high-stress earning periods?"*
+
+### Chart Specifications
+
+#### 4.1 — Financial Overview Chart (`LineChart` + `BarChart` composite)
+```
+X-axis: Time (days/weeks/months — toggle)
+Y-axis Left: EGP value (portfolio + cash)
+Y-axis Right: Caloric balance (kcal surplus/deficit)
+Overlay Lines:
+  - Portfolio value: solid cyan, 2px stroke
+  - Monthly earnings: dashed amber, 2px stroke
+  - Running expense total: dotted red, 1px stroke
+Background Bars:
+  - Daily caloric balance: emerald (surplus) / red (deficit) bars, 40% opacity
+Grid: Horizontal only, #1C2535 (--chart-grid), 1px
+Tooltip: Custom tooltip showing all 4 values at touched X position
+```
+
+**Implementation pattern:**
+```dart
+LineChartData(
+  lineBarsData: [portfolioLine, earningsLine, expenseLine],
+  titlesData: FlTitlesData(
+    leftTitles: AxisTitles(sideTitles: egpTitles),
+    rightTitles: AxisTitles(sideTitles: kcalTitles),
+    bottomTitles: AxisTitles(sideTitles: dateTitles),
+  ),
+  lineTouchData: LineTouchData(
+    touchTooltipData: LineTouchTooltipData(
+      tooltipBgColor: Color(0xFF1E2838),
+      getTooltipItems: multiAxisTooltipBuilder,
+    ),
+  ),
+)
+```
+
+#### 4.2 — Health Dashboard (`BarChart` + `RadarChart`)
+- **Weekly Steps Bar Chart:** 7 bars (Mon–Sun), emerald fill, today's bar highlighted with cyan outline
+- **Sleep Stage Radar:** 4 axes (Deep, REM, Light, Awake), violet fill at 60% opacity, comparing this week vs last week
+- **Heart Rate Trend:** `LineChart` with 24h granularity, gradient fill from `--accent-emerald` to transparent
+
+#### 4.3 — Telemetry Dashboard (`PieChart` + `BarChart`)
+- **App Usage Pie:** Top 8 apps by screen time, each with a unique tinted slice
+- **Hourly Activity Heatmap:** Custom `Canvas`-painted grid (7 days × 24 hours), color intensity = unlock frequency
+- **Decision Break Stats:** `BarChart` showing how many times each blacklisted app was blocked vs. allowed per day
+
+#### 4.4 — Mass Attendance Streak Grid
+A custom `CustomPainter` implementation (not fl_chart) rendering a GitHub-style contribution grid:
+- 52 columns (weeks) × 7 rows (days)
+- Cell color: `--accent-violet` at opacity tiers (0%, 30%, 70%, 100%) based on attendance type
+- Longest streak highlighted with a cyan underline annotation
+
+---
+
+## 5. Animation Strategy
+
+### Guiding Rule: "Animate State, Not Content"
+
+Animations exist to communicate *that something changed* and *what the new state is*. They do not exist to entertain.
+
+### Animation Inventory
+
+| Trigger | Animation | Duration | Curve |
+|---|---|---|---|
+| App launch | Staggered card reveal (cards slide in from bottom, 80ms apart) | 400ms total | `Curves.easeOutCubic` |
+| Card tap → domain view | Hero expand + fade content in | 300ms | `Curves.fastOutSlowIn` |
+| Metric value change | Countup tween (number animates from old to new value) | 600ms | `Curves.easeOutExpo` |
+| Task completion | Strikethrough draw + card collapses | 250ms | `Curves.easeInOut` |
+| Overlay blocker appear | Scale from 0.95 + fade in (jarring, intentional) | 150ms | `Curves.easeOut` |
+| Decision break countdown | Circular progress ring draining | Real-time | Linear |
+| BLoC loading state | Shimmer scan across card skeleton | Loop | Linear |
+| Chart data load | Lines draw from left to right | 500ms | `Curves.easeOutQuart` |
+| Voice listening | Pulsing waveform (Rive animation or `AnimationController` + `CustomPainter`) | Loop | Sine wave |
+
+### Rive Integration (Voice & Overlay)
+Two Rive animations are used for states that require fluid, continuous motion:
+1. **Voice Listener State Machine:** Idle → Listening → Processing → Done. Artboard shows a minimal waveform that responds to audio amplitude (driven by amplitude data streamed from the wake-word engine).
+2. **Decision Break Overlay:** A bold countdown ring with an ambient particle drift behind the timer number — communicates "pause, don't panic."
+
+### Micro-Interaction Details
+- **Toggle switches** use a custom thumb that morphs shape (circle → rounded square when toggled on) — 200ms
+- **Chart touch** highlights the touched point with a pulse ring expand — 300ms, no repeat
+- **Bottom sheet expansion** uses a custom `DraggableScrollableSheet` with spring physics simulation
+
+---
+
+## 6. Navigation Architecture
+
+### Structure
+```
+MaterialApp
+├── DashboardShell (persistent bottom nav, 5 tabs)
+│   ├── Tab 0: Home (Command Center)
+│   ├── Tab 1: Productivity (Tasks + Calendar)
+│   ├── Tab 2: Health (Biometrics + Nutrition)
+│   ├── Tab 3: Finance (Ledger + EGX)
+│   └── Tab 4: Church (Attendance + Ministry)
+├── TelemetryOverview (floating action button → full screen)
+├── SettingsFlow (pushed on top)
+└── VoiceCommandSheet (bottom sheet, triggered by wake word or mic FAB)
+```
+
+### Bottom Navigation
+- **No labels** — domain identified by icon + accent color only
+- Active tab: icon fills with domain accent color, scale 1.15
+- Inactive: icon outline in `--text-disabled`
+- Tab switch animation: icon morphs using `AnimatedIcon` where available, else crossfade
+
+### Adaptive Layout (Android vs Windows)
+- **Android:** Single-column scroll, bottom navigation bar
+- **Windows:** Two-column layout with persistent left rail navigation, chart views expand to fill available horizontal space, keyboard shortcuts for all primary actions
