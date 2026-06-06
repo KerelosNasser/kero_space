@@ -47,12 +47,12 @@ UI Widget rebuilds via BlocBuilder
 | BLoC | Events | Key States |
 |---|---|---|
 | `TelemetryBloc` | `AppLaunchDetected`, `ScreenUnlockLogged`, `ClickEventRecorded` | `TelemetryDashboardState(sessions, topApps, unlockTimeline)` |
-| `ProductivityBloc` | `TaskCreated`, `TaskCompleted`, `NoteUpdated`, `CalendarSynced` | `TaskListState`, `CalendarViewState` |
-| `HealthBloc` | `HealthDataPolled`, `MealLogged`, `CalorieTargetUpdated` | `HealthDashboardState(steps, hr, sleep, macros)` |
+| `ProductivityBloc` | `TaskCreated`, `TaskCompleted`, `NoteUpdated`, `CalendarSynced`, `FastingCalendarRefreshed` | `TaskListState`, `CalendarViewState(fastingPeriods)` |
+| `HealthBloc` | `HealthDataPolled`, `MealLogged`, `CalorieTargetUpdated`, `FastingToggleSwitched` | `HealthDashboardState(steps, hr, sleep, macros, isFastingMode)` |
 | `FinanceBloc` | `InvoiceCreated`, `PaymentReceived`, `EGXPriceRefreshed` | `LedgerState`, `PortfolioState` |
 | `ChurchBloc` | `AttendanceMarked`, `ConfessionEntryCreated`, `ServiceTaskUpdated` | `AttendanceStreakState`, `MinistryBoardState` |
 | `VoiceBloc` | `WakeWordDetected`, `CommandTranscribed`, `CommandExecuted` | `VoiceIdleState`, `VoiceListeningState`, `CommandResultState` |
-| `OverlayBloc` | `BlacklistedAppDetected`, `DecisionBreakExpired`, `AppAccessGranted` | `OverlayInactiveState`, `DecisionBreakState(secondsRemaining)` |
+| `OverlayBloc` | `BlacklistedAppDetected`, `DecisionBreakExpired`, `AppAccessGranted`, `BlockerRuleUpdated`, `AgentToggleSwitched` | `OverlayInactiveState`, `DecisionBreakState(secondsRemaining)`, `OmniscientControlState(agentStates, blacklist)` |
 
 ### BLoC Composition Strategy
 - `AppBloc` — root navigator + authentication state

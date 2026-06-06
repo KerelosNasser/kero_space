@@ -34,47 +34,49 @@ ALEF assumes:
 ## 3. Feature Domain Map
 
 ### Domain 1 — The Omniscient Layer (OS Telemetry & Behavioral Control)
-**Purpose:** To give you radical self-awareness about how you actually spend your digital time, and enforce the behavioral guardrails you set for yourself.
+**Purpose:** Give radical self-awareness of digital time use and enforce behavioral boundaries. Optimized for ADHD brains needing active, low-friction control.
 
-- **Mindless Scrolling Blocker:** System overlay that intercepts blacklisted app launches and enforces a configurable Decision Break timer before granting access.
-- **System-Wide Click Logger:** Background accessibility service that parses UI interactions across all running apps, logging what you click, tap, and type (locally).
-- **Screen & Unlock Logger:** Precise event timestamps for every screen wake, sleep, and device unlock.
-- **Always-Listening Wake-Word Engine ("Ears"):** Fully offline, energy-efficient voice activation using an on-device neural wake-word model. No audio ever leaves the device.
-
-**Why it matters:** Most screen-time apps show you stats passively. ALEF actively intervenes.
+- **Omniscient Control Center:** Core configuration interface in settings. Allows toggling background agents (AccessibilityAgent, UsageGuardAgent, ScreenEventAgent, WakeWordAgent), managing app blacklists, defining allowed hours, and setting blocker strictness (Soft countdown vs. Hard Lockout).
+- **Mindless Scrolling Blocker:** System overlay intercepting blacklisted app launches, enforcing dynamic Decision Break timers, and offering custom ADHD cognitive reset tasks.
+- **System-Wide Click Logger:** Background accessibility service logging tap and click telemetry locally with built-in PII redaction.
+- **Screen & Unlock Logger:** Monitors device usage cycles (wake, sleep, unlock frequency).
+- **Always-Listening Wake-Word Engine ("Ears"):** Local, offline neural wake-word activation ("Hey Alef") for hands-free tech operations.
 
 ---
 
 ### Domain 2 — Productivity & Unified Calendar Engine
-**Purpose:** A single source of truth for your task list, notes, and schedule — merging your on-device Samsung Calendar and Google Calendar without cloud middlemen.
+**Purpose:** Single source of truth for schedule, notes, and tasks, combining local calendar database with Google Calendar OAuth2, optimized for ADHD task-management and college academic cycles.
 
-- **Notes & To-Do Engine:** Hierarchical tasks with parent-child dependency chains, multi-priority queues, and daily checklist pipelines with carry-forward logic.
-- **Dual-Calendar Sync:** Direct read/write access to the local Samsung Calendar ContentProvider (via platform channel), plus private Google Calendar OAuth2 integration. All sync logic runs on-device.
+- **Notes & To-Do Engine:** Hierarchical tasks with parent-child chains, carry-forward checklists, and ADHD focus modes (gamified milestones, pomodoro, micro-task break-downs).
+- **Dual-Calendar Sync:** Direct local Samsung Calendar provider reads + private Google Calendar OAuth PKCE.
+- **Dynamic Coptic Orthodox Fasting Calendar:** Automatically computes yearly changing Coptic fasting cycles (Great Lent, Apostles' Fast, Jonah's Fast, Advent, Wednesday/Friday fasts) using the Alexandrian Computus algorithm. Displays fasting periods and specific dietary constraints directly in the calendar schedule.
 
 ---
 
 ### Domain 3 — Health, Biometrics & Calorie Intelligence
-**Purpose:** A closed-loop health intelligence system that ingests wearable data and correlates it with your dietary intake — entirely offline.
+**Purpose:** Closed-loop, offline health intelligence system matching active lifestyles and strict dietary disciplines.
 
-- **Wearable Integration (Honor Watch):** Background polling of Android Health Connect for step counts, heart rate trends, and sleep stage data.
-- **Precise Calorie Engine:** A local SQLite-backed ingredient database with per-gram caloric/macro density. No barcode scanning cloud APIs. No external lookups. You weigh ingredients; ALEF computes the rest.
+- **Wearable Integration (Honor Watch):** Syncs step counts, active heart rate, and sleep quality indexes via Android Health Connect.
+- **Egyptian Food Calorie Engine:** Local DB pre-loaded with Egyptian foods (e.g., Ful Medames, Falafel/Ta'ameya, Koshary, Feteer, Egyptian bread) with macro profiles.
+- **Orthodox Fasting Toggle:** A single-tap macro toggle that flags non-vegan ingredients (meat, dairy, eggs, fish) and adjusts macronutrient ratios (higher complex carbs, lower animal fats) to support Coptic fasting disciplines automatically.
 
 ---
 
 ### Domain 4 — Wealth & Advanced Financial Ledger
-**Purpose:** Professional-grade financial tracking for a freelance income stream and an active EGX investment portfolio, without uploading your net worth to a startup.
+**Purpose:** Bookkeeping and investment tracker aligned with the user's Management Information Systems (MIS) curriculum, freelance development projects, and prospective banking/fintech career paths.
 
-- **Freelance Accounting Core:** Multi-currency double-entry bookkeeping. Tracks client invoices, payment receipts, outstanding balances, and currency conversion at snapshot exchange rates (manually updated or scraped locally).
-- **Private EGX Portfolio Tracker:** Scrapes publicly available EGX market data locally (or via home server proxy) to compute real-time portfolio valuations, capital gains/losses, and dividend yield tracking.
+- **MIS Double-Entry Bookkeeping:** A clean double-entry accounting engine designed around MIS standards. Tracks multi-currency cash flows, client invoice generation (EGP, USD), paid vs. outstanding ledger accounts, and freelancing profits.
+- **Egyptian Exchange (EGX) Tracker:** Offline-friendly local web scraper parsing EGX market listings to monitor portfolio valuation, capital gains, and dividend payouts in EGP.
+- **Career Preparation Kanban:** Dedicated board tracking banking job applications, software developer certifications, and freelance client pipelines.
 
 ---
 
 ### Domain 5 — Spiritual & Church Life Discipline
-**Purpose:** A structured space for spiritual discipline, ministry accountability, and community service management — treated with the highest confidentiality tier in the system.
+**Purpose:** A secure, high-confidentiality space for Coptic Orthodox spiritual development, service tracking, and liturgy attendance.
 
-- **Confessions Log:** Mandatory AES-256 encryption at rest. The user's master passphrase (never stored) derives the encryption key via Argon2. No plaintext ever written to disk.
-- **Ministry & Service Management:** A lightweight project management layer for church service tasks, member records, and lesson plan tracking.
-- **Holy Mass Attendance:** A streak-based habit tracker with visual consistency grids, longest-streak analytics, and weekly/monthly attendance heatmaps.
+- **Confessions Log:** Argon2-derived key with AES-256 client-side encryption. Completely local, excluded from sync outbox. Auto-locks on inactivity.
+- **Coptic Ministry & Service Management:** Task coordinator for church classes, member rolls, service duties, and lesson drafting.
+- **Holy Liturgy Attendance:** Visual contribution grid (52 weeks x 7 days in deep violet hues) with streak metrics and attendance logging.
 
 ---
 

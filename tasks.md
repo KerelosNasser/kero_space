@@ -186,8 +186,10 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
   - **No Google Sign-In SDK** — private OAuth client only
 - [ ] **3.8** Unified `CalendarBloc` merging Samsung + Google events into a single sorted stream
 - [ ] **3.9** Calendar UI: month view + day view using `table_calendar` (customized to match ALEF theme)
+- [ ] **3.10** Implement dynamic Coptic Orthodox Fasting Calendar Computus algorithm to automatically calculate and highlight shifting fasts (Great Lent, Apostles' Fast, Jonah's Fast, weekly Wednesday/Friday fasts) based on Orthodox Pascha calculation.
+- [ ] **3.11** ADHD visual adjustments: dynamic task carry-forward visual styling, breathing cyan gradient on active pinned focus tasks, custom light haptic triggers, and particle Canvas splash on check-offs.
 
-**DoD:** Tasks persist across app restarts. Calendar shows events from both sources. Google OAuth refresh token survives app restart.
+**DoD:** Tasks persist across app restarts. Calendar shows events from both sources. Google OAuth refresh token survives app restart. Fasting dates calculated dynamically and highlighted correctly.
 
 ---
 
@@ -212,8 +214,9 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
   - `DailySummary` calculation: sum of all meals vs. configurable target
 - [ ] **4.5** Calorie target configuration screen (BMR calculator: weight, height, age, activity level → Mifflin-St Jeor formula)
 - [ ] **4.6** Calorie history chart (14-day bar chart: daily surplus/deficit)
+- [ ] **4.7** Seed local database with Egyptian food items (Ful Medames, Falafel/Ta'ameya, Koshary, etc.) and precalculate macro density. Implement Coptic Fasting macro logic (toggle switch) dynamically adjusting macros to plant-based ratios and alerting on animal products.
 
-**DoD:** Steps from Honor Watch visible in app within 30 minutes of activity. Meal logging persists and sums correctly. Charts render with real data.
+**DoD:** Steps from Honor Watch visible in app within 30 minutes of activity. Meal logging persists and sums correctly. Charts render with real data. Egyptian foods searchable. Fasting mode changes macro constraints.
 
 ---
 
@@ -245,8 +248,9 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
   - Dividend yield tracking (manual entry of dividend records)
 - [ ] **5.7** Multi-axis correlation chart: earnings + portfolio + caloric balance (the flagship visualization described in `design.md`)
 - [ ] **5.8** Currency rate management: manual rate entry UI + optional local scraping of CBE exchange rates
+- [ ] **5.9** Build MIS-aligned financial reports (balance sheets, debit/credit journal charts matching academic curricula) and set up the Career Preparation Kanban module tracking banking job targets, tech certs, and freelance client pipelines.
 
-**DoD:** Invoice creates journal entries automatically. Portfolio value updates within 15 minutes of price change during trading hours. Multi-axis chart renders all three data series with correct Y-axis scaling.
+**DoD:** Invoice creates journal entries automatically. Portfolio value updates within 15 minutes of price change during trading hours. Multi-axis chart renders all three data series with correct Y-axis scaling. Career Kanban tracks job/certification progress.
 
 ---
 
@@ -304,8 +308,12 @@ Surface all telemetry data collected by the agents into actionable, glanceable v
 - [ ] **7.6** Click log browser:
   - Filterable by app, date range
   - Timeline view showing click density per hour
+- [ ] **7.7** Implement the Omniscient Control Center settings screen:
+  - 2x2 toggle status grid binding Accessibility, UsageGuard, ScreenEvent, and WakeWord agents.
+  - Blacklist rule manager interface allowing configuration of allowed hours, custom Decision Break countdown times, and Soft vs Hard lockout strictness.
+  - Emergency bypass overlay keypad triggering puzzle verification and logging bypass events.
 
-**DoD:** All three telemetry charts render with 7+ days of real collected data. Blacklist configuration changes take effect within one accessibility event cycle.
+**DoD:** All three telemetry charts render with 7+ days of real collected data. Blacklist configuration changes take effect within one accessibility event cycle. Blocker settings are modifiable and applied at runtime.
 
 ---
 
