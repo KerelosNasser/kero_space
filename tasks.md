@@ -202,23 +202,23 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 
 ### Tasks
 
-- [ ] **4.1** Health Connect integration via `health` package:
+- [x] **4.1** Health Connect integration via `health` package:
   - Request permissions: `STEPS`, `HEART_RATE`, `SLEEP_SESSION`
   - `HealthConnectRepository` polling every 30 minutes via WorkManager
   - Write to `HealthRecord` Isar collection
-- [ ] **4.2** `HealthBloc` with states for steps, heart rate, sleep
-- [ ] **4.3** Health Dashboard UI:
+- [x] **4.2** `HealthBloc` with states for steps, heart rate, sleep
+- [x] **4.3** Health Dashboard UI:
   - Weekly steps bar chart (fl_chart `BarChart`)
   - Heart rate line chart with 24h data
   - Sleep stages radar chart
   - Today's summary card with ring indicators
-- [ ] **4.4** Calorie Engine:
+- [x] **4.4** Calorie Engine:
   - `IngredientSearchScreen`: search local Isar ingredient DB by name (debounced Isar query)
   - `MealLogScreen`: weight input (grams) → auto-computed calories + macros
   - `DailySummary` calculation: sum of all meals vs. configurable target
-- [ ] **4.5** Calorie target configuration screen (BMR calculator: weight, height, age, activity level → Mifflin-St Jeor formula)
-- [ ] **4.6** Calorie history chart (14-day bar chart: daily surplus/deficit)
-- [ ] **4.7** Seed local database with Egyptian food items (Ful Medames, Falafel/Ta'ameya, Koshary, etc.) and precalculate macro density. Implement Coptic Fasting macro logic (toggle switch) dynamically adjusting macros to plant-based ratios and alerting on animal products.
+- [x] **4.5** Calorie target configuration screen (BMR calculator: weight, height, age, activity level → Mifflin-St Jeor formula)
+- [x] **4.6** Calorie history chart (14-day bar chart: daily surplus/deficit)
+- [x] **4.7** Seed local database with Egyptian food items (Ful Medames, Falafel/Ta'ameya, Koshary, etc.) and precalculate macro density. Implement Coptic Fasting macro logic (toggle switch) dynamically adjusting macros to plant-based ratios and alerting on animal products.
 
 **DoD:** Steps from Honor Watch visible in app within 30 minutes of activity. Meal logging persists and sums correctly. Charts render with real data. Egyptian foods searchable. Fasting mode changes macro constraints.
 
@@ -229,30 +229,30 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 
 ### Tasks
 
-- [ ] **5.1** Double-entry bookkeeping data model:
-  - `Account` (asset, liability, income, expense, equity)
-  - `JournalEntry` (debit account, credit account, amount, currency, date, memo)
-  - Multi-currency: amounts stored in minor units (piasters) with currency code; display converted at snapshot rate
-- [ ] **5.2** `FinanceBloc` with events for all ledger operations
-- [ ] **5.3** Invoice management:
-  - Client CRUD
-  - Invoice create/edit (line items, due date, currency)
-  - Invoice status flow: DRAFT → SENT → PARTIALLY_PAID → PAID → OVERDUE
-  - PDF export (`pdf` package) for invoice documents
-- [ ] **5.4** Payment recording (links payment to invoice, creates journal entry)
+- [ ] **5.1** Simplified Expense/Income Data Model:
+  - `Transaction` (amount, type: INCOME/EXPENSE, category, date, memo)
+  - `Budget` (category, monthly_limit)
+- [ ] **5.2** `FinanceBloc` with events for transactions and automated parsing
+- [ ] **5.3** Android Notification Listener Integration:
+  - Configure `flutter_notification_listener` or native Android `NotificationListenerService`.
+  - Create a background parsing engine using regex to detect bank/wallet SMS and Push Notifications (e.g., CIB, NBE, Vodafone Cash, Instapay).
+  - Automatically parse the amount, vendor, and transaction type, and save to the Isar DB.
+- [ ] **5.4** Advanced Financial Automation:
+  - Auto-categorization engine based on vendor keywords.
+  - Budgeting alerts (notify when a category is near its limit).
 - [ ] **5.5** Financial reports:
-  - Monthly income statement
-  - Cash flow timeline chart
-  - Outstanding receivables list with aging brackets
+  - Monthly income vs expense summary.
+  - Cash flow timeline chart.
+  - Spending breakdown by category (Pie chart).
 - [ ] **5.6** EGX Portfolio Tracker:
   - `EGXHolding` CRUD (ticker, quantity, average cost basis, purchase date)
-  - EGX price scraper (Kotlin `OkHttp` running on Docker backend as a scheduled job, or on-device via `dio` hitting EGX public website with HTML parsing using `html` package)
-  - `EGXPriceSnapshot` written to Isar every market-open polling cycle (15 minutes during trading hours 10:00–14:30 EET)
-  - Portfolio valuation: `(currentPrice - avgCost) * quantity` per holding
-  - Dividend yield tracking (manual entry of dividend records)
-- [ ] **5.7** Multi-axis correlation chart: earnings + portfolio + caloric balance (the flagship visualization described in `design.md`)
-- [ ] **5.8** Currency rate management: manual rate entry UI + optional local scraping of CBE exchange rates
-- [ ] **5.9** Build MIS-aligned financial reports (balance sheets, debit/credit journal charts matching academic curricula) and set up the Career Preparation Kanban module tracking banking job targets, tech certs, and freelance client pipelines.
+  - EGX price scraper (`dio` + `html` polling).
+  - `EGXPriceSnapshot` written to Isar every market-open polling cycle.
+  - Portfolio valuation and dividend yield tracking.
+- [ ] **5.7** TradingView Integration:
+  - Implement `tradingview_lightweight_charts` for the EGX OHLC candlestick visualization.
+- [ ] **5.8** Multi-axis correlation chart: earnings + portfolio + caloric balance (the flagship visualization described in `design.md`)
+- [ ] **5.9** Career Preparation Kanban module tracking banking job targets, tech certs, and freelance client pipelines.
 
 **DoD:** Invoice creates journal entries automatically. Portfolio value updates within 15 minutes of price change during trading hours. Multi-axis chart renders all three data series with correct Y-axis scaling. Career Kanban tracks job/certification progress.
 

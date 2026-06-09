@@ -3,37 +3,44 @@ import 'package:isar/isar.dart';
 part 'finance_collections.g.dart';
 
 @collection
-class Invoice {
+class Transaction {
   Id id = Isar.autoIncrement;
-  late String deviceId;
-  late String platform;
-  late String clientName;
+
   late double amount;
-  late String currency;
-  late String status;
-  late DateTime dueDate;
+  
+  @Index()
+  late String type; // 'INCOME' or 'EXPENSE'
+  
+  @Index()
+  late String category;
+  
+  late DateTime date;
+  
+  String? memo;
+  String? vendor;
+  
+  /// Whether this was automatically created via Notification Listener
+  bool isAutoParsed = false;
 }
 
 @collection
-class Transaction {
+class Budget {
   Id id = Isar.autoIncrement;
-  late String deviceId;
-  late String platform;
-  late String type; // 'DEBIT' or 'CREDIT'
-  late String account;
-  late double amount;
-  late String currency;
-  late DateTime date;
-  late String memo;
+
+  @Index(unique: true)
+  late String category;
+  
+  late double monthlyLimit;
 }
 
 @collection
 class EGXHolding {
   Id id = Isar.autoIncrement;
-  late String deviceId;
-  late String platform;
+
+  @Index(unique: true)
   late String ticker;
-  late int quantity;
+  
+  late double quantity;
   late double averageCost;
   late DateTime purchaseDate;
 }
@@ -41,9 +48,21 @@ class EGXHolding {
 @collection
 class EGXPriceSnapshot {
   Id id = Isar.autoIncrement;
-  late String deviceId;
-  late String platform;
+
+  @Index()
   late String ticker;
+  
   late double currentPrice;
+  late double changePercentage;
   late DateTime timestamp;
+}
+
+@collection
+class EGXWatchlist {
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true)
+  late String ticker;
+  
+  late String companyName;
 }

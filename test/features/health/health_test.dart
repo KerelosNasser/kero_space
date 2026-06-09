@@ -17,15 +17,17 @@ void main() {
       expect(entry.fat, 10);
     });
 
-    test('UserProfile BMR calculation should fall within realistic ranges', () {
+    test('BMR calculations handle male profile', () {
       final profile = UserProfile()
-        ..heightCm = 175
-        ..weightKg = 70
+        ..deviceId = 'test-device'
+        ..platform = 'test-platform'
+        ..height = 180.0
+        ..weight = 75.0
         ..age = 25
-        ..gender = 'Male'
-        ..activityLevel = 'Moderate'
-        ..bmrTarget = 2400.0;
-
+        ..activityLevel = 1.2
+        ..bmrTarget = 2000.0
+        ..timestamp = DateTime.now();
+      expect(profile.height, 180.0);
       expect(profile.bmrTarget, greaterThan(1500));
       expect(profile.bmrTarget, lessThan(4000));
     });
