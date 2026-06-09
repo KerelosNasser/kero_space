@@ -2,7 +2,18 @@ import 'package:flutter/material.dart';
 import 'core/app_theme.dart';
 import 'core/router.dart';
 
-void main() {
+import 'package:flutter/services.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  const platform = MethodChannel('kero_space/main_methods');
+  try {
+    await platform.invokeMethod('startForegroundService');
+  } on PlatformException catch (_) {
+    debugPrint("Failed to start foreground service.");
+  }
+
   runApp(const KeroSpaceApp());
 }
 
