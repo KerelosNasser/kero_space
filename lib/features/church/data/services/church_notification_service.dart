@@ -13,7 +13,7 @@ class ChurchNotificationService {
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
     );
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    await flutterLocalNotificationsPlugin.initialize(settings: initializationSettings);
   }
 
   Future<void> scheduleMonthlyConfessionReminder() async {
@@ -31,13 +31,12 @@ class ChurchNotificationService {
     var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month + 1, 1, 10, 0);
 
     await flutterLocalNotificationsPlugin.zonedSchedule(
-      1,
-      'Confession Reminder',
-      'Time for your monthly confession.',
-      scheduledDate,
-      platformChannelSpecifics,
+      id: 1,
+      title: 'Confession Reminder',
+      body: 'Time for your monthly confession.',
+      scheduledDate: scheduledDate,
+      notificationDetails: platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
     );
   }
@@ -52,10 +51,10 @@ class ChurchNotificationService {
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await flutterLocalNotificationsPlugin.show(
-      2,
-      'Confession Missed',
-      'It has been 14 days since your last log. Return to your spiritual routine.',
-      platformChannelSpecifics,
+      id: 2,
+      title: 'Confession Missed',
+      body: 'It has been 14 days since your last log. Return to your spiritual routine.',
+      notificationDetails: platformChannelSpecifics,
     );
   }
 }

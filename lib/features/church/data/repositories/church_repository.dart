@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 import '../models/mass_attendance.dart';
 import '../models/ministry_task.dart';
-import '../models/ministry_member.dart';
+
 
 class ChurchRepository {
   final Isar _isar;

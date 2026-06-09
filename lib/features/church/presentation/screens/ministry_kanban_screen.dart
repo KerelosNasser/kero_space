@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/church_bloc.dart';
-import '../data/models/ministry_task.dart';
+import '../../data/models/ministry_task.dart';
 
 class MinistryKanbanScreen extends StatefulWidget {
-  const MinistryKanbanScreen({Key? key}) : super(key: key);
+  const MinistryKanbanScreen({super.key});
 
   @override
   State<MinistryKanbanScreen> createState() => _MinistryKanbanScreenState();

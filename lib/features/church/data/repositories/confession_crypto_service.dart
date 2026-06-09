@@ -3,8 +3,11 @@ import 'package:cryptography/cryptography.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ConfessionCryptoService {
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage;
   static const _saltKey = 'confession_salt';
+
+  ConfessionCryptoService({FlutterSecureStorage? secureStorage}) 
+      : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   /// Derives the encryption key using Argon2id.
   Future<SecretKey> deriveKey(String passphrase) async {

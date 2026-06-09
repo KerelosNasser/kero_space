@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/church_bloc.dart';
-import '../data/models/mass_attendance.dart';
-import 'widgets/attendance_contribution_grid.dart';
+import '../../data/models/mass_attendance.dart';
+import '../widgets/attendance_contribution_grid.dart';
 
 class AttendanceScreen extends StatefulWidget {
-  const AttendanceScreen({Key? key}) : super(key: key);
+  const AttendanceScreen({super.key});
 
   @override
   State<AttendanceScreen> createState() => _AttendanceScreenState();
@@ -67,14 +67,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   title: const Text('Retroactive Log', style: TextStyle(color: Colors.white)),
                   trailing: const Icon(Icons.calendar_today, color: Colors.white),
                   onTap: () async {
+                    final bloc = context.read<ChurchBloc>();
                     final date = await showDatePicker(
                       context: context,
                       initialDate: DateTime.now(),
                       firstDate: DateTime(2020),
                       lastDate: DateTime.now(),
                     );
-                    if (date != null && mounted) {
-                      context.read<ChurchBloc>().add(MarkAttendanceEvent(date, AttendanceType.liturgy));
+                    if (date != null) {
+                      bloc.add(MarkAttendanceEvent(date, AttendanceType.liturgy));
                     }
                   },
                 ),

@@ -8,7 +8,7 @@ import '../../data/repositories/encrypted_confessions_repo.dart';
 class ConfessionLogScreen extends StatefulWidget {
   final EncryptedIsarConfessionsRepo repo;
 
-  const ConfessionLogScreen({Key? key, required this.repo}) : super(key: key);
+  const ConfessionLogScreen({super.key, required this.repo});
 
   @override
   State<ConfessionLogScreen> createState() => _ConfessionLogScreenState();
@@ -86,24 +86,12 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> {
                           children: [
                             QuillSimpleToolbar(
                               controller: _controller,
-                              configurations: const QuillSimpleToolbarConfigurations(
-                                showFontFamily: false,
-                                showFontSize: false,
-                                showColorButton: false,
-                                showBackgroundColorButton: false,
-                                showClearFormat: false,
-                                showAlignmentButtons: false,
-                              ),
                             ),
                             Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: QuillEditor.basic(
                                   controller: _controller,
-                                  configurations: const QuillEditorConfigurations(
-                                    // autoFocus: false, (Removed as it might not be in latest Configurations directly in basic constructor, we rely on defaults mostly)
-                                    padding: EdgeInsets.zero,
-                                  ),
                                 ),
                               ),
                             ),
@@ -153,10 +141,6 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> {
                               const SizedBox(height: 8),
                               QuillEditor.basic(
                                 controller: QuillController(document: doc, selection: const TextSelection.collapsed(offset: 0), readOnly: true),
-                                configurations: const QuillEditorConfigurations(
-                                  padding: EdgeInsets.zero,
-                                  // showCursor: false,
-                                ),
                               ),
                             ],
                           ),

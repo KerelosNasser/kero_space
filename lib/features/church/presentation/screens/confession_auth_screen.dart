@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/confession_bloc.dart';
 
 class ConfessionAuthScreen extends StatefulWidget {
-  const ConfessionAuthScreen({Key? key}) : super(key: key);
+  const ConfessionAuthScreen({super.key});
 
   @override
   State<ConfessionAuthScreen> createState() => _ConfessionAuthScreenState();

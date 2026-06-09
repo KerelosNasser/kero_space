@@ -49,7 +49,7 @@ dependencies:
   freezed_annotation: any
   json_annotation: any
   flutter_fancy_tree_view: any
-  flutter_quill: any
+  flutter_quill: ^11.5.1
   path_provider: ^2.1.5
   table_calendar: any
   permission_handler: ^12.0.3
