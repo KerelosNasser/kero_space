@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/productivity/presentation/screens/productivity_screen.dart';
+import '../features/productivity/presentation/screens/note_editor_screen.dart';
+import '../features/productivity/data/models/note_model.dart';
+
 class PlaceholderScreen extends StatelessWidget {
   final String title;
   const PlaceholderScreen({super.key, required this.title});
@@ -23,7 +27,14 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/productivity',
-      builder: (context, state) => const PlaceholderScreen(title: 'Productivity'),
+      builder: (context, state) => const ProductivityScreen(),
+    ),
+    GoRoute(
+      path: '/note_editor',
+      builder: (context, state) {
+        final note = state.extra as Note?;
+        return NoteEditorScreen(existingNote: note);
+      },
     ),
     GoRoute(
       path: '/health',
