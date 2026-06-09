@@ -56,3 +56,31 @@ class RemoveFromWatchlistEvent extends FinanceEvent {
   @override
   List<Object> get props => [ticker];
 }
+
+class AddCareerTaskEvent extends FinanceEvent {
+  final CareerTask task;
+
+  const AddCareerTaskEvent(this.task);
+
+  @override
+  List<Object> get props => [task];
+}
+
+class UpdateCareerTaskStatusEvent extends FinanceEvent {
+  final int taskId;
+  final String newStatus;
+
+  const UpdateCareerTaskStatusEvent(this.taskId, this.newStatus);
+
+  @override
+  List<Object> get props => [taskId, newStatus];
+}
+
+class DeleteCareerTaskEvent extends FinanceEvent {
+  final int taskId;
+
+  const DeleteCareerTaskEvent(this.taskId);
+
+  @override
+  List<Object> get props => [taskId];
+}

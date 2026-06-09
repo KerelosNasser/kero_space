@@ -5,6 +5,8 @@ import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart'
 import 'package:kero_space/features/finance/presentation/widgets/transactions_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/budgets_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/portfolio_tab.dart';
+import 'package:kero_space/features/finance/presentation/widgets/correlation_tab.dart';
+import 'package:kero_space/features/finance/presentation/widgets/career_tab.dart';
 
 class FinanceHomeScreen extends StatefulWidget {
   const FinanceHomeScreen({super.key});
@@ -56,14 +58,16 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
           if (state is FinanceLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is FinanceLoaded) {
-            return IndexedStack(
-              index: _currentIndex,
-              children: [
-                TransactionsTab(state: state),
-                BudgetsTab(state: state),
-                PortfolioTab(state: state),
-              ],
-            );
+              return IndexedStack(
+                index: _currentIndex,
+                children: [
+                  TransactionsTab(state: state),
+                  BudgetsTab(state: state),
+                  PortfolioTab(state: state),
+                  CorrelationTab(state: state),
+                  CareerTab(state: state),
+                ],
+              );
           } else if (state is FinanceError) {
             return Center(child: Text('Error: ${state.message}'));
           }
@@ -73,10 +77,13 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
+        type: BottomNavigationBarType.fixed, // Needed for >3 items
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Transactions'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Txns'),
           BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: 'Budgets'),
           BottomNavigationBarItem(icon: Icon(Icons.trending_up), label: 'Portfolio'),
+          BottomNavigationBarItem(icon: Icon(Icons.insights), label: 'Correlation'),
+          BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Career'),
         ],
       ),
     );

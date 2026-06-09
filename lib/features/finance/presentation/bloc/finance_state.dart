@@ -18,6 +18,9 @@ class FinanceLoaded extends FinanceState {
   final Map<String, double> tickerPrices;
   final double totalIncome;
   final double totalExpense;
+  final List<CareerTask> careerTasks;
+  // We use dynamic here to avoid importing health models directly, or we can just import health models in finance_bloc.dart
+  final List<dynamic> recentMeals;
 
   const FinanceLoaded({
     required this.transactions,
@@ -26,6 +29,8 @@ class FinanceLoaded extends FinanceState {
     required this.tickerPrices,
     required this.totalIncome,
     required this.totalExpense,
+    required this.careerTasks,
+    required this.recentMeals,
   });
 
   @override
@@ -36,6 +41,8 @@ class FinanceLoaded extends FinanceState {
         tickerPrices,
         totalIncome,
         totalExpense,
+        careerTasks,
+        recentMeals,
       ];
 }
 

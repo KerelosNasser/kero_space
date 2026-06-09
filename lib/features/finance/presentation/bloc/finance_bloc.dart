@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:kero_space/features/finance/data/models/finance_collections.dart';
 import 'package:kero_space/features/finance/data/repositories/finance_repository.dart';
 import 'package:kero_space/features/finance/data/repositories/egx_scraper_service.dart';
+import 'package:kero_space/features/health/data/repositories/nutrition_repository.dart';
 
 part 'finance_event.dart';
 part 'finance_state.dart';
@@ -10,12 +11,15 @@ part 'finance_state.dart';
 class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   final FinanceRepository _financeRepository;
   final EGXScraperService _egxScraperService;
+  final NutritionRepository _nutritionRepository;
 
   FinanceBloc({
     required FinanceRepository financeRepository,
     required EGXScraperService egxScraperService,
+    required NutritionRepository nutritionRepository,
   })  : _financeRepository = financeRepository,
         _egxScraperService = egxScraperService,
+        _nutritionRepository = nutritionRepository,
         super(FinanceInitial()) {
     on<LoadFinanceData>(_onLoadFinanceData);
     on<RefreshStockPrices>(_onRefreshStockPrices);
@@ -23,6 +27,9 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<SetBudgetEvent>(_onSetBudget);
     on<AddToWatchlistEvent>(_onAddToWatchlist);
     on<RemoveFromWatchlistEvent>(_onRemoveFromWatchlist);
+    on<AddCareerTaskEvent>(_onAddCareerTask);
+    on<UpdateCareerTaskStatusEvent>(_onUpdateCareerTaskStatus);
+    on<DeleteCareerTaskEvent>(_onDeleteCareerTask);
   }
 
   Future<void> _onLoadFinanceData(
@@ -32,6 +39,16 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       final transactions = await _financeRepository.getAllTransactions();
       final budgets = await _financeRepository.getAllBudgets();
       final watchlist = await _financeRepository.getWatchlist();
+      final careerTasks = await _financeRepository.getAllCareerTasks();
+      
+      // Fetch recent meals for correlation (last 7 days)
+      final DateTime now = DateTime.now();
+      final List<dynamic> recentMeals = [];
+      for (int i = 0; i < 7; i++) {
+        final date = now.subtract(Duration(days: i));
+        final meals = await _nutritionRepository.getDailyMeals(date);
+        recentMeals.addAll(meals);
+      }
 
       double income = 0;
       double expense = 0;
@@ -47,6 +64,8 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         tickerPrices: const {},
         totalIncome: income,
         totalExpense: expense,
+        careerTasks: careerTasks,
+        recentMeals: recentMeals,
       ));
 
       // Trigger stock price fetch if we have a watchlist
@@ -78,6 +97,8 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         tickerPrices: newPrices,
         totalIncome: currentState.totalIncome,
         totalExpense: currentState.totalExpense,
+        careerTasks: currentState.careerTasks,
+        recentMeals: currentState.recentMeals,
       ));
     }
   }
@@ -111,6 +132,24 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   Future<void> _onRemoveFromWatchlist(
       RemoveFromWatchlistEvent event, Emitter<FinanceState> emit) async {
     await _financeRepository.removeFromWatchlist(event.ticker);
+    add(LoadFinanceData());
+  }
+
+  Future<void> _onAddCareerTask(
+      AddCareerTaskEvent event, Emitter<FinanceState> emit) async {
+    await _financeRepository.addCareerTask(event.task);
+    add(LoadFinanceData());
+  }
+
+  Future<void> _onUpdateCareerTaskStatus(
+      UpdateCareerTaskStatusEvent event, Emitter<FinanceState> emit) async {
+    await _financeRepository.updateCareerTaskStatus(event.taskId, event.newStatus);
+    add(LoadFinanceData());
+  }
+
+  Future<void> _onDeleteCareerTask(
+      DeleteCareerTaskEvent event, Emitter<FinanceState> emit) async {
+    await _financeRepository.deleteCareerTask(event.taskId);
     add(LoadFinanceData());
   }
 }

@@ -29,5 +29,6 @@ void setupLocator() {
   getIt.registerFactory<FinanceBloc>(() => FinanceBloc(
         financeRepository: getIt<FinanceRepository>(),
         egxScraperService: getIt<EGXScraperService>(),
+        nutritionRepository: getIt<NutritionRepository>(),
       ));
 }

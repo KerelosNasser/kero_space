@@ -229,27 +229,27 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 
 ### Tasks
 
-- [ ] **5.1** Simplified Expense/Income Data Model:
+- [x] **5.1** Simplified Expense/Income Data Model:
   - `Transaction` (amount, type: INCOME/EXPENSE, category, date, memo)
   - `Budget` (category, monthly_limit)
-- [ ] **5.2** `FinanceBloc` with events for transactions and automated parsing
-- [ ] **5.3** Android Notification Listener Integration:
+- [x] **5.2** `FinanceBloc` with events for transactions and automated parsing
+- [x] **5.3** Android Notification Listener Integration:
   - Configure `flutter_notification_listener` or native Android `NotificationListenerService`.
   - Create a background parsing engine using regex to detect bank/wallet SMS and Push Notifications (e.g., CIB, NBE, Vodafone Cash, Instapay).
   - Automatically parse the amount, vendor, and transaction type, and save to the Isar DB.
-- [ ] **5.4** Advanced Financial Automation:
+- [x] **5.4** Advanced Financial Automation:
   - Auto-categorization engine based on vendor keywords.
   - Budgeting alerts (notify when a category is near its limit).
-- [ ] **5.5** Financial reports:
+- [x] **5.5** Financial reports:
   - Monthly income vs expense summary.
   - Cash flow timeline chart.
   - Spending breakdown by category (Pie chart).
-- [ ] **5.6** EGX Portfolio Tracker:
+- [x] **5.6** EGX Portfolio Tracker:
   - `EGXHolding` CRUD (ticker, quantity, average cost basis, purchase date)
   - EGX price scraper (`dio` + `html` polling).
   - `EGXPriceSnapshot` written to Isar every market-open polling cycle.
   - Portfolio valuation and dividend yield tracking.
-- [ ] **5.7** TradingView Integration:
+- [x] **5.7** TradingView Integration:
   - Implement `tradingview_lightweight_charts` for the EGX OHLC candlestick visualization.
 - [ ] **5.8** Multi-axis correlation chart: earnings + portfolio + caloric balance (the flagship visualization described in `design.md`)
 - [ ] **5.9** Career Preparation Kanban module tracking banking job targets, tech certs, and freelance client pipelines.

@@ -66,3 +66,20 @@ class EGXWatchlist {
   
   late String companyName;
 }
+
+@collection
+class CareerTask {
+  Id id = Isar.autoIncrement;
+
+  late String title;
+  String? description;
+
+  @Index()
+  late String status; // 'TODO', 'IN_PROGRESS', 'DONE'
+
+  @Index()
+  late String category; // 'Banking', 'Tech Cert', 'Freelance'
+
+  DateTime? dueDate;
+  late DateTime createdAt;
+}

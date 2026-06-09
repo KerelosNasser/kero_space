@@ -54,4 +54,31 @@ class FinanceRepository {
   Future<List<EGXWatchlist>> getWatchlist() async {
     return await _isar.eGXWatchlists.where().findAll();
   }
+
+  // Career Task (Kanban)
+  Future<void> addCareerTask(CareerTask task) async {
+    await _isar.writeTxn(() async {
+      await _isar.careerTasks.put(task);
+    });
+  }
+
+  Future<void> updateCareerTaskStatus(int id, String newStatus) async {
+    await _isar.writeTxn(() async {
+      final task = await _isar.careerTasks.get(id);
+      if (task != null) {
+        task.status = newStatus;
+        await _isar.careerTasks.put(task);
+      }
+    });
+  }
+
+  Future<void> deleteCareerTask(int id) async {
+    await _isar.writeTxn(() async {
+      await _isar.careerTasks.delete(id);
+    });
+  }
+
+  Future<List<CareerTask>> getAllCareerTasks() async {
+    return await _isar.careerTasks.where().findAll();
+  }
 }
