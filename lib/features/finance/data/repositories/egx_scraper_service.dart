@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart' show parse;
+import 'package:flutter/foundation.dart';
 
 class EGXScraperService {
   final Dio _dio;
@@ -13,28 +14,23 @@ class EGXScraperService {
     final url = 'https://english.mubasher.info/markets/EGX/stocks/${ticker.toUpperCase()}';
     
     try {
-      final response = await _dio.get(
-        url,
-        options: Options(
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          },
-        ),
-      );
-
+      final response = await _dio.get(url, options: Options(
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      ));
+      
       if (response.statusCode == 200) {
-        final document = parse(response.data);
+        var document = parse(response.data);
+        var priceElement = document.querySelector('.market-summary__price');
         
-        // Find the span containing the price
-        final priceSpans = document.getElementsByClassName('market-summary__last-price');
-        
-        if (priceSpans.isNotEmpty) {
-          final priceText = priceSpans.first.text.trim().replaceAll(',', '');
+        if (priceElement != null) {
+          String priceText = priceElement.text.replaceAll(RegExp(r'[^0-9.]'), '');
           return double.tryParse(priceText);
         }
       }
     } catch (e) {
-      print('Error scraping $ticker: $e');
+      debugPrint('Error fetching price for $ticker: $e');
     }
     return null;
   }

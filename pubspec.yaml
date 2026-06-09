@@ -60,6 +60,7 @@ dependencies:
   flutter_notification_listener: ^1.4.0
   candlesticks: ^3.0.1
   html: ^0.15.6
+  bloc: ^9.2.1
 
 dev_dependencies:
   flutter_test:
