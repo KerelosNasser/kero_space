@@ -24,5 +24,9 @@ class MainActivity : FlutterActivity() {
                 result.notImplemented()
             }
         }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kero_space/calendar").setMethodCallHandler(
+            CalendarChannelHandler(this)
+        )
     }
 }

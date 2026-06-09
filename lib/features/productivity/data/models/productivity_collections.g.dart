@@ -2897,33 +2897,38 @@ const CalendarEventSchema = CollectionSchema(
   name: r'CalendarEvent',
   id: 2832606634183555054,
   properties: {
-    r'deviceId': PropertySchema(
+    r'allDay': PropertySchema(
       id: 0,
+      name: r'allDay',
+      type: IsarType.bool,
+    ),
+    r'deviceId': PropertySchema(
+      id: 1,
       name: r'deviceId',
       type: IsarType.string,
     ),
     r'endTime': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'endTime',
       type: IsarType.dateTime,
     ),
     r'platform': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'platform',
       type: IsarType.string,
     ),
     r'source': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'source',
       type: IsarType.string,
     ),
     r'startTime': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'startTime',
       type: IsarType.dateTime,
     ),
     r'title': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'title',
       type: IsarType.string,
     )
@@ -2961,12 +2966,13 @@ void _calendarEventSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.deviceId);
-  writer.writeDateTime(offsets[1], object.endTime);
-  writer.writeString(offsets[2], object.platform);
-  writer.writeString(offsets[3], object.source);
-  writer.writeDateTime(offsets[4], object.startTime);
-  writer.writeString(offsets[5], object.title);
+  writer.writeBool(offsets[0], object.allDay);
+  writer.writeString(offsets[1], object.deviceId);
+  writer.writeDateTime(offsets[2], object.endTime);
+  writer.writeString(offsets[3], object.platform);
+  writer.writeString(offsets[4], object.source);
+  writer.writeDateTime(offsets[5], object.startTime);
+  writer.writeString(offsets[6], object.title);
 }
 
 CalendarEvent _calendarEventDeserialize(
@@ -2976,13 +2982,14 @@ CalendarEvent _calendarEventDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = CalendarEvent();
-  object.deviceId = reader.readString(offsets[0]);
-  object.endTime = reader.readDateTime(offsets[1]);
+  object.allDay = reader.readBool(offsets[0]);
+  object.deviceId = reader.readString(offsets[1]);
+  object.endTime = reader.readDateTime(offsets[2]);
   object.id = id;
-  object.platform = reader.readString(offsets[2]);
-  object.source = reader.readString(offsets[3]);
-  object.startTime = reader.readDateTime(offsets[4]);
-  object.title = reader.readString(offsets[5]);
+  object.platform = reader.readString(offsets[3]);
+  object.source = reader.readString(offsets[4]);
+  object.startTime = reader.readDateTime(offsets[5]);
+  object.title = reader.readString(offsets[6]);
   return object;
 }
 
@@ -2994,16 +3001,18 @@ P _calendarEventDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 1:
-      return (reader.readDateTime(offset)) as P;
-    case 2:
       return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readDateTime(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readDateTime(offset)) as P;
+    case 6:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -3106,6 +3115,16 @@ extension CalendarEventQueryWhere
 
 extension CalendarEventQueryFilter
     on QueryBuilder<CalendarEvent, CalendarEvent, QFilterCondition> {
+  QueryBuilder<CalendarEvent, CalendarEvent, QAfterFilterCondition>
+      allDayEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'allDay',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<CalendarEvent, CalendarEvent, QAfterFilterCondition>
       deviceIdEqualTo(
     String value, {
@@ -3825,6 +3844,18 @@ extension CalendarEventQueryLinks
 
 extension CalendarEventQuerySortBy
     on QueryBuilder<CalendarEvent, CalendarEvent, QSortBy> {
+  QueryBuilder<CalendarEvent, CalendarEvent, QAfterSortBy> sortByAllDay() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'allDay', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CalendarEvent, CalendarEvent, QAfterSortBy> sortByAllDayDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'allDay', Sort.desc);
+    });
+  }
+
   QueryBuilder<CalendarEvent, CalendarEvent, QAfterSortBy> sortByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deviceId', Sort.asc);
@@ -3903,6 +3934,18 @@ extension CalendarEventQuerySortBy
 
 extension CalendarEventQuerySortThenBy
     on QueryBuilder<CalendarEvent, CalendarEvent, QSortThenBy> {
+  QueryBuilder<CalendarEvent, CalendarEvent, QAfterSortBy> thenByAllDay() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'allDay', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CalendarEvent, CalendarEvent, QAfterSortBy> thenByAllDayDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'allDay', Sort.desc);
+    });
+  }
+
   QueryBuilder<CalendarEvent, CalendarEvent, QAfterSortBy> thenByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deviceId', Sort.asc);
@@ -3993,6 +4036,12 @@ extension CalendarEventQuerySortThenBy
 
 extension CalendarEventQueryWhereDistinct
     on QueryBuilder<CalendarEvent, CalendarEvent, QDistinct> {
+  QueryBuilder<CalendarEvent, CalendarEvent, QDistinct> distinctByAllDay() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'allDay');
+    });
+  }
+
   QueryBuilder<CalendarEvent, CalendarEvent, QDistinct> distinctByDeviceId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -4039,6 +4088,12 @@ extension CalendarEventQueryProperty
   QueryBuilder<CalendarEvent, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<CalendarEvent, bool, QQueryOperations> allDayProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'allDay');
     });
   }
 

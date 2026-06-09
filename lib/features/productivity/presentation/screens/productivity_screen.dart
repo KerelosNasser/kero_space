@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:table_calendar/table_calendar.dart';
+
 import '../bloc/productivity_bloc.dart';
+import '../bloc/calendar_bloc.dart';
 import '../widgets/daily_checklist.dart';
 import '../widgets/task_tree_view.dart';
 import '../../data/repositories/productivity_repository.dart';
+import '../../data/repositories/local_calendar_repository.dart';
 import '../../data/models/productivity_collections.dart';
 
 class ProductivityScreen extends StatelessWidget {
@@ -13,10 +17,13 @@ class ProductivityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ProductivityBloc(ProductivityRepository())..add(const ProductivityEvent.loadData()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => ProductivityBloc(ProductivityRepository())..add(const ProductivityEvent.loadData())),
+        BlocProvider(create: (_) => CalendarBloc(LocalCalendarRepository())..add(const CalendarEventBlocEvent.loadEvents())),
+      ],
       child: DefaultTabController(
-        length: 3,
+        length: 4,
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Productivity'),
@@ -25,6 +32,7 @@ class ProductivityScreen extends StatelessWidget {
                 Tab(text: "Today"),
                 Tab(text: "Projects"),
                 Tab(text: "Notes"),
+                Tab(text: "Calendar"),
               ],
             ),
           ),
@@ -50,6 +58,46 @@ class ProductivityScreen extends StatelessWidget {
                           return ListTile(
                             title: Text(note.title),
                             onTap: () => context.push('/note_editor', extra: {'note': note, 'bloc': context.read<ProductivityBloc>()}),
+                          );
+                        },
+                      ),
+                      // Tab 4: Calendar
+                      BlocBuilder<CalendarBloc, CalendarState>(
+                        builder: (context, calState) {
+                          return calState.when(
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (msg) => Center(child: Text("Error: $msg")),
+                            loaded: (events) {
+                              return Column(
+                                children: [
+                                  TableCalendar(
+                                    firstDay: DateTime.utc(2020, 10, 16),
+                                    lastDay: DateTime.utc(2030, 3, 14),
+                                    focusedDay: DateTime.now(),
+                                    eventLoader: (day) {
+                                      return events.where((e) => 
+                                        e.startTime.year == day.year && 
+                                        e.startTime.month == day.month && 
+                                        e.startTime.day == day.day
+                                      ).toList();
+                                    },
+                                    calendarFormat: CalendarFormat.month,
+                                  ),
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: events.length,
+                                      itemBuilder: (context, index) {
+                                        final event = events[index];
+                                        return ListTile(
+                                          title: Text(event.title),
+                                          subtitle: Text("${event.startTime.toLocal()} - ${event.source}"),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           );
                         },
                       ),

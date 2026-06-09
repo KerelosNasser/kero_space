@@ -42,4 +42,5 @@ class CalendarEvent {
   late DateTime startTime;
   late DateTime endTime;
   late String source; // 'SAMSUNG', 'GOOGLE', 'LOCAL'
+  bool allDay = false;
 }

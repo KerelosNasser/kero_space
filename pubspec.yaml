@@ -51,6 +51,8 @@ dependencies:
   flutter_fancy_tree_view: any
   flutter_quill: any
   path_provider: ^2.1.5
+  table_calendar: any
+  permission_handler: ^12.0.3
 
 dev_dependencies:
   flutter_test:
