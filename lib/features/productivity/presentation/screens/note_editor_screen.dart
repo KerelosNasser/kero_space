@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'dart:convert';
 import '../../data/models/productivity_collections.dart';
+import '../bloc/productivity_bloc.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final Note? existingNote;
+  final dynamic bloc; // Passed from productivity_screen.dart
 
-  const NoteEditorScreen({super.key, this.existingNote});
+  const NoteEditorScreen({super.key, this.existingNote, this.bloc});
 
   @override
   State<NoteEditorScreen> createState() => _NoteEditorScreenState();
@@ -45,8 +47,24 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             icon: const Icon(Icons.save),
             onPressed: () {
               // Save logic here
-              // Temporary save logic
-              // Temporary save logic
+              final jsonStr = jsonEncode(_controller.document.toDelta().toJson());
+              if (widget.bloc != null) {
+                if (widget.existingNote != null) {
+                  final updatedNote = widget.existingNote!
+                    ..quillDelta = jsonStr
+                    ..updatedAt = DateTime.now();
+                  widget.bloc.add(ProductivityEvent.updateNote(updatedNote));
+                } else {
+                  final newNote = Note()
+                    ..title = 'New Note'
+                    ..quillDelta = jsonStr
+                    ..deviceId = 'local'
+                    ..platform = 'local'
+                    ..createdAt = DateTime.now()
+                    ..updatedAt = DateTime.now();
+                  widget.bloc.add(ProductivityEvent.createNote(newNote));
+                }
+              }
               Navigator.of(context).pop();
             },
           )

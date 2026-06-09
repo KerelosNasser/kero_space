@@ -6,6 +6,7 @@ import '../bloc/productivity_bloc.dart';
 import '../widgets/daily_checklist.dart';
 import '../widgets/task_tree_view.dart';
 import '../../data/repositories/productivity_repository.dart';
+import '../../data/models/productivity_collections.dart';
 
 class ProductivityScreen extends StatelessWidget {
   const ProductivityScreen({super.key});
@@ -48,7 +49,7 @@ class ProductivityScreen extends StatelessWidget {
                           final note = allNotes[index];
                           return ListTile(
                             title: Text(note.title),
-                            onTap: () => context.push('/note_editor', extra: note),
+                            onTap: () => context.push('/note_editor', extra: {'note': note, 'bloc': context.read<ProductivityBloc>()}),
                           );
                         },
                       ),
@@ -58,15 +59,58 @@ class ProductivityScreen extends StatelessWidget {
               );
             },
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              // Simple create action depending on current tab context
-              // For demo purposes, we will just navigate to note creation for now
-              context.push('/note_editor');
-            },
-            child: const Icon(Icons.add),
+          floatingActionButton: Builder(
+            builder: (fabContext) => FloatingActionButton(
+              onPressed: () {
+                final tabController = DefaultTabController.of(fabContext);
+                final bloc = fabContext.read<ProductivityBloc>();
+                if (tabController.index == 2) {
+                  // Notes tab
+                  fabContext.push('/note_editor', extra: {'bloc': bloc});
+                } else {
+                  // Projects / Today tab
+                  _showCreateTaskDialog(fabContext, bloc);
+                }
+              },
+              child: const Icon(Icons.add),
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCreateTaskDialog(BuildContext context, ProductivityBloc bloc) {
+    final titleController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('New Project / Task'),
+        content: TextField(
+          controller: titleController,
+          decoration: const InputDecoration(hintText: 'Enter title...'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (titleController.text.isNotEmpty) {
+                final newTask = Task()
+                  ..title = titleController.text
+                  ..type = TaskType.project
+                  ..deviceId = 'local'
+                  ..platform = 'local'
+                  ..createdAt = DateTime.now();
+                bloc.add(ProductivityEvent.createTask(newTask));
+              }
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Create'),
+          ),
+        ],
       ),
     );
   }

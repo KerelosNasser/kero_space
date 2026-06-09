@@ -32,8 +32,10 @@ final router = GoRouter(
     GoRoute(
       path: '/note_editor',
       builder: (context, state) {
-        final note = state.extra as Note?;
-        return NoteEditorScreen(existingNote: note);
+        final extraMap = state.extra as Map<String, dynamic>?;
+        final note = extraMap?['note'] as Note?;
+        final bloc = extraMap?['bloc'];
+        return NoteEditorScreen(existingNote: note, bloc: bloc);
       },
     ),
     GoRoute(
