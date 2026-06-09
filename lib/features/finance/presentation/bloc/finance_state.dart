@@ -11,6 +11,21 @@ class FinanceInitial extends FinanceState {}
 
 class FinanceLoading extends FinanceState {}
 
+class CorrelationDataPoint extends Equatable {
+  final DateTime date;
+  final double cumulativeWealth;
+  final double dailyCaloricSurplus; // Calories consumed minus BMR
+
+  const CorrelationDataPoint({
+    required this.date,
+    required this.cumulativeWealth,
+    required this.dailyCaloricSurplus,
+  });
+
+  @override
+  List<Object> get props => [date, cumulativeWealth, dailyCaloricSurplus];
+}
+
 class FinanceLoaded extends FinanceState {
   final List<Transaction> transactions;
   final List<Budget> budgets;
@@ -19,8 +34,7 @@ class FinanceLoaded extends FinanceState {
   final double totalIncome;
   final double totalExpense;
   final List<CareerTask> careerTasks;
-  // We use dynamic here to avoid importing health models directly, or we can just import health models in finance_bloc.dart
-  final List<dynamic> recentMeals;
+  final List<CorrelationDataPoint> correlationTimeline;
 
   const FinanceLoaded({
     required this.transactions,
@@ -30,7 +44,7 @@ class FinanceLoaded extends FinanceState {
     required this.totalIncome,
     required this.totalExpense,
     required this.careerTasks,
-    required this.recentMeals,
+    required this.correlationTimeline,
   });
 
   @override
@@ -42,7 +56,7 @@ class FinanceLoaded extends FinanceState {
         totalIncome,
         totalExpense,
         careerTasks,
-        recentMeals,
+        correlationTimeline,
       ];
 }
 

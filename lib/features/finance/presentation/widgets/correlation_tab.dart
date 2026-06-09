@@ -9,28 +9,13 @@ class CorrelationTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Basic implementation of multi-axis chart
-    // We will show 3 lines: Net Earnings, Portfolio Value, Caloric Surplus
-    
-    // Convert transactions to net earnings per day
-    // This is a simplified chart for demonstration
     final List<FlSpot> earningsSpots = [];
     final List<FlSpot> caloricSpots = [];
     
-    double netEarnings = 0;
-    for (int i = 0; i < state.transactions.length; i++) {
-      final tx = state.transactions[i];
-      if (tx.type == 'INCOME') netEarnings += tx.amount;
-      if (tx.type == 'EXPENSE') netEarnings -= tx.amount;
-      earningsSpots.add(FlSpot(i.toDouble(), netEarnings));
-    }
-    
-    // Convert meals to daily calories
-    for (int i = 0; i < state.recentMeals.length; i++) {
-      final meal = state.recentMeals[i];
-      // In a real app we would group by day and subtract BMR.
-      // Here we just plot raw calories for the correlation visualization.
-      caloricSpots.add(FlSpot(i.toDouble(), meal.calories));
+    for (int i = 0; i < state.correlationTimeline.length; i++) {
+      final point = state.correlationTimeline[i];
+      earningsSpots.add(FlSpot(i.toDouble(), point.cumulativeWealth));
+      caloricSpots.add(FlSpot(i.toDouble(), point.dailyCaloricSurplus));
     }
 
     if (earningsSpots.isEmpty) {
@@ -71,7 +56,7 @@ class CorrelationTab extends StatelessWidget {
                     barWidth: 3,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: true, color: Colors.green.withOpacity(0.1)),
+                    belowBarData: BarAreaData(show: true, color: Colors.green.withValues(alpha: 0.1)),
                   ),
                   LineChartBarData(
                     spots: caloricSpots,

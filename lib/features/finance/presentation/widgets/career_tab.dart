@@ -45,34 +45,60 @@ class CareerTab extends StatelessWidget {
   }
 
   Widget _buildKanbanColumn(BuildContext context, String title, List<CareerTask> tasks) {
-    return Container(
-      width: 250,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Text(
-              '$title (${tasks.length})',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
+    return DragTarget<CareerTask>(
+      onAcceptWithDetails: (details) {
+        if (details.data.status != title) {
+          context.read<FinanceBloc>().add(UpdateCareerTaskStatusEvent(details.data.id, title));
+        }
+      },
+      builder: (context, candidateData, rejectedData) {
+        return Container(
+          width: 250,
+          margin: const EdgeInsets.only(right: 16),
+          decoration: BoxDecoration(
+            color: candidateData.isNotEmpty 
+                ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5)
+                : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(12),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                final task = tasks[index];
-                return _buildTaskCard(context, task);
-              },
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
+                  '$title (${tasks.length})',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: tasks.length,
+                  itemBuilder: (context, index) {
+                    final task = tasks[index];
+                    return Draggable<CareerTask>(
+                      data: task,
+                      feedback: SizedBox(
+                        width: 230,
+                        child: Material(
+                          elevation: 8,
+                          borderRadius: BorderRadius.circular(8),
+                          child: _buildTaskCard(context, task),
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.3,
+                        child: _buildTaskCard(context, task),
+                      ),
+                      child: _buildTaskCard(context, task),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

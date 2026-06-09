@@ -251,8 +251,8 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
   - Portfolio valuation and dividend yield tracking.
 - [x] **5.7** TradingView Integration:
   - Implement `tradingview_lightweight_charts` for the EGX OHLC candlestick visualization.
-- [ ] **5.8** Multi-axis correlation chart: earnings + portfolio + caloric balance (the flagship visualization described in `design.md`)
-- [ ] **5.9** Career Preparation Kanban module tracking banking job targets, tech certs, and freelance client pipelines.
+- [x] **5.8** Multi-axis correlation chart: earnings + portfolio + caloric balance (the flagship visualization described in `design.md`)
+- [x] **5.9** Career Preparation Kanban module tracking banking job targets, tech certs, and freelance client pipelines.
 
 **DoD:** Invoice creates journal entries automatically. Portfolio value updates within 15 minutes of price change during trading hours. Multi-axis chart renders all three data series with correct Y-axis scaling. Career Kanban tracks job/certification progress.
 

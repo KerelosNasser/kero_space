@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kero_space/features/finance/data/models/finance_collections.dart';
+import 'package:kero_space/features/health/data/models/health_collections.dart';
 import 'package:kero_space/features/finance/data/repositories/finance_repository.dart';
 import 'package:kero_space/features/finance/data/repositories/egx_scraper_service.dart';
 import 'package:kero_space/features/health/data/repositories/nutrition_repository.dart';
@@ -41,20 +42,41 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       final watchlist = await _financeRepository.getWatchlist();
       final careerTasks = await _financeRepository.getAllCareerTasks();
       
-      // Fetch recent meals for correlation (last 7 days)
-      final DateTime now = DateTime.now();
-      final List<dynamic> recentMeals = [];
-      for (int i = 0; i < 7; i++) {
-        final date = now.subtract(Duration(days: i));
-        final meals = await _nutritionRepository.getDailyMeals(date);
-        recentMeals.addAll(meals);
-      }
-
       double income = 0;
       double expense = 0;
+      // Also calculate daily net to build the cumulative wealth timeline
+      Map<String, double> dailyWealthDelta = {};
+      
       for (var tx in transactions) {
         if (tx.type == 'INCOME') income += tx.amount;
         if (tx.type == 'EXPENSE') expense += tx.amount;
+        
+        final dateKey = '${tx.date.year}-${tx.date.month.toString().padLeft(2, '0')}-${tx.date.day.toString().padLeft(2, '0')}';
+        final delta = tx.type == 'INCOME' ? tx.amount : -tx.amount;
+        dailyWealthDelta[dateKey] = (dailyWealthDelta[dateKey] ?? 0) + delta;
+      }
+
+      // Fetch recent meals for correlation (last 7 days)
+      final DateTime now = DateTime.now();
+      List<CorrelationDataPoint> timeline = [];
+      double rollingWealth = 0; // In a real app we'd fetch the baseline wealth before 7 days
+
+      for (int i = 6; i >= 0; i--) {
+        final date = now.subtract(Duration(days: i));
+        final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        
+        rollingWealth += dailyWealthDelta[dateKey] ?? 0;
+        
+        final meals = await _nutritionRepository.getDailyMeals(date);
+        double totalCalories = meals.fold(0.0, (sum, meal) => sum + meal.calories);
+        // Assuming average BMR is 2000 for calculation. In a real app, we'd fetch UserProfile.
+        double surplus = totalCalories - 2000.0; 
+
+        timeline.add(CorrelationDataPoint(
+          date: date,
+          cumulativeWealth: rollingWealth,
+          dailyCaloricSurplus: surplus,
+        ));
       }
 
       emit(FinanceLoaded(
@@ -65,7 +87,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         totalIncome: income,
         totalExpense: expense,
         careerTasks: careerTasks,
-        recentMeals: recentMeals,
+        correlationTimeline: timeline,
       ));
 
       // Trigger stock price fetch if we have a watchlist
@@ -98,7 +120,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         totalIncome: currentState.totalIncome,
         totalExpense: currentState.totalExpense,
         careerTasks: currentState.careerTasks,
-        recentMeals: currentState.recentMeals,
+        correlationTimeline: currentState.correlationTimeline,
       ));
     }
   }
