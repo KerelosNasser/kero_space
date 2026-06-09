@@ -1,7 +1,8 @@
 import 'dart:isolate';
-import 'package:isar/isar.dart';
+import 'package:flutter/foundation.dart';
 import 'sync_outbox_repository.dart';
 import 'isar_service.dart';
+import 'sync_outbox_record.dart';
 
 class SyncWorker {
   static Future<void> triggerSync(String dbDirectory) async {
@@ -14,7 +15,7 @@ class SyncWorker {
       
       if (batch.isNotEmpty) {
         // Mocking HTTP Sync for now
-        print('Syncing ${batch.length} records to Docker backend...');
+        debugPrint('Syncing ${batch.length} records to Docker backend...');
         
         await IsarService.instance.writeTxn(() async {
           for (var record in batch) {
