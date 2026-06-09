@@ -20,3 +20,13 @@ class AppUsageRecord {
   late int foregroundMs;
   late DateTime date;
 }
+
+@collection
+class TelemetryEvent {
+  Id id = Isar.autoIncrement;
+  late String deviceId;
+  late String platform;
+  late String name;
+  late String dataJson;
+  late DateTime timestamp;
+}

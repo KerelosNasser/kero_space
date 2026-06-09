@@ -12,3 +12,24 @@ class Task {
   DateTime? dueDate;
   late DateTime createdAt;
 }
+
+@collection
+class Note {
+  Id id = Isar.autoIncrement;
+  late String deviceId;
+  late String platform;
+  late String title;
+  late String contentJson;
+  late DateTime updatedAt;
+}
+
+@collection
+class CalendarEvent {
+  Id id = Isar.autoIncrement;
+  late String deviceId;
+  late String platform;
+  late String title;
+  late DateTime startTime;
+  late DateTime endTime;
+  late String source; // 'SAMSUNG', 'GOOGLE', 'LOCAL'
+}
