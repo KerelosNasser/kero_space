@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS health_check (
+  id SERIAL PRIMARY KEY,
+  status VARCHAR(50) NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;

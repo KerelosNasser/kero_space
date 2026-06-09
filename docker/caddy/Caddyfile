@@ -1,0 +1,4 @@
+localhost {
+    tls internal
+    reverse_proxy kero-space-api:8080
+}
