@@ -23,6 +23,7 @@ class IsarService {
         HealthRecordSchema,
         MealEntrySchema,
         IngredientSchema,
+        UserProfileSchema,
         InvoiceSchema,
         TransactionSchema,
         EGXHoldingSchema,

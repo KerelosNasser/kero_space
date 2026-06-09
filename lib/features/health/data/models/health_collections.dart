@@ -38,3 +38,16 @@ class Ingredient {
   late double fat;
   late bool isFastingCompliant;
 }
+
+@collection
+class UserProfile {
+  Id id = Isar.autoIncrement;
+  late String deviceId;
+  late String platform;
+  late double height; // in cm
+  late double weight; // in kg
+  late int age;
+  late double activityLevel; // Multiplier like 1.2, 1.55, etc.
+  late double bmrTarget; // Calculated BMR goal
+  late DateTime timestamp;
+}
