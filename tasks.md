@@ -75,6 +75,7 @@ Define all Isar collections and the sync outbox mechanism. Every feature in late
 
 - [ ] **1.1** Define Isar collections for all domains:
   ```dart
+  // Core schemas will include deviceId and platform fields for Android <-> Windows sync tracking
   @Collection() class TelemetryEvent { ... }
   @Collection() class AppUsageRecord { ... }
   @Collection() class ScreenEvent { ... }
