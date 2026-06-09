@@ -124,45 +124,45 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 
 ### Tasks
 
-- [ ] **2.1** Implement `KeroSpaceForegroundService` in Kotlin:
+- [x] **2.1** Implement `KeroSpaceForegroundService` in Kotlin:
   - Persistent notification with "Kero Space Active" status
   - `START_STICKY` restart policy
   - `KeroSpaceBootReceiver` for boot persistence
 
-- [ ] **2.2** Implement `KeroSpaceScreenReceiver`:
+- [x] **2.2** Implement `KeroSpaceScreenReceiver`:
   - Register in `KeroSpaceForegroundService.onCreate()`
   - Emit `{type, timestamp}` JSON to `kero_space/screen_events` EventChannel
   - Write `ScreenEvent` to Isar via `ContentValues` (Kotlin-side Isar write)
   - **Validate:** Lock/unlock device 10 times, verify 10 UNLOCK events appear in Flutter BLoC state
 
-- [ ] **2.3** Implement `KeroSpaceAccessibilityService`:
+- [x] **2.3** Implement `KeroSpaceAccessibilityService`:
   - Config XML with event types as specified in `agents.md`
   - Emit filtered click events to `kero_space/accessibility` EventChannel
   - **Validate:** Open Instagram, verify `TypeWindowStateChanged` event is received in Flutter with correct `packageName`
 
-- [ ] **2.4** Implement Overlay Window (`OverlayManager`):
+- [x] **2.4** Implement Overlay Window (`OverlayManager`):
   - `showOverlay(packageName, durationSeconds)` MethodChannel handler
   - Creates `TYPE_APPLICATION_OVERLAY` window with countdown timer
   - `dismissOverlay()` handler
   - **Validate:** Invoke overlay from Flutter, verify it appears over all apps, verify it dismisses on timer
 
-- [ ] **2.5** Wire Scrolling Blocker logic:
+- [x] **2.5** Wire Scrolling Blocker logic:
   - `AccessibilityService.onAccessibilityEvent()` checks `BlacklistRepository` (reads from Isar)
   - Calls `OverlayManager.showOverlay()` on match
   - **Validate:** Add Instagram to blacklist in app, open Instagram, overlay appears within 500ms
 
-- [ ] **2.6** Implement `UsageStatsWorker` (WorkManager):
+- [x] **2.6** Implement `UsageStatsWorker` (WorkManager):
   - 15-minute periodic query of `UsageStatsManager`
   - Writes `AppUsageRecord` list to Isar
   - **Validate:** Run for 1 hour, verify 4 worker executions in Logcat, Isar contains usage records
 
-- [ ] **2.7** Implement `WakeWordService`:
+- [x] **2.7** Implement `WakeWordService`:
   - `AudioRecord` setup at 16kHz, 16-bit PCM
   - ONNX Runtime integration with a placeholder model (use a pre-trained "hey siri" style model for testing)
   - Emit detection event to `kero_space/wake_word` EventChannel
   - **Validate:** Model detects test phrase at least 90% of the time from 1 meter in quiet room
 
-- [ ] **2.8** Wire all channels to Dart `EventChannel`/`MethodChannel` counterparts and abstract as `KeroSpacePlatformService` interface (injected via GetIt).
+- [x] **2.8** Wire all channels to Dart `EventChannel`/`MethodChannel` counterparts and abstract as `KeroSpacePlatformService` interface (injected via GetIt).
 
 **DoD:** All 4 agents operating simultaneously. Device runs for 4 hours with no ANR, no crash, battery drain < 8% above baseline.
 
