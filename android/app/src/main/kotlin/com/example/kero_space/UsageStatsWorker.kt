@@ -14,7 +14,7 @@ class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
 
     private val TAG = "KeroSpaceUsageStats"
 
-    override fun doWork(): Result {
+    override fun doWork(): androidx.work.ListenableWorker.Result {
         Log.d(TAG, "doWork: Querying UsageStatsManager")
         
         val usageStatsManager = applicationContext.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -32,7 +32,7 @@ class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
 
         if (usageStatsList.isNullOrEmpty()) {
             Log.d(TAG, "No usage stats found. Does the app have permission?")
-            return Result.success()
+            return androidx.work.ListenableWorker.Result.success()
         }
 
         val jsonArray = JSONArray()
@@ -56,6 +56,6 @@ class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
         intent.putExtra("payload", jsonArray.toString())
         applicationContext.sendBroadcast(intent)
 
-        return Result.success()
+        return androidx.work.ListenableWorker.Result.success()
     }
 }
