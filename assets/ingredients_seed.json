@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1",
+    "name": "Ful Medames",
+    "calories": 344,
+    "protein": 26.1,
+    "carbs": 58.3,
+    "fat": 1.5,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "2",
+    "name": "Chicken Breast",
+    "calories": 165,
+    "protein": 31.0,
+    "carbs": 0.0,
+    "fat": 3.6,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3",
+    "name": "White Rice",
+    "calories": 130,
+    "protein": 2.7,
+    "carbs": 28.0,
+    "fat": 0.3,
+    "isFastingCompliant": true
+  }
+]
