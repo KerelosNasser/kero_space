@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.kero_space"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

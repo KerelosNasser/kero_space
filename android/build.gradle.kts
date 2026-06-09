@@ -25,9 +25,9 @@ subprojects {
                 android.javaClass.getMethod("setNamespace", String::class.java).invoke(android, targetNamespace)
             }
             try {
-                android.javaClass.getMethod("setCompileSdk", Integer.TYPE).invoke(android, 34)
+                android.javaClass.getMethod("setCompileSdk", Integer.TYPE).invoke(android, 36)
             } catch (e: Exception) {
-                android.javaClass.getMethod("setCompileSdkVersion", Integer.TYPE).invoke(android, 34)
+                android.javaClass.getMethod("setCompileSdkVersion", Integer.TYPE).invoke(android, 36)
             }
         } catch (e: Exception) {}
     }
