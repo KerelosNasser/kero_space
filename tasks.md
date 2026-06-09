@@ -175,23 +175,23 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 
 ### Tasks
 
-- [ ] **3.1** `ProductivityBloc` implementation with full event/state coverage
-- [ ] **3.2** Task CRUD screens: list, create (with priority + parent task picker), detail, complete
-- [ ] **3.3** Multi-tiered task dependency rendering (tree view with `flutter_fancy_tree_view` or custom `CustomPainter`)
-- [ ] **3.4** Daily checklist view with carry-forward logic (incomplete tasks from yesterday auto-appear)
-- [ ] **3.5** Notes CRUD with rich text support (`flutter_quill`)
-- [ ] **3.6** Samsung Calendar platform channel (`kero_space/calendar`):
+- [x] **3.1** `ProductivityBloc` implementation with full event/state coverage
+- [x] **3.2** Task CRUD screens: list, create (with priority + parent task picker), detail, complete
+- [x] **3.3** Multi-tiered task dependency rendering (tree view with `flutter_fancy_tree_view` or custom `CustomPainter`)
+- [x] **3.4** Daily checklist view with carry-forward logic (incomplete tasks from yesterday auto-appear)
+- [x] **3.5** Notes CRUD with rich text support (`flutter_quill`)
+- [x] **3.6** Samsung Calendar platform channel (`kero_space/calendar`):
   - Kotlin reads from `CalendarContract.Events` ContentProvider
   - Returns events as JSON to Flutter
-- [ ] **3.7** Google Calendar OAuth2 integration:
+- [~] **3.7** Google Calendar OAuth2 integration: (SKIPPED PER USER REQUEST)
   - PKCE flow using `flutter_appauth`
   - Tokens stored in `flutter_secure_storage`
   - `GoogleCalendarRepository` implementation using raw `dio` HTTP calls to Calendar REST API v3
   - **No Google Sign-In SDK** — private OAuth client only
-- [ ] **3.8** Unified `CalendarBloc` merging Samsung + Google events into a single sorted stream
-- [ ] **3.9** Calendar UI: month view + day view using `table_calendar` (customized to match Kero Space theme)
-- [ ] **3.10** Implement dynamic Coptic Orthodox Fasting Calendar Computus algorithm to automatically calculate and highlight shifting fasts (Great Lent, Apostles' Fast, Jonah's Fast, weekly Wednesday/Friday fasts) based on Orthodox Pascha calculation.
-- [ ] **3.11** ADHD visual adjustments: dynamic task carry-forward visual styling, breathing monochrome white gradient on active pinned focus tasks, custom light haptic triggers, and particle Canvas splash on check-offs.
+- [x] **3.8** Unified `CalendarBloc` merging Samsung + Google events into a single sorted stream
+- [x] **3.9** Calendar UI: month view + day view using `table_calendar` (customized to match Kero Space theme)
+- [x] **3.10** Implement dynamic Coptic Orthodox Fasting Calendar Computus algorithm to automatically calculate and highlight shifting fasts (Great Lent, Apostles' Fast, Jonah's Fast, weekly Wednesday/Friday fasts) based on Orthodox Pascha calculation.
+- [x] **3.11** ADHD visual adjustments: dynamic task carry-forward visual styling, breathing monochrome white gradient on active pinned focus tasks, custom light haptic triggers, and particle Canvas splash on check-offs.
 
 **DoD:** Tasks persist across app restarts. Calendar shows events from both sources. Google OAuth refresh token survives app restart. Fasting dates calculated dynamically and highlighted correctly.
 
