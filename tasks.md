@@ -6,6 +6,8 @@ This roadmap is structured for a **solo principal engineer** with full-stack and
 
 Each phase has a **Definition of Done (DoD)** — tasks are not complete until the DoD criteria are met.
 
+**Phase Review & Completion Rule:** After completing the tasks for a phase, you must thoroughly review the implementation. If the phase is fully implemented and production-ready, mark it as completed. If there are gaps, bugs, or missing requirements, revisit the tasks and complete them before checking off the phase.
+
 ---
 
 ## Phase 0 — Project Scaffolding & DevOps Foundation
