@@ -28,28 +28,38 @@ class UpdateServiceTaskEvent extends ChurchEvent {
   List<Object?> get props => [task];
 }
 
+enum ChurchStatus { initial, loading, success, failure }
+
 // States
 class ChurchState extends Equatable {
+  final ChurchStatus status;
   final List<MassAttendance> attendances;
   final List<MinistryTask> tasks;
+  final String? errorMessage;
   
   const ChurchState({
+    this.status = ChurchStatus.initial,
     this.attendances = const [],
     this.tasks = const [],
+    this.errorMessage,
   });
 
   ChurchState copyWith({
+    ChurchStatus? status,
     List<MassAttendance>? attendances,
     List<MinistryTask>? tasks,
+    String? errorMessage,
   }) {
     return ChurchState(
+      status: status ?? this.status,
       attendances: attendances ?? this.attendances,
       tasks: tasks ?? this.tasks,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
   @override
-  List<Object?> get props => [attendances, tasks];
+  List<Object?> get props => [status, attendances, tasks, errorMessage];
 }
 
 // Bloc
@@ -58,19 +68,58 @@ class ChurchBloc extends Bloc<ChurchEvent, ChurchState> {
 
   ChurchBloc(this._repository) : super(const ChurchState()) {
     on<LoadChurchData>((event, emit) async {
-      final attendances = await _repository.getAttendances();
-      final tasks = await _repository.getTasks();
-      emit(state.copyWith(attendances: attendances, tasks: tasks));
+      emit(state.copyWith(status: ChurchStatus.loading));
+      try {
+        final attendances = await _repository.getAttendances();
+        final tasks = await _repository.getTasks();
+        emit(state.copyWith(
+          status: ChurchStatus.success,
+          attendances: attendances,
+          tasks: tasks,
+          errorMessage: null, // Clear error on success
+        ));
+      } catch (e) {
+        emit(state.copyWith(
+          status: ChurchStatus.failure,
+          errorMessage: "Failed to load church data.",
+        ));
+      }
     });
 
     on<MarkAttendanceEvent>((event, emit) async {
-      await _repository.markAttendance(event.date, event.type);
-      add(LoadChurchData());
+      // Optimistic UI update
+      final newAttendance = MassAttendance()
+        ..date = DateTime(event.date.year, event.date.month, event.date.day)
+        ..attendanceType = event.type;
+        
+      final updatedAttendances = List<MassAttendance>.from(state.attendances)..add(newAttendance);
+      emit(state.copyWith(attendances: updatedAttendances, status: ChurchStatus.success));
+      
+      try {
+        await _repository.markAttendance(event.date, event.type);
+      } catch (e) {
+        emit(state.copyWith(
+          status: ChurchStatus.failure,
+          errorMessage: "Failed to save attendance.",
+        ));
+        add(LoadChurchData()); // Revert optimistic update
+      }
     });
 
     on<UpdateServiceTaskEvent>((event, emit) async {
-      await _repository.saveTask(event.task);
-      add(LoadChurchData());
+      // Optimistic update
+      final updatedTasks = state.tasks.map((t) => t.id == event.task.id ? event.task : t).toList();
+      emit(state.copyWith(tasks: updatedTasks, status: ChurchStatus.success));
+
+      try {
+        await _repository.saveTask(event.task);
+      } catch (e) {
+        emit(state.copyWith(
+          status: ChurchStatus.failure,
+          errorMessage: "Failed to update task.",
+        ));
+        add(LoadChurchData()); // Revert optimistic update
+      }
     });
   }
 }

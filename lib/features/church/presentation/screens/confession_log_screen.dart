@@ -14,7 +14,7 @@ class ConfessionLogScreen extends StatefulWidget {
   State<ConfessionLogScreen> createState() => _ConfessionLogScreenState();
 }
 
-class _ConfessionLogScreenState extends State<ConfessionLogScreen> {
+class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsBindingObserver {
   final QuillController _controller = QuillController.basic();
   List<Map<String, dynamic>> _pastConfessions = [];
   bool _isLoading = true;
@@ -22,7 +22,21 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadConfessions();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      context.read<ConfessionBloc>().add(LockConfessionSession());
+    }
   }
 
   Future<void> _loadConfessions() async {

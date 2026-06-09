@@ -26,8 +26,19 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: BlocBuilder<ChurchBloc, ChurchState>(
+      body: BlocConsumer<ChurchBloc, ChurchState>(
+        listener: (context, state) {
+          if (state.status == ChurchStatus.failure && state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),
+            );
+          }
+        },
         builder: (context, state) {
+          if (state.status == ChurchStatus.loading && state.tasks.isEmpty) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFBF5AF2)));
+          }
+
           final todoTasks = state.tasks.where((t) => t.status == MinistryTaskStatus.todo).toList();
           final inProgressTasks = state.tasks.where((t) => t.status == MinistryTaskStatus.inProgress).toList();
           final doneTasks = state.tasks.where((t) => t.status == MinistryTaskStatus.done).toList();
@@ -61,7 +72,18 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.builder(
+            child: tasks.isEmpty 
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.inbox_outlined, color: Colors.grey.withAlpha(128), size: 48),
+                      const SizedBox(height: 8),
+                      Text('No tasks', style: TextStyle(color: Colors.grey.withAlpha(128))),
+                    ],
+                  ),
+                )
+              : ListView.builder(
               itemCount: tasks.length,
               itemBuilder: (context, index) {
                 final task = tasks[index];

@@ -27,8 +27,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: BlocBuilder<ChurchBloc, ChurchState>(
+      body: BlocConsumer<ChurchBloc, ChurchState>(
+        listener: (context, state) {
+          if (state.status == ChurchStatus.failure && state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),
+            );
+          }
+        },
         builder: (context, state) {
+          if (state.status == ChurchStatus.loading && state.attendances.isEmpty) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFBF5AF2)));
+          }
+
           int currentStreak = _calculateStreak(state.attendances);
 
           return Padding(
