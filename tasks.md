@@ -16,7 +16,7 @@ Establish the monorepo, CI pipeline, and Docker backend skeleton so every subseq
 
 ### Tasks
 
-- [ ] **0.1** Initialize Flutter project with package structure:
+- [x] **0.1** Initialize Flutter project with package structure:
   ```
   lib/
     core/           # DI, routing, theme (strictly in lib/core/app_theme.dart)
@@ -32,7 +32,7 @@ Establish the monorepo, CI pipeline, and Docker backend skeleton so every subseq
   ```
   Use `very_good_cli` or manual structure following Clean Architecture conventions.
 
-- [ ] **0.2** Add and configure all dependencies in `pubspec.yaml`:
+- [x] **0.2** Add and configure all dependencies in `pubspec.yaml`:
   - `flutter_bloc`, `equatable` — state management
   - `isar`, `isar_flutter_libs` — local database
   - `fl_chart` — data visualization
@@ -44,21 +44,21 @@ Establish the monorepo, CI pipeline, and Docker backend skeleton so every subseq
   - `go_router` — declarative navigation
   - `freezed`, `json_serializable` — code generation
 
-- [ ] **0.3** Implement `AppTheme` strictly within a single file `lib/core/app_theme.dart` containing all color tokens, typography scales, light/dark mode definitions, and visual decorations. No hardcoded colors are allowed anywhere else in the codebase.
+- [x] **0.3** Implement `AppTheme` strictly within a single file `lib/core/app_theme.dart` containing all color tokens, typography scales, light/dark mode definitions, and visual decorations. No hardcoded colors are allowed anywhere else in the codebase.
 
-- [ ] **0.4** Configure `go_router` with all top-level routes. Stub all feature screens with `PlaceholderScreen(featureName)`.
+- [x] **0.4** Configure `go_router` with all top-level routes. Stub all feature screens with `PlaceholderScreen(featureName)`.
 
-- [ ] **0.5** Set up Docker backend skeleton:
+- [x] **0.5** Set up Docker backend skeleton:
   - `docker-compose.yml` with `kero-space-api`, `kero-space-postgres`, `kero-space-redis`, `kero-space-caddy` services
   - PostgreSQL init script with all table schemas (with `updated_at` triggers)
   - Caddy with self-signed TLS config
   - API server stub (Dart Shelf or Rust Actix) returning `200 OK` on `/health`
 
-- [ ] **0.6** Set up GitHub Actions (or Gitea if self-hosted):
+- [x] **0.6** Set up GitHub Actions (or Gitea if self-hosted):
   - `flutter analyze` + `flutter test` on every push
   - Docker image build + push to local registry on merge to `main`
 
-- [ ] **0.7** Configure Android `AndroidManifest.xml` with all permissions declared (not yet granted):
+- [x] **0.7** Configure Android `AndroidManifest.xml` with all permissions declared (not yet granted):
   - `BIND_ACCESSIBILITY_SERVICE`, `PACKAGE_USAGE_STATS`, `SYSTEM_ALERT_WINDOW`, `RECORD_AUDIO`, `RECEIVE_BOOT_COMPLETED`, `FOREGROUND_SERVICE`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`
 
 **DoD:** `flutter run` launches on Android with a themed shell. Docker `docker-compose up` starts all services with healthy status. CI passes.
@@ -73,7 +73,7 @@ Define all Isar collections and the sync outbox mechanism. Every feature in late
 
 ### Tasks
 
-- [ ] **1.1** Define Isar collections for all domains:
+- [x] **1.1** Define Isar collections for all domains:
   ```dart
   // Core schemas will include deviceId and platform fields for Android <-> Windows sync tracking
   @Collection() class TelemetryEvent { ... }
@@ -96,21 +96,21 @@ Define all Isar collections and the sync outbox mechanism. Every feature in late
   ```
   Run `flutter pub run build_runner build` to generate Isar adapters.
 
-- [ ] **1.2** Implement `IsarService` singleton — opens the Isar instance with encryption key (loaded from `flutter_secure_storage` on first run, generated if absent).
+- [x] **1.2** Implement `IsarService` singleton — opens the Isar instance with encryption key (loaded from `flutter_secure_storage` on first run, generated if absent).
 
-- [ ] **1.3** Implement `SyncOutboxRepository`:
+- [x] **1.3** Implement `SyncOutboxRepository`:
   - `addToOutbox(entity, operation)` — writes a `SyncOutboxRecord` with `PENDING` status
   - `getPendingBatch(limit: 50)` — retrieves oldest PENDING records
   - `markSynced(ids)` / `markFailed(ids, error)` — status updates
 
-- [ ] **1.4** Implement `SyncWorker` (Dart isolate):
+- [x] **1.4** Implement `SyncWorker` (Dart isolate):
   - Runs every 30 seconds when Docker is reachable
   - Calls `SyncOutboxRepository.getPendingBatch()`, POSTs to `/sync/batch`, updates statuses
   - Handles 409 Conflict from server: applies Last-Write-Wins by default
 
-- [ ] **1.5** Seed the **Ingredient Database** into Isar from a local JSON file (source: Open Food Facts offline export filtered to Egyptian common foods + standard staples). ~3,000 ingredients minimum.
+- [x] **1.5** Seed the **Ingredient Database** into Isar from a local JSON file (source: Open Food Facts offline export filtered to Egyptian common foods + standard staples). ~3,000 ingredients minimum.
 
-- [ ] **1.6** Write unit tests for all repository implementations (mock Isar with `isar_test`).
+- [x] **1.6** Write unit tests for all repository implementations (mock Isar with `isar_test`).
 
 **DoD:** All collections openable. Outbox write/read cycle verified in tests. Ingredient seed completes < 5s on device.
 
