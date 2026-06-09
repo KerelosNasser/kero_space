@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:kero_space/core/data/isar_service.dart';
 import 'package:kero_space/features/health/data/models/health_collections.dart';
 import 'package:flutter/foundation.dart';
+import 'package:isar/isar.dart';
 import 'dart:io';
 
 @lazySingleton
@@ -37,22 +38,41 @@ class HealthConnectRepository {
     }
   }
 
-  Future<void> syncBiometrics(DateTime startTime, DateTime endTime) async {
+  Future<void> syncBiometrics(DateTime startTime, DateTime endTime, {bool isBackground = false, List<HealthDataType>? specificTypes}) async {
     if (kIsWeb || !Platform.isAndroid) return;
     
-    bool hasPermissions = await requestPermissions();
-    if (!hasPermissions) return;
+    final typesToFetch = specificTypes ?? _types;
+    final permissions = List.filled(typesToFetch.length, HealthDataAccess.READ);
+    bool hasPermissions = await _health.hasPermissions(typesToFetch, permissions: permissions) ?? false;
+    
+    if (!hasPermissions) {
+      if (isBackground) {
+        // Do not pop up permission dialogs in the background isolate!
+        debugPrint("Aborting background sync: Health permissions not granted.");
+        return;
+      } else {
+        hasPermissions = await requestPermissions();
+        if (!hasPermissions) return;
+      }
+    }
 
     try {
       List<HealthDataPoint> healthData = await _health.getHealthDataFromTypes(
         startTime: startTime,
         endTime: endTime,
-        types: _types,
+        types: typesToFetch,
       );
 
       final isar = IsarService.instance;
 
       List<HealthRecord> recordsToSave = [];
+      List<String> stringTypesToDelete = [];
+
+      for (var t in typesToFetch) {
+        if (t == HealthDataType.STEPS) stringTypesToDelete.add('STEPS');
+        if (t == HealthDataType.HEART_RATE) stringTypesToDelete.add('HEART_RATE');
+        if (t == HealthDataType.SLEEP_SESSION) stringTypesToDelete.add('SLEEP');
+      }
 
       for (var dataPoint in healthData) {
         // Prepare string type mapping
@@ -85,6 +105,15 @@ class HealthConnectRepository {
 
       if (recordsToSave.isNotEmpty) {
         await isar.writeTxn(() async {
+          // Prevent duplication by deleting overlapping records of the synced types
+          for (var type in stringTypesToDelete) {
+            await isar.healthRecords
+                .filter()
+                .typeEqualTo(type)
+                .timestampBetween(startTime, endTime)
+                .deleteAll();
+          }
+          
           await isar.healthRecords.putAll(recordsToSave);
         });
         debugPrint("Synced ${recordsToSave.length} health records to Isar.");
