@@ -84,4 +84,10 @@ class NutritionRepository {
         .timestampBetween(startOfDay, endOfDay)
         .findAll();
   }
+
+  Future<UserProfile?> getUserProfile() async {
+    final isar = IsarService.instance;
+    // Assuming there's only one user profile for the local device
+    return await isar.userProfiles.where().findFirst();
+  }
 }

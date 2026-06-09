@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kero_space/features/finance/data/models/finance_collections.dart';
-import 'package:kero_space/features/health/data/models/health_collections.dart';
+
 import 'package:kero_space/features/finance/data/repositories/finance_repository.dart';
 import 'package:kero_space/features/finance/data/repositories/egx_scraper_service.dart';
 import 'package:kero_space/features/health/data/repositories/nutrition_repository.dart';
@@ -59,7 +59,20 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       // Fetch recent meals for correlation (last 7 days)
       final DateTime now = DateTime.now();
       List<CorrelationDataPoint> timeline = [];
-      double rollingWealth = 0; // In a real app we'd fetch the baseline wealth before 7 days
+      
+      // Calculate true baseline wealth before the 7-day window
+      double rollingWealth = 0; 
+      final DateTime sevenDaysAgo = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6));
+      
+      for (var tx in transactions) {
+        if (tx.date.isBefore(sevenDaysAgo)) {
+           rollingWealth += tx.type == 'INCOME' ? tx.amount : -tx.amount;
+        }
+      }
+
+      // Fetch dynamic UserProfile for BMR calculation
+      final userProfile = await _nutritionRepository.getUserProfile();
+      final double baselineBMR = userProfile?.bmrTarget ?? 2000.0;
 
       for (int i = 6; i >= 0; i--) {
         final date = now.subtract(Duration(days: i));
@@ -69,8 +82,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         
         final meals = await _nutritionRepository.getDailyMeals(date);
         double totalCalories = meals.fold(0.0, (sum, meal) => sum + meal.calories);
-        // Assuming average BMR is 2000 for calculation. In a real app, we'd fetch UserProfile.
-        double surplus = totalCalories - 2000.0; 
+        double surplus = totalCalories - baselineBMR; 
 
         timeline.add(CorrelationDataPoint(
           date: date,
