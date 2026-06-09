@@ -2,62 +2,62 @@
 
 ![Kero Space Logo](file:///C:/Users/keron/.gemini/antigravity-ide/brain/2dfa2d70-6002-4d06-ae89-d67797c2b90e/kero_space_minimal_logo_1780785663495.png)
 
-## 1. Design Philosophy: "Operational Density with Cognitive Calm"
+## 1. Design Philosophy: "Minimalist Apple Aesthetic"
 
-Kero Space's interface serves a user who is simultaneously a developer, a teacher, a freelancer, an investor, and a spiritual practitioner. The design must communicate high-information density without producing decision fatigue.
+Kero Space's interface serves a user who is simultaneously a developer, a teacher, a freelancer, an investor, and a spiritual practitioner. The design must communicate high-information density while feeling as native and frictionless as an iOS app.
 
-The visual language is **Dark Utilitarian Precision** — think mission control, not wellness app. Every pixel justifies its existence. Color is semantic, not decorative. Animation is purposeful, not playful.
+The visual language is **Monochrome Minimalism** — pure black backgrounds, high-contrast white typography, and standard iOS native components. Color is used sparingly, primarily relying on black, white, and subtle grays.
 
 ### Core Tenets
-1. **Glanceability First** — The most critical metric in any view must be readable in under 400ms.
-2. **Progressive Disclosure** — Summary cards expand to detail. Detail views drill to raw data. Never show everything at once.
-3. **Semantic Color System** — Colors mean things and never deviate from their meaning.
-4. **Motion as Feedback** — Animations confirm state transitions, not embellish them.
+1. **OLED Black First** — The primary background is pure `#000000` to create a seamless, borderless feel on modern screens.
+2. **High Contrast** — White is the primary secondary color, used for text, essential icons, and primary interactions.
+3. **Cupertino Native** — Utilize iOS design patterns: large titles, subtle blurs, bottom sheets, and native spring animations.
+4. **Motion as Feedback** — Fluid, physics-based spring animations that feel distinctly Apple.
 
 ---
 
 ## 2. Color & Typography System
 
-### Color Tokens (CSS-style naming for documentation clarity)
+### Color Tokens (iOS Dark Mode style)
 
 ```
---bg-primary:      #0B0F17   // Deep Matte Obsidian (neutral, low-strain charcoal)
---bg-surface:      #121824   // Quiet Slate Layer (distinct card elevation, high visual clarity)
---bg-elevated:     #1E293B   // Steel Grey Elevated (dialogs, context dropdowns)
---bg-overlay:      rgba(11, 15, 23, 0.75) // Frosted Obsidian Overlay (with high blur backdrop)
+--bg-primary:      #000000   // Pure Black (OLED native)
+--bg-surface:      #1C1C1E   // Cupertino Secondary System Background
+--bg-elevated:     #2C2C2E   // Cupertino Tertiary System Background
+--bg-overlay:      rgba(0, 0, 0, 0.6) // Cupertino Modal Backdrop (with high blur)
 
---accent-cyan:     #0284C7   // Sky Blue (clean interaction, links, active state)
---accent-gold:     #F59E0B   // Amber Gold (wealth, balance sheets, EGX metrics)
---accent-mint:     #10B981   // Sage Emerald (health Connect sync, daily macros)
---accent-violet:   #6366F1   // Indigo Violet (Coptic liturgical calendar, prayer logs)
---accent-rose:     #EF4444   // Muted Crimson (active blocker, lockout, error states)
---accent-slate:    #64748B   // Cool Slate (telemetry logs, neutral labels)
+--accent-primary:  #FFFFFF   // Pure White (primary actions, active states)
+--accent-cyan:     #0A84FF   // iOS System Blue (links, primary buttons)
+--accent-mint:     #32D74B   // iOS System Green (success, health, rings)
+--accent-rose:     #FF453A   // iOS System Red (destructive actions, errors)
+--accent-gold:     #FF9F0A   // iOS System Orange (alerts, warnings)
+--accent-violet:   #BF5AF2   // iOS System Purple (spirituality, church)
 
---text-primary:    #F8FAFC   // Pure Snow White (optimal contrast)
---text-secondary:  #64748B   // Slate Grey (subtle descriptions, settings subtext)
---text-disabled:   #334155   // Midnight Charcoal (disabled state fields)
+--text-primary:    #FFFFFF   // Pure White
+--text-secondary:  rgba(235, 235, 245, 0.6) // iOS Secondary Label Color
+--text-disabled:   rgba(235, 235, 245, 0.3) // iOS Tertiary Label Color
 
---glass-border:    rgba(255, 255, 255, 0.05) // Micro-thin slate edge border
---border-glow:     rgba(99, 102, 241, 0.12)  // Indigo focus glow
---chart-grid:      #1E293B   // Subdued grid separation
---divider:         #1E293B   // Clean horizontal rule divider
+--glass-border:    rgba(255, 255, 255, 0.15) // Hairline separator
+--border-glow:     rgba(255, 255, 255, 0.12) // White focus glow
+--chart-grid:      #38383A   // iOS System Separator Color
+--divider:         #38383A   // Clean horizontal rule divider
 ```
 
 ### Typography
-- **Display / Hero Numbers:** `JetBrains Mono` — monospaced for numerical data (portfolio value, calorie counts, step numbers). Numbers never reflow.
-- **Headings:** `DM Sans` — geometric, authoritative, narrow tracking.
-- **Body / Labels:** `DM Sans Regular` — consistent with headings, readable at small sizes.
-- **Arabic text** (if ever needed for church content): `IBM Plex Arabic`.
+- **Display / Hero Numbers:** `SF Pro Display` — Apple's system font, rounded and clean. `SF Rounded` or `SF Mono` for data where appropriate.
+- **Headings:** `SF Pro Display` — bold, tight tracking.
+- **Body / Labels:** `SF Pro Text` — highly readable at small sizes.
+- **Arabic text** (if ever needed for church content): `SF Arabic`.
 
-### Type Scale
+### Type Scale (iOS Human Interface Guidelines)
 | Role | Size | Weight | Font |
 |---|---|---|---|
-| Hero Metric | 48sp | 300 | JetBrains Mono |
-| Section Header | 18sp | 600 | DM Sans |
-| Card Title | 14sp | 500 | DM Sans |
-| Body | 13sp | 400 | DM Sans |
-| Label/Caption | 11sp | 400 | DM Sans |
-| Monospace Data | 13sp | 400 | JetBrains Mono |
+| Large Title | 34sp | 700 | SF Pro Display |
+| Title 1 | 28sp | 600 | SF Pro Display |
+| Title 2 | 22sp | 600 | SF Pro Display |
+| Headline | 17sp | 600 | SF Pro Text |
+| Body | 17sp | 400 | SF Pro Text |
+| Footnote | 13sp | 400 | SF Pro Text |
 
 ### Implementation Guidelines
 - **Single-File Theming:** To simplify code edits and ensure uniform branding, all color variables, HSL values, visual decoration constants, and text stylings are declared strictly in a single source file: `lib/core/app_theme.dart`.
@@ -91,9 +91,9 @@ The home screen is a scrollable **Widget Grid** — not a tab bar. Each domain h
 
 ### Card Component Anatomy
 Every Snapshot Card follows the same structure:
-1. **Domain accent bar** (2px left border in domain color)
+1. **Domain accent bar** (2px left border in domain color or pure white)
 2. **Domain label** (11sp, secondary text)
-3. **Hero metric** (48sp monospaced or 24sp DM Sans)
+3. **Hero metric** (34sp SF Pro Display)
 4. **Delta indicator** (directional arrow + percentage change)
 5. **Micro-sparkline** (30-day trend, rendered via `fl_chart` `LineChart` with no axes)
 
@@ -149,7 +149,7 @@ Integrates visual alerts for yearly shifting fasting periods (Great Lent, Advent
 Minimizes cognitive friction while offering positive reinforcement loops to support focus.
 
 1. **Active Focus Widget (Visual Anchor):**
-   - Pin a single task to the top hero row. The pinned card pulsates with a slow, breathing cyan gradient (`--accent-cyan`) to ground wandering attention.
+   - Pin a single task to the top hero row. The pinned card pulsates with a slow, breathing white/gray gradient to ground wandering attention without breaking the monochrome aesthetic.
 2. **Gamified Dopamine Milestones:**
    - **Task Slash Spell:** Completing a task triggers a crisp haptic tap (`HapticFeedback.lightImpact`) and draws a neon slash across the card text. A micro-particle burst (using custom Canvas painting) sprays small colored shapes outwards.
    - **Streak Counters:** Top bar features flame icons displaying continuous healthy habits (fasting compliance, daily focus streaks, liturgy attendance).
@@ -181,7 +181,7 @@ Overlay Lines:
   - Running expense total: dotted rose, 1px stroke
 Background Bars:
   - Daily caloric balance: mint (surplus) / rose (deficit) bars, 40% opacity
-Grid: Horizontal only, #131B2A (--chart-grid), 1px
+Grid: Horizontal only, #38383A (--chart-grid), 1px
 Tooltip: Custom tooltip showing all 4 values at touched X position
 ```
 
@@ -231,11 +231,11 @@ Animations exist to communicate *that something changed* and *what the new state
 
 | Trigger | Animation | Duration | Curve |
 |---|---|---|---|
-| App launch | Staggered card reveal (cards slide in from bottom, 80ms apart) | 400ms total | `Curves.easeOutCubic` |
-| Card tap → domain view | Hero expand + fade content in | 300ms | `Curves.fastOutSlowIn` |
-| Metric value change | Countup tween (number animates from old to new value) | 600ms | `Curves.easeOutExpo` |
-| Task completion | Strikethrough draw + card collapses | 250ms | `Curves.easeInOut` |
-| Overlay blocker appear | Scale from 0.95 + fade in (jarring, intentional) | 150ms | `Curves.easeOut` |
+| App launch | Native modal slide up or fade | 300ms | `Curves.easeOut` (or iOS Spring) |
+| Card tap → domain view | Cupertino page transition | 350ms | iOS Spring (fast out, slow in) |
+| Metric value change | Countup tween (number animates from old to new value) | 500ms | `Curves.easeOutExpo` |
+| Task completion | Checkmark morph + row collapse | 300ms | iOS Spring |
+| Overlay blocker appear | Modal presentation slide up | 350ms | iOS Spring |
 | Decision break countdown | Circular progress ring draining | Real-time | Linear |
 | BLoC loading state | Shimmer scan across card skeleton | Loop | Linear |
 | Chart data load | Lines draw from left to right | 500ms | `Curves.easeOutQuart` |

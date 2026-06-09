@@ -188,7 +188,7 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 - [ ] **3.8** Unified `CalendarBloc` merging Samsung + Google events into a single sorted stream
 - [ ] **3.9** Calendar UI: month view + day view using `table_calendar` (customized to match Kero Space theme)
 - [ ] **3.10** Implement dynamic Coptic Orthodox Fasting Calendar Computus algorithm to automatically calculate and highlight shifting fasts (Great Lent, Apostles' Fast, Jonah's Fast, weekly Wednesday/Friday fasts) based on Orthodox Pascha calculation.
-- [ ] **3.11** ADHD visual adjustments: dynamic task carry-forward visual styling, breathing cyan gradient on active pinned focus tasks, custom light haptic triggers, and particle Canvas splash on check-offs.
+- [ ] **3.11** ADHD visual adjustments: dynamic task carry-forward visual styling, breathing monochrome white gradient on active pinned focus tasks, custom light haptic triggers, and particle Canvas splash on check-offs.
 
 **DoD:** Tasks persist across app restarts. Calendar shows events from both sources. Google OAuth refresh token survives app restart. Fasting dates calculated dynamically and highlighted correctly.
 
@@ -265,7 +265,7 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
   - Single-tap mark attendance for today
   - Retroactive date picker (mark past dates)
   - Streak calculation (longest current streak, all-time longest)
-  - Contribution grid UI (52-week × 7-day `CustomPainter`, violet color scale)
+  - Contribution grid UI (52-week × 7-day `CustomPainter`, iOS system purple or monochrome white/gray color scale)
   - Monthly/yearly statistics cards
 - [ ] **6.3** Confessions Log:
   - Passphrase setup screen (first time): derives AES-256-GCM key via `Argon2id(passphrase, randomSalt)`; salt stored in `flutter_secure_storage`; key NEVER stored
