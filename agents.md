@@ -308,3 +308,19 @@ KeroSpaceBootReceiver extends BroadcastReceiver
 
 ### Battery Optimization Exemption
 The app must request `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` from the user during onboarding. The onboarding flow includes a guided deep-link to the exact Android settings screen for this exemption — no manual navigation required.
+
+---
+
+## Development Methodology & Verification (MANDATORY)
+
+To ensure the reliability of the Omniscient Layer and its integrations, all future development on background services, features, or any app functionalities MUST strictly adhere to the following rules:
+
+1. **Test-Driven Development (TDD)**:
+   - Before writing implementation code for any new service, functionality, or BLoC, you MUST write failing unit tests or integration tests.
+   - For native Android code (Kotlin), use JUnit/Robolectric or instrumented tests to verify Intents, Service bindings, and Room/Isar interactions.
+   - For Dart code, use `flutter test` for BLoCs, repositories, and UI widgets.
+
+2. **Mandatory Build & Analysis Checks**:
+   - Before claiming any work is complete, you MUST run static analysis: `flutter analyze` for Dart code, and Android Lint/Detekt for Kotlin.
+   - You MUST run a full debug build (`flutter build apk --debug` or `./gradlew assembleDebug`) to verify that native code compiles correctly without syntax or dependency errors.
+   - Never commit code that fails analysis, has unresolved warnings, or fails to build. Evidence of success (build output/test output) must precede assertions of completion.
