@@ -50,6 +50,7 @@ dependencies:
   json_annotation: any
   flutter_fancy_tree_view: any
   flutter_quill: any
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'dart:convert';
-import '../../data/models/note_model.dart';
+import '../../data/models/productivity_collections.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final Note? existingNote;
@@ -45,7 +45,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             icon: const Icon(Icons.save),
             onPressed: () {
               // Save logic here
-              final jsonStr = jsonEncode(_controller.document.toDelta().toJson());
+              // Temporary save logic
               // Temporary save logic
               Navigator.of(context).pop();
             },
@@ -56,14 +56,12 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         children: [
           quill.QuillSimpleToolbar(
             controller: _controller,
-            configurations: const quill.QuillSimpleToolbarConfigurations(),
           ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: quill.QuillEditor.basic(
                 controller: _controller,
-                configurations: const quill.QuillEditorConfigurations(),
               ),
             ),
           )

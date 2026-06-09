@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/productivity/presentation/screens/productivity_screen.dart';
 import '../features/productivity/presentation/screens/note_editor_screen.dart';
-import '../features/productivity/data/models/note_model.dart';
+import '../features/productivity/data/models/productivity_collections.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   final String title;

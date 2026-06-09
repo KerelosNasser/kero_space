@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../bloc/productivity_bloc.dart';
 import '../widgets/daily_checklist.dart';
 import '../widgets/task_tree_view.dart';
-import '../../../../core/injection.dart';
+import '../../data/repositories/productivity_repository.dart';
 
 class ProductivityScreen extends StatelessWidget {
   const ProductivityScreen({super.key});
@@ -13,7 +13,7 @@ class ProductivityScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<ProductivityBloc>()..add(const ProductivityEvent.loadData()),
+      create: (_) => ProductivityBloc(ProductivityRepository())..add(const ProductivityEvent.loadData()),
       child: DefaultTabController(
         length: 3,
         child: Scaffold(

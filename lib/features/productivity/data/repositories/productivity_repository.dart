@@ -3,9 +3,7 @@ import '../../../../core/data/isar_service.dart';
 import '../models/productivity_collections.dart';
 
 class ProductivityRepository {
-  final IsarService _isarService;
-
-  ProductivityRepository(this._isarService);
+  ProductivityRepository();
 
   Future<List<Task>> getAllTasks() async {
     final isar = IsarService.instance;
