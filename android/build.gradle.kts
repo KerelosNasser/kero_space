@@ -24,6 +24,11 @@ subprojects {
                 val targetNamespace = if (groupStr.isNotEmpty()) groupStr else "dev.flutter.plugin." + project.name
                 android.javaClass.getMethod("setNamespace", String::class.java).invoke(android, targetNamespace)
             }
+            try {
+                android.javaClass.getMethod("setCompileSdk", Integer.TYPE).invoke(android, 34)
+            } catch (e: Exception) {
+                android.javaClass.getMethod("setCompileSdkVersion", Integer.TYPE).invoke(android, 34)
+            }
         } catch (e: Exception) {}
     }
 }
