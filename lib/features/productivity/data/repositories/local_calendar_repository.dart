@@ -11,11 +11,8 @@ class LocalCalendarRepository {
     try {
       final status = await Permission.calendarFullAccess.request();
       if (!status.isGranted) {
-        final readOnlyStatus = await Permission.calendarReadOnly.request();
-        if (!readOnlyStatus.isGranted) {
-            debugPrint('Calendar permission denied by user.');
-            return [];
-        }
+        debugPrint('Calendar permission denied by user.');
+        return [];
       }
 
       final String result = await _channel.invokeMethod('getEvents');

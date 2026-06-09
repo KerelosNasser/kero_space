@@ -44,8 +44,50 @@ class ProductivityScreen extends StatelessWidget {
                 loaded: (allTasks, dailyChecklist, allNotes) {
                   return TabBarView(
                     children: [
-                      // Tab 1: Today's Checklist
-                      DailyChecklist(tasks: dailyChecklist),
+                      // Tab 1: Today's Checklist & Fasting Badge
+                      Column(
+                        children: [
+                          BlocBuilder<CalendarBloc, CalendarState>(
+                            builder: (context, calState) {
+                              return calState.maybeWhen(
+                                loaded: (events) {
+                                  final today = DateTime.now();
+                                  final fastEvent = events.firstWhere(
+                                    (e) => e.source == 'COPTIC' && e.startTime.year == today.year && e.startTime.month == today.month && e.startTime.day == today.day,
+                                    orElse: () => CalendarEvent()..source = 'NONE',
+                                  );
+                                  if (fastEvent.source == 'COPTIC') {
+                                    return Container(
+                                      margin: const EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(12.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.purple.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        border: Border.all(color: Colors.purple),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.restaurant_menu, color: Colors.purple),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              "Today is a Fasting Day: ${fastEvent.title}. Strictly Vegan (No meat/dairy).",
+                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                                orElse: () => const SizedBox.shrink(),
+                              );
+                            },
+                          ),
+                          Expanded(child: DailyChecklist(tasks: dailyChecklist)),
+                        ],
+                      ),
                       
                       // Tab 2: Projects Tree View
                       TaskTreeView(allTasks: allTasks),
@@ -82,6 +124,24 @@ class ProductivityScreen extends StatelessWidget {
                                       ).toList();
                                     },
                                     calendarFormat: CalendarFormat.month,
+                                    calendarBuilders: CalendarBuilders(
+                                      markerBuilder: (context, date, eventList) {
+                                        if (eventList.isEmpty) return const SizedBox();
+                                        
+                                        final hasCoptic = eventList.any((e) => (e as CalendarEvent).source == 'COPTIC');
+                                        return Positioned(
+                                          bottom: 1,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: hasCoptic ? Colors.purple : Colors.blue,
+                                            ),
+                                            width: 7.0,
+                                            height: 7.0,
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                   Expanded(
                                     child: ListView.builder(
