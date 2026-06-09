@@ -11,6 +11,8 @@ import '../features/health/presentation/screens/ingredient_search_screen.dart';
 import '../features/health/presentation/screens/meal_log_screen.dart';
 import '../features/health/data/models/health_collections.dart';
 import '../features/health/presentation/bloc/health_bloc.dart';
+import '../features/finance/presentation/screens/finance_home_screen.dart';
+import '../features/finance/presentation/bloc/finance_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
@@ -82,7 +84,10 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/finance',
-      builder: (context, state) => const PlaceholderScreen(title: 'Finance'),
+      builder: (context, state) => BlocProvider.value(
+        value: GetIt.I<FinanceBloc>()..add(LoadFinanceData()),
+        child: const FinanceHomeScreen(),
+      ),
     ),
     GoRoute(
       path: '/church',
