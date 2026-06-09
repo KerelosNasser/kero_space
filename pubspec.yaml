@@ -44,7 +44,7 @@ dependencies:
   dio: any
   get_it: any
   injectable: any
-  health: any
+  health: ^13.3.1
   go_router: any
   freezed_annotation: any
   json_annotation: any
