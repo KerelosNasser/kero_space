@@ -6,7 +6,7 @@ import 'isar_service.dart';
 import 'sync_outbox_record.dart';
 
 class SyncWorker {
-  static Future<void> triggerSync(String dbDirectory) async {
+  static Future<void> triggerSync(String dbDirectory, {String? dockerUrl}) async {
     await Isolate.run(() async {
       // Open Isar inside the isolate
       await IsarService.init(dbDirectory);
@@ -15,8 +15,11 @@ class SyncWorker {
       final batch = await repo.getPendingBatch();
       
       if (batch.isNotEmpty) {
-        // Mocking HTTP Sync for now
-        final baseUrl = Platform.isWindows ? 'localhost' : '192.168.1.100';
+        // Use provided URL or fallback
+        String baseUrl = dockerUrl ?? '';
+        if (baseUrl.isEmpty) {
+          baseUrl = Platform.isWindows ? 'localhost' : '192.168.1.100';
+        }
         final endpoint = 'https://$baseUrl:8443';
         debugPrint('Syncing ${batch.length} records to $endpoint...');
         
