@@ -17,6 +17,15 @@ import 'package:kero_space/features/finance/data/repositories/finance_repository
 import 'package:kero_space/features/finance/data/repositories/egx_scraper_service.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 
+// Telemetry module
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:kero_space/core/data/kero_space_platform_service.dart';
+import 'package:kero_space/features/telemetry/data/repositories/screen_event_repository.dart';
+import 'package:kero_space/features/telemetry/data/repositories/app_usage_repository.dart';
+import 'package:kero_space/features/telemetry/data/repositories/click_log_repository.dart';
+import 'package:kero_space/features/telemetry/data/repositories/blacklist_repository.dart';
+import 'package:kero_space/features/telemetry/presentation/bloc/telemetry_bloc.dart';
+
 final getIt = GetIt.instance;
 
 void setupLocator() {
