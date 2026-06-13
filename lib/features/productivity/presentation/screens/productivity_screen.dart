@@ -8,9 +8,9 @@ import '../bloc/productivity_bloc.dart';
 import '../bloc/calendar_bloc.dart';
 import '../widgets/daily_checklist.dart';
 import '../widgets/task_tree_view.dart';
-import '../../data/repositories/productivity_repository.dart';
-import '../../data/repositories/local_calendar_repository.dart';
 import '../../data/models/productivity_collections.dart';
+
+import 'package:kero_space/core/di/injection.dart';
 
 class ProductivityScreen extends StatelessWidget {
   const ProductivityScreen({super.key});
@@ -19,8 +19,8 @@ class ProductivityScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => ProductivityBloc(ProductivityRepository())..add(const ProductivityEvent.loadData())),
-        BlocProvider(create: (_) => CalendarBloc(LocalCalendarRepository())..add(const CalendarEventBlocEvent.loadEvents())),
+        BlocProvider.value(value: getIt<ProductivityBloc>()..add(const ProductivityEvent.loadData())),
+        BlocProvider.value(value: getIt<CalendarBloc>()..add(const CalendarEventBlocEvent.loadEvents())),
       ],
       child: DefaultTabController(
         length: 4,

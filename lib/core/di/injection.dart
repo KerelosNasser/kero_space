@@ -1,6 +1,14 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:kero_space/core/data/isar_service.dart';
+
+// Productivity module
+import 'package:kero_space/features/productivity/data/repositories/productivity_repository.dart';
+import 'package:kero_space/features/productivity/data/repositories/local_calendar_repository.dart';
+import 'package:kero_space/features/productivity/presentation/bloc/productivity_bloc.dart';
+import 'package:kero_space/features/productivity/presentation/bloc/calendar_bloc.dart';
+
+// Church module
 import 'package:kero_space/features/church/data/repositories/church_repository.dart';
 import 'package:kero_space/features/church/data/repositories/confession_crypto_service.dart';
 import 'package:kero_space/features/church/data/repositories/encrypted_confessions_repo.dart';
@@ -17,6 +25,10 @@ import 'package:kero_space/features/finance/data/repositories/finance_repository
 import 'package:kero_space/features/finance/data/repositories/egx_scraper_service.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 
+// Voice module
+import 'package:kero_space/features/voice/domain/command_parser.dart';
+import 'package:kero_space/features/voice/presentation/bloc/voice_bloc.dart';
+
 // Telemetry module
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:kero_space/core/data/kero_space_platform_service.dart';
@@ -32,12 +44,18 @@ void setupLocator() {
   // Common
   getIt.registerLazySingleton<Dio>(() => Dio());
 
+  // Productivity
+  getIt.registerLazySingleton<ProductivityRepository>(() => ProductivityRepository());
+  getIt.registerLazySingleton<LocalCalendarRepository>(() => LocalCalendarRepository());
+  getIt.registerLazySingleton<ProductivityBloc>(() => ProductivityBloc(getIt<ProductivityRepository>()));
+  getIt.registerLazySingleton<CalendarBloc>(() => CalendarBloc(getIt<LocalCalendarRepository>()));
+
   // Health
   getIt.registerLazySingleton<HealthConnectRepository>(
     () => HealthConnectRepository(),
   );
   getIt.registerLazySingleton<NutritionRepository>(() => NutritionRepository());
-  getIt.registerFactory<HealthBloc>(
+  getIt.registerLazySingleton<HealthBloc>(
     () => HealthBloc(
       getIt<HealthConnectRepository>(),
       getIt<NutritionRepository>(),
@@ -51,7 +69,7 @@ void setupLocator() {
   getIt.registerLazySingleton<EGXScraperService>(
     () => EGXScraperService(dio: getIt<Dio>()),
   );
-  getIt.registerFactory<FinanceBloc>(
+  getIt.registerLazySingleton<FinanceBloc>(
     () => FinanceBloc(
       financeRepository: getIt<FinanceRepository>(),
       egxScraperService: getIt<EGXScraperService>(),
@@ -72,12 +90,24 @@ void setupLocator() {
       getIt<ConfessionCryptoService>(),
     ),
   );
-  getIt.registerFactory<ChurchBloc>(
+  getIt.registerLazySingleton<ChurchBloc>(
     () => ChurchBloc(getIt<ChurchRepository>()),
   );
-  getIt.registerFactory<ConfessionBloc>(
+  getIt.registerLazySingleton<ConfessionBloc>(
     () => ConfessionBloc(
       getIt<ConfessionCryptoService>(),
+    ),
+  );
+
+  // Voice
+  getIt.registerLazySingleton<CommandParser>(() => CommandParser());
+  getIt.registerLazySingleton<VoiceBloc>(
+    () => VoiceBloc(
+      getIt<CommandParser>(),
+      getIt<ProductivityBloc>(),
+      getIt<HealthBloc>(),
+      getIt<FinanceBloc>(),
+      getIt<ChurchBloc>(),
     ),
   );
 
@@ -92,7 +122,7 @@ void setupLocator() {
       () => ClickLogRepository(IsarService.instance));
   getIt.registerLazySingleton<BlacklistRepository>(
       () => BlacklistRepository(getIt<FlutterSecureStorage>()));
-  getIt.registerFactory<TelemetryBloc>(() => TelemetryBloc(
+  getIt.registerLazySingleton<TelemetryBloc>(() => TelemetryBloc(
     getIt<ScreenEventRepository>(),
     getIt<AppUsageRepository>(),
     getIt<ClickLogRepository>(),

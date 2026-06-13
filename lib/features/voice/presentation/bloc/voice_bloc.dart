@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:injectable/injectable.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 import '../../domain/command_parser.dart';
@@ -9,16 +8,35 @@ import '../../domain/parsed_intent.dart';
 import 'voice_event.dart';
 import 'voice_state.dart';
 
-@lazySingleton
+// Domain BLoCs and Models
+import 'package:kero_space/features/productivity/presentation/bloc/productivity_bloc.dart';
+import 'package:kero_space/features/productivity/data/models/productivity_collections.dart';
+import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
+import 'package:kero_space/features/health/data/models/health_collections.dart';
+import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
+import 'package:kero_space/features/church/presentation/bloc/church_bloc.dart';
+import 'package:kero_space/features/church/data/models/mass_attendance.dart';
+
 class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
   final CommandParser _parser;
+  final ProductivityBloc _productivityBloc;
+  final HealthBloc _healthBloc;
+  final FinanceBloc _financeBloc;
+  final ChurchBloc _churchBloc;
+
   final SpeechToText _speech = SpeechToText();
   
   static const EventChannel _wakeWordChannel = EventChannel('kero_space/wake_word');
   StreamSubscription? _wakeWordSubscription;
   Timer? _listenTimeout;
 
-  VoiceBloc(this._parser) : super(VoiceIdle()) {
+  VoiceBloc(
+    this._parser,
+    this._productivityBloc,
+    this._healthBloc,
+    this._financeBloc,
+    this._churchBloc,
+  ) : super(VoiceIdle()) {
     on<WakeWordTriggered>(_onWakeWordTriggered);
     on<StartListeningEvent>(_onStartListening);
     on<StopListeningEvent>(_onStopListening);
@@ -32,15 +50,12 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
 
   void _initWakeWordListener() {
     _wakeWordSubscription = _wakeWordChannel.receiveBroadcastStream().listen((event) {
-      // Event implies WAKE_WORD_DETECTED
       add(WakeWordTriggered());
     });
   }
 
   Future<void> _onWakeWordTriggered(WakeWordTriggered event, Emitter<VoiceState> emit) async {
     emit(VoiceWakeDetected());
-    
-    // Give a small UI buffer for the user to see the bottom sheet
     await Future.delayed(const Duration(milliseconds: 500));
     add(StartListeningEvent());
   }
@@ -77,7 +92,6 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
       ),
     );
 
-    // Hard timeout 5s
     _listenTimeout?.cancel();
     _listenTimeout = Timer(const Duration(seconds: 5), () {
       add(StopListeningEvent());
@@ -89,7 +103,6 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
     if (_speech.isListening) {
       _speech.stop();
     }
-    // If we're still just listening without processing, go back to idle
     if (state is VoiceListening) {
       emit(VoiceIdle());
     }
@@ -116,23 +129,55 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
   Future<void> _onConfirmIntent(ConfirmIntentEvent event, Emitter<VoiceState> emit) async {
     if (state is VoiceConfirmPending) {
       final intent = (state as VoiceConfirmPending).intent;
-      
-      // The VoiceBloc emits success, but the actual domain BLoC execution 
-      // will be handled in the UI by listening to this success state 
-      // OR we can inject other Blocs here. 
-      // For V1 architecture, we just emit Success so the UI dismisses, 
-      // and the UI can dispatch to the right BLoC based on the intent we carried.
-      // Wait, the plan says: "Intent Router (inside VoiceBloc)". Let's just emit success 
-      // and let the UI or a middleware handle it. For now, Success.
-      
       String msg = "Done!";
-      if (intent is AddTodoIntent) msg = "Added to do";
-      if (intent is AddNoteIntent) msg = "Note saved";
-      if (intent is AddExpenseIntent) msg = "Expense recorded";
-      if (intent is LogMealIntent) msg = "Meal logged";
+
+      if (intent is AddTodoIntent) {
+        msg = "Added to do";
+        final task = Task()
+          ..title = intent.title
+          ..type = TaskType.task
+          ..deviceId = 'voice'
+          ..platform = 'voice'
+          ..createdAt = DateTime.now()
+          ..updatedAt = DateTime.now();
+        _productivityBloc.add(ProductivityEvent.createTask(task));
+      } else if (intent is AddNoteIntent) {
+        msg = "Note saved";
+        final note = Note()
+          ..title = "Voice Note"
+          ..quillDelta = '[{"insert":"${intent.body}\\n"}]'
+          ..deviceId = 'voice'
+          ..platform = 'voice'
+          ..createdAt = DateTime.now()
+          ..updatedAt = DateTime.now();
+        _productivityBloc.add(ProductivityEvent.createNote(note));
+      } else if (intent is AddExpenseIntent) {
+        msg = "Expense recorded";
+        _financeBloc.add(AddTransactionEvent(
+          amount: intent.amount,
+          type: 'EXPENSE',
+          category: 'Other',
+          vendor: intent.vendor ?? 'Voice',
+        ));
+      } else if (intent is LogMealIntent) {
+        msg = "Meal logged";
+        final meal = MealEntry()
+          ..name = intent.food
+          ..grams = (intent.grams ?? 100).toDouble()
+          ..calories = 0
+          ..protein = 0
+          ..carbs = 0
+          ..fat = 0
+          ..deviceId = 'voice'
+          ..platform = 'voice'
+          ..timestamp = DateTime.now();
+        _healthBloc.add(LogMeal(meal));
+      } else if (intent is MarkAttendanceIntent) {
+        msg = "Attendance marked";
+        _churchBloc.add(MarkAttendanceEvent(intent.date, AttendanceType.liturgy));
+      }
       
       emit(VoiceSuccess(msg));
-      
       await Future.delayed(const Duration(milliseconds: 1500));
       emit(VoiceIdle());
     }
