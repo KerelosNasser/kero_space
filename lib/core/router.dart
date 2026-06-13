@@ -16,6 +16,10 @@ import '../features/finance/presentation/bloc/finance_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
+import '../features/telemetry/presentation/bloc/telemetry_bloc.dart' as kero_space_telemetry_bloc;
+import '../features/telemetry/presentation/bloc/telemetry_event.dart' as kero_space_telemetry_event;
+import '../features/telemetry/presentation/pages/telemetry_screen.dart' as kero_space_telemetry_screen;
+
 class PlaceholderScreen extends StatelessWidget {
   final String title;
   const PlaceholderScreen({super.key, required this.title});
@@ -95,7 +99,10 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/telemetry',
-      builder: (context, state) => const PlaceholderScreen(title: 'Telemetry'),
+      builder: (context, state) => BlocProvider.value(
+        value: GetIt.I<kero_space_telemetry_bloc.TelemetryBloc>()..add(kero_space_telemetry_event.LoadTelemetryDashboard()),
+        child: const kero_space_telemetry_screen.TelemetryScreen(),
+      ),
     ),
   ],
 );
