@@ -1,4 +1,4 @@
-package com.kero_space.kero_space.telemetry
+package com.example.kero_space.telemetry
 
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences

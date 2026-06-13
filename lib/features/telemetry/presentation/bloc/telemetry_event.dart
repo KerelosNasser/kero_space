@@ -6,13 +6,17 @@ abstract class TelemetryEvent extends Equatable {
   @override List<Object?> get props => [];
 }
 
-class LoadTelemetryDashboard extends TelemetryEvent {}
+class LoadTelemetryDashboard extends TelemetryEvent {
+  const LoadTelemetryDashboard();
+}
 class LoadUnlockHeatmap extends TelemetryEvent {
   final DateTime weekStart;
   const LoadUnlockHeatmap(this.weekStart);
   @override List<Object?> get props => [weekStart];
 }
-class LoadBlockerStats extends TelemetryEvent {}
+class LoadBlockerStats extends TelemetryEvent {
+  const LoadBlockerStats();
+}
 class LoadClickLogs extends TelemetryEvent {
   final String? packageFilter;
   final DateTime? from;
@@ -21,7 +25,9 @@ class LoadClickLogs extends TelemetryEvent {
   const LoadClickLogs({this.packageFilter, this.from, this.to, this.page = 0});
   @override List<Object?> get props => [packageFilter, from, to, page];
 }
-class LoadBlacklist extends TelemetryEvent {}
+class LoadBlacklist extends TelemetryEvent {
+  const LoadBlacklist();
+}
 class AddBlacklistRule extends TelemetryEvent {
   final BlacklistRule rule;
   const AddBlacklistRule(this.rule);
@@ -43,4 +49,6 @@ class ToggleAgent extends TelemetryEvent {
   const ToggleAgent(this.agentId, this.enabled);
   @override List<Object?> get props => [agentId, enabled];
 }
-class RefreshAgentStatuses extends TelemetryEvent {}
+class RefreshAgentStatuses extends TelemetryEvent {
+  const RefreshAgentStatuses();
+}
