@@ -326,21 +326,21 @@ Surface all telemetry data collected by the agents into actionable, glanceable v
 
 ### Tasks
 
-- [ ] **8.1** `VoiceBloc` with full state machine (Idle → WakeWordDetected → Listening → Processing → Success/Failure)
-- [ ] **8.2** `CommandParser` — rule-based NLP (no ML required for v1):
+- [x] **8.1** `VoiceBloc` with full state machine (Idle → WakeWordDetected → Listening → Processing → Success/Failure)
+- [x] **8.2** `CommandParser` — rule-based NLP (no ML required for v1):
   - Intent classification by keyword matching + regex patterns
   - Entity extraction: task names, meal names, amounts, dates
   - Map intents to BLoC events
-- [ ] **8.3** Voice Command UI:
+- [x] **8.3** Voice Command UI:
   - Bottom sheet that auto-opens on wake word
   - Rive waveform animation (responds to detected wake word)
   - Transcription displayed live as Whisper emits partial results
   - Command result card (success/failure with action summary)
-- [ ] **8.4** Whisper on-device integration:
+- [x] **8.4** Whisper on-device integration:
   - `whisper.cpp` compiled for Android ARM64 via Flutter FFI
   - Tiny model (~75MB) bundled in assets
   - Transcription runs in background isolate (no UI freeze)
-- [ ] **8.5** Wake word custom model training documentation:
+- [x] **8.5** Wake word custom model training documentation:
   - README with instructions for recording 500 samples of "hey kero" and training with OpenWakeWord
   - Script for model export to ONNX format
   - Integration testing checklist
@@ -354,19 +354,19 @@ Surface all telemetry data collected by the agents into actionable, glanceable v
 
 ### Tasks
 
-- [ ] **9.1** Implement Windows platform channel (`kero_space/win_process`):
+- [x] **9.1** Implement Windows platform channel (`kero_space/win_process`):
   - Dart FFI binding to `user32.dll` `GetForegroundWindow` + `GetWindowText`
   - Poll every 5 seconds, emit process change events to `ProcessEventBloc`
-- [ ] **9.2** Adaptive layout: implement `AdaptiveLayout` widget that switches between mobile (bottom nav) and desktop (left rail) based on `MediaQuery.size.width > 800`
-- [ ] **9.3** Desktop-specific: keyboard shortcuts (`flutter_shortcuts`):
+- [x] **9.2** Adaptive layout: implement `AdaptiveLayout` widget that switches between mobile (bottom nav) and desktop (left rail) based on `MediaQuery.size.width > 800`
+- [x] **9.3** Desktop-specific: keyboard shortcuts (`flutter_shortcuts`):
   - `Ctrl+N` → New task
   - `Ctrl+Shift+M` → Mark mass today
   - `Ctrl+L` → Log meal
   - `Ctrl+/` → Voice command input (text fallback on Windows)
-- [ ] **9.4** Windows-specific window management:
+- [x] **9.4** Windows-specific window management:
   - `window_manager` package for custom title bar, minimize-to-tray
   - System tray icon with quick-action menu
-- [ ] **9.5** Docker backend connectivity on Windows:
+- [x] **9.5** Docker backend connectivity on Windows:
   - If backend is on same machine: `localhost:8443`
   - If backend is on home server: mDNS discovery or configurable IP
 
