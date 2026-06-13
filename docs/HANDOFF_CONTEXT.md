@@ -7,32 +7,24 @@
 **Architecture**: Feature-first + BLoC
 **State management**: `flutter_bloc`
 **Router**: `go_router`
-**Key deps (relevant)**: `isar`, `permission_handler`, `shimmer`, `get_it`, `integration_test`, `msix`
+**Key deps (relevant)**: `isar`, `permission_handler`, `shimmer`, `get_it`, `shared_preferences`, `timezone`, `integration_test`, `msix`
 **Path aliases**: Standard `package:kero_space/...`
-**Files indexed**:
-  - `pubspec.yaml`
-  - `tasks.md` (Master Roadmap)
-  - `lib/core/permissions/*`
-  - `lib/core/error/*`
-  - `lib/shared/widgets/shimmer/*`
-  - `scripts/*` (.sh & .ps1 builds/backups)
-  - `docs/PERFORMANCE_AUDIT.md`, `SECURITY_AUDIT.md`, `BACKUP_SETUP.md`
-  - `test/security/*` and `integration_test/app_test.dart`
-**Generated files present**: yes (Isar adapters `.g.dart`, `build_runner` required)
-**Open unknowns**: None. Windows C++ native assets build threw an environmental warning locally during testing, but Dart static analysis is fully clean.
+**Generated files present**: yes (Isar adapters `.g.dart`, excluded from analysis via `analysis_options.yaml`)
+**Open unknowns**: None.
 **Windows path separator**: `\` (backslash) in PowerShell commands.
 
 ---
 
 ## 📦 Session State Summary
 
-We have officially reached the end of the **Phase 10: Polish, Hardening & Production Readiness** roadmap. 
+All 10 phases of the roadmap are **fully complete**. `flutter analyze` reports **No issues found**.
 
 ### Current State:
-1. **Fully Implemented:** All 10 phases in `tasks.md` are completely marked as `[x]`. 
-2. **Production-Ready:** The codebase is fortified with unified error handling (`AppErrorBloc`), progressive permission banners, beautiful shimmer loading screens, and robust security checks.
-3. **Data Protection:** Offline data backup scripts (`backup.sh`/`.ps1`) and JSON export capabilities are integrated into `SettingsScreen`.
-4. **CI/Build Tools:** Release build scripts (`build_release.sh` and `build_msix.ps1`) are ready to bundle the app.
+1. **Phases 0–10**: All tasks `[x]`. The 10-phase production roadmap is 100% done.
+2. **Voice Intent Dispatch**: `VoiceBloc` routes parsed intents to `ProductivityBloc`, `HealthBloc`, `FinanceBloc`, `ChurchBloc` via `getIt` singletons.
+3. **On-Device Voice Docs**: `docs/WHISPER_ONDEVICE.md` and `docs/WAKE_WORD_TRAINING.md` written and committed.
+4. **Windows Docker Connectivity**: `SettingsScreen` exposes a Docker Server URL field backed by `SharedPreferences`. `SyncWorker` consumes it.
+5. **Static Analysis**: Zero issues. Generated files excluded via `analysis_options.yaml`. `timezone` added as explicit dep.
 
 ### Where to pick up next time:
 - If you alter any Isar models or Freezed classes, run:
@@ -46,4 +38,9 @@ We have officially reached the end of the **Phase 10: Polish, Hardening & Produc
 - To generate the Windows MSIX installer:
   ```powershell
   ./scripts/build_msix.ps1
+  ```
+- To verify clean analysis at any point:
+  ```powershell
+  rtk flutter analyze
+  # Expected: No issues found!
   ```
