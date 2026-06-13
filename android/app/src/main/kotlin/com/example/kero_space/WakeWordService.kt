@@ -11,6 +11,7 @@ import android.media.MediaRecorder
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 
 class WakeWordService : Service() {
@@ -89,10 +90,17 @@ class WakeWordService : Service() {
     private fun emitWakeWordEvent(text: String, confidence: Float) {
         val json = "{\"type\":\"WAKE_WORD_DETECTED\",\"text\":\"\$text\",\"confidence\":\$confidence,\"timestamp\":\${System.currentTimeMillis()}}"
         
-        // Ensure we send this back to the main thread for EventSink
-        Handler(mainLooper).post {
-            KeroSpaceForegroundService.wakeWordEventSink?.success(json)
+        val launchIntent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            putExtra("VOICE_WAKE_TRIGGERED", true)
         }
+        startActivity(launchIntent)
+        
+        // Ensure we send this back to the main thread for EventSink
+        // Add a 600ms buffer to allow Flutter engine to warm up if screen was off
+        Handler(Looper.getMainLooper()).postDelayed({
+            KeroSpaceForegroundService.wakeWordEventSink?.success(json)
+        }, 600)
     }
 
     override fun onDestroy() {
