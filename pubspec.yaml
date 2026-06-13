@@ -63,6 +63,7 @@ dependencies:
   bloc: ^9.2.1
   cryptography: ^2.9.0
   flutter_local_notifications: ^22.0.0
+  timezone: any
   installed_apps: ^2.1.1
   speech_to_text: ^7.4.0
   window_manager: ^0.5.1

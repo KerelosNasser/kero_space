@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import '../../../../core/data/isar_service.dart';
 
 class DataExportService {
   Future<String> exportData() async {
-    final isar = IsarService.instance;
     
     // We would fetch all items from Isar here:
     // final tasks = await isar.tasks.where().findAll();

@@ -14,14 +14,16 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   final EGXScraperService _egxScraperService;
   final NutritionRepository _nutritionRepository;
 
+  // ignore: prefer_initializing_formals
   FinanceBloc({
     required FinanceRepository financeRepository,
     required EGXScraperService egxScraperService,
     required NutritionRepository nutritionRepository,
-  })  : _financeRepository = financeRepository,
-        _egxScraperService = egxScraperService,
-        _nutritionRepository = nutritionRepository,
+  })  : _financeRepository = financeRepository, // ignore: prefer_initializing_formals
+        _egxScraperService = egxScraperService, // ignore: prefer_initializing_formals
+        _nutritionRepository = nutritionRepository, // ignore: prefer_initializing_formals
         super(FinanceInitial()) {
+
     on<LoadFinanceData>(_onLoadFinanceData);
     on<RefreshStockPrices>(_onRefreshStockPrices);
     on<AddTransactionEvent>(_onAddTransaction);
