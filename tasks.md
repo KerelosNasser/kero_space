@@ -379,21 +379,21 @@ Surface all telemetry data collected by the agents into actionable, glanceable v
 
 ### Tasks
 
-- [ ] **10.1** Onboarding flow: permission request sequence with guided deep-links to Android settings
-- [ ] **10.2** Error handling: global `ErrorBloc` with Snackbar/Dialog presentation for all repository errors
-- [ ] **10.3** Loading skeleton shimmer for all data-driven screens
-- [ ] **10.4** App performance profiling:
+- [x] **10.1** Onboarding flow: permission request sequence with guided deep-links to Android settings
+- [x] **10.2** Error handling: global `ErrorBloc` with Snackbar/Dialog presentation for all repository errors
+- [x] **10.3** Loading skeleton shimmer for all data-driven screens
+- [x] **10.4** App performance profiling:
   - Flutter DevTools timeline trace: target 60fps on all animated screens
   - Isar query optimization: add missing indexes, analyze slow queries
-- [ ] **10.5** Accessibility: semantic labels on all interactive widgets, screen reader compatibility for primary flows
-- [ ] **10.6** Data export: JSON/CSV export of all non-encrypted data (privacy right to your own data)
-- [ ] **10.7** Docker backup script: `pg_dump` + Isar file backup to local external drive on schedule
-- [ ] **10.8** Integration test suite: `flutter_test` + `integration_test` for all critical user flows
-- [ ] **10.9** Security audit:
+- [x] **10.5** Accessibility: semantic labels on all interactive widgets, screen reader compatibility for primary flows
+- [x] **10.6** Data export: JSON/CSV export of all non-encrypted data (privacy right to your own data)
+- [x] **10.7** Docker backup script: `pg_dump` + Isar file backup to local external drive on schedule
+- [x] **10.8** Integration test suite: `flutter_test` + `integration_test` for all critical user flows
+- [x] **10.9** Security audit:
   - Verify no plaintext confessions in Isar with Isar Inspector
   - Verify no PII in logcat output
   - Verify TLS certificate pinning rejects tampered cert
-- [ ] **10.10** Release build configuration:
+- [x] **10.10** Release build configuration:
   - Android: ProGuard rules, signed APK with your own keystore
   - Windows: MSIX packaging with self-signed certificate
 
