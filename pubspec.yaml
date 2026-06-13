@@ -68,6 +68,8 @@ dependencies:
   window_manager: ^0.5.1
   system_tray: ^2.0.3
   ffi: ^2.2.0
+  shimmer: ^3.0.0
+  msix: ^3.17.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

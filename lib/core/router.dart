@@ -4,6 +4,7 @@ import '../shared/widgets/app_shell.dart';
 
 import '../features/productivity/presentation/screens/productivity_screen.dart';
 import '../features/productivity/presentation/screens/note_editor_screen.dart';
+import '../features/settings/presentation/screens/settings_screen.dart' as kero_space_settings;
 import '../features/productivity/data/models/productivity_collections.dart';
 
 import '../features/health/presentation/screens/health_dashboard_screen.dart';
@@ -51,6 +52,11 @@ final router = GoRouter(
         final bloc = extraMap?['bloc'];
         return NoteEditorScreen(existingNote: note, bloc: bloc);
       },
+    ),
+    GoRoute(
+      path: '/settings',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const kero_space_settings.SettingsScreen(),
     ),
     GoRoute(
       path: '/health/config',
