@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'core/app_theme.dart';
 import 'core/router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'features/voice/presentation/bloc/voice_bloc.dart';
+import 'features/voice/presentation/bloc/voice_state.dart';
+import 'features/voice/presentation/widgets/voice_bottom_sheet.dart';
 
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -35,10 +39,28 @@ class KeroSpaceApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Kero Space',
-      theme: AppTheme.darkTheme,
-      routerConfig: router,
+    return BlocProvider.value(
+      value: getIt<VoiceBloc>(),
+      child: MaterialApp.router(
+        title: 'Kero Space',
+        theme: AppTheme.darkTheme,
+        routerConfig: router,
+        builder: (context, child) {
+          return BlocListener<VoiceBloc, VoiceState>(
+            listener: (context, state) {
+              if (state is VoiceWakeDetected) {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => const VoiceBottomSheet(),
+                );
+              }
+            },
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
+      ),
     );
   }
 }
