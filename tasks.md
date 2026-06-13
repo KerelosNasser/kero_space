@@ -294,25 +294,25 @@ Surface all telemetry data collected by the agents into actionable, glanceable v
 
 ### Tasks
 
-- [ ] **7.1** `TelemetryBloc` aggregating data from all three telemetry repositories (screen events, usage stats, click logs)
-- [ ] **7.2** Screen Time Overview screen:
+- [x] **7.1** `TelemetryBloc` aggregating data from all three telemetry repositories (screen events, usage stats, click logs)
+- [x] **7.2** Screen Time Overview screen:
   - Today's total screen time (hero metric)
   - App usage pie chart (fl_chart `PieChart`, top 8 apps)
   - Daily trend line (7-day screen time history)
-- [ ] **7.3** Unlock pattern heatmap:
+- [x] **7.3** Unlock pattern heatmap:
   - `CustomPainter` grid: 7 days × 24 hours, color intensity = unlock count
   - Tap a cell to see raw timestamps for that hour
-- [ ] **7.4** Blocker effectiveness dashboard:
+- [x] **7.4** Blocker effectiveness dashboard:
   - Blocked attempts vs. granted overrides per app per day
   - "Resistance rate" metric: (blocked / total attempts) × 100%
   - Weekly trend bar chart
-- [ ] **7.5** Blacklist management screen:
+- [x] **7.5** Blacklist management screen:
   - Add/remove apps (shows installed apps list with icons)
   - Per-app configuration: allowed windows, daily quota, Decision Break duration
-- [ ] **7.6** Click log browser:
+- [x] **7.6** Click log browser:
   - Filterable by app, date range
   - Timeline view showing click density per hour
-- [ ] **7.7** Implement the Omniscient Control Center settings screen:
+- [x] **7.7** Implement the Omniscient Control Center settings screen:
   - 2x2 toggle status grid binding Accessibility, UsageGuard, ScreenEvent, and WakeWord agents.
   - Blacklist rule manager interface allowing configuration of allowed hours, custom Decision Break countdown times, and Soft vs Hard lockout strictness.
   - Emergency bypass overlay keypad triggering puzzle verification and logging bypass events.
