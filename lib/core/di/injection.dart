@@ -71,4 +71,23 @@ void setupLocator() {
       getIt<ConfessionCryptoService>(),
     ),
   );
+
+  // Telemetry
+  getIt.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
+  getIt.registerLazySingleton<KeroSpacePlatformService>(() => KeroSpacePlatformService());
+  getIt.registerLazySingleton<ScreenEventRepository>(
+      () => ScreenEventRepository(IsarService.instance));
+  getIt.registerLazySingleton<AppUsageRepository>(
+      () => AppUsageRepository(IsarService.instance));
+  getIt.registerLazySingleton<ClickLogRepository>(
+      () => ClickLogRepository(IsarService.instance));
+  getIt.registerLazySingleton<BlacklistRepository>(
+      () => BlacklistRepository(getIt<FlutterSecureStorage>()));
+  getIt.registerFactory<TelemetryBloc>(() => TelemetryBloc(
+    getIt<ScreenEventRepository>(),
+    getIt<AppUsageRepository>(),
+    getIt<ClickLogRepository>(),
+    getIt<BlacklistRepository>(),
+    getIt<KeroSpacePlatformService>(),
+  ));
 }
