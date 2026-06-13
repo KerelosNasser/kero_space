@@ -1,6 +1,9 @@
+import 'package:injectable/injectable.dart';
+
 import 'parsed_intent.dart';
 import 'recurrence.dart';
 
+@lazySingleton
 class CommandParser {
   final Map<String, String> _numberWords = {
     'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',

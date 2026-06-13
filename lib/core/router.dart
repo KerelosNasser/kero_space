@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../shared/widgets/app_shell.dart';
 
 import '../features/productivity/presentation/screens/productivity_screen.dart';
 import '../features/productivity/presentation/screens/note_editor_screen.dart';
@@ -33,19 +34,17 @@ class PlaceholderScreen extends StatelessWidget {
   }
 }
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _shellNavigatorKey = GlobalKey<NavigatorState>();
+
 final router = GoRouter(
+  navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const PlaceholderScreen(title: 'Home / Dashboard'),
-    ),
-    GoRoute(
-      path: '/productivity',
-      builder: (context, state) => const ProductivityScreen(),
-    ),
+    // --- Detail Routes (Full Screen) ---
     GoRoute(
       path: '/note_editor',
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extraMap = state.extra as Map<String, dynamic>?;
         final note = extraMap?['note'] as Note?;
@@ -54,55 +53,95 @@ final router = GoRouter(
       },
     ),
     GoRoute(
-      path: '/health',
+      path: '/health/config',
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => BlocProvider.value(
-        value: GetIt.I<HealthBloc>()..add(LoadDashboard()),
-        child: const HealthDashboardScreen(),
-      ),
-      routes: [
-        GoRoute(
-          path: 'config',
-          builder: (context, state) => BlocProvider.value(
-            value: GetIt.I<HealthBloc>(),
-            child: const CalorieConfigScreen(),
-          ),
-        ),
-        GoRoute(
-          path: 'search',
-          builder: (context, state) => BlocProvider.value(
-            value: GetIt.I<HealthBloc>(),
-            child: const IngredientSearchScreen(),
-          ),
-        ),
-        GoRoute(
-          path: 'log',
-          builder: (context, state) {
-            final ingredient = state.extra as Ingredient;
-            return BlocProvider.value(
-              value: GetIt.I<HealthBloc>(),
-              child: MealLogScreen(ingredient: ingredient),
-            );
-          },
-        ),
-      ]
-    ),
-    GoRoute(
-      path: '/finance',
-      builder: (context, state) => BlocProvider.value(
-        value: GetIt.I<FinanceBloc>()..add(LoadFinanceData()),
-        child: const FinanceHomeScreen(),
+        value: GetIt.I<HealthBloc>(),
+        child: const CalorieConfigScreen(),
       ),
     ),
     GoRoute(
-      path: '/church',
-      builder: (context, state) => const PlaceholderScreen(title: 'Church'),
+      path: '/health/search',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider.value(
+        value: GetIt.I<HealthBloc>(),
+        child: const IngredientSearchScreen(),
+      ),
     ),
     GoRoute(
-      path: '/telemetry',
-      builder: (context, state) => BlocProvider.value(
-        value: GetIt.I<kero_space_telemetry_bloc.TelemetryBloc>()..add(kero_space_telemetry_event.LoadTelemetryDashboard()),
-        child: const kero_space_telemetry_screen.TelemetryScreen(),
-      ),
+      path: '/health/log',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final ingredient = state.extra as Ingredient;
+        return BlocProvider.value(
+          value: GetIt.I<HealthBloc>(),
+          child: MealLogScreen(ingredient: ingredient),
+        );
+      },
+    ),
+
+    // --- Stateful Shell Routes ---
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => const PlaceholderScreen(title: 'Home / Dashboard'),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/productivity',
+              builder: (context, state) => const ProductivityScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/health',
+              builder: (context, state) => BlocProvider.value(
+                value: GetIt.I<HealthBloc>()..add(LoadDashboard()),
+                child: const HealthDashboardScreen(),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/finance',
+              builder: (context, state) => BlocProvider.value(
+                value: GetIt.I<FinanceBloc>()..add(LoadFinanceData()),
+                child: const FinanceHomeScreen(),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/church',
+              builder: (context, state) => const PlaceholderScreen(title: 'Church'),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/telemetry',
+              builder: (context, state) => BlocProvider.value(
+                value: GetIt.I<kero_space_telemetry_bloc.TelemetryBloc>()..add(kero_space_telemetry_event.LoadTelemetryDashboard()),
+                child: const kero_space_telemetry_screen.TelemetryScreen(),
+              ),
+            ),
+          ],
+        ),
+      ],
     ),
   ],
 );

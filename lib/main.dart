@@ -12,6 +12,21 @@ import 'core/data/isar_service.dart';
 import 'core/di/injection.dart';
 import 'package:kero_space/features/finance/data/repositories/notification_parser_service.dart';
 
+import 'dart:io' show Platform;
+import 'core/platform/windows/window_manager_service.dart';
+import 'core/platform/windows/process_watcher_bloc.dart';
+import 'core/platform/windows/process_watcher_event.dart';
+import 'features/church/presentation/bloc/church_bloc.dart';
+import 'features/church/data/models/mass_attendance.dart';
+import 'features/voice/presentation/bloc/voice_event.dart';
+
+class NavigateToIntent extends Intent {
+  final String route;
+  const NavigateToIntent(this.route);
+}
+class MarkAttendanceGlobalIntent extends Intent { const MarkAttendanceGlobalIntent(); }
+class StartVoiceIntent extends Intent { const StartVoiceIntent(); }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -24,11 +39,16 @@ void main() async {
   // Initialize background notification parser
   await NotificationParserService.initialize(IsarService.instance);
   
-  const platform = MethodChannel('kero_space/main_methods');
-  try {
-    await platform.invokeMethod('startForegroundService');
-  } on PlatformException catch (_) {
-    debugPrint("Failed to start foreground service.");
+  if (Platform.isWindows) {
+    await WindowManagerService.init();
+    getIt.registerSingleton<ProcessWatcherBloc>(ProcessWatcherBloc()..add(ProcessWatcherStarted()));
+  } else {
+    const platform = MethodChannel('kero_space/main_methods');
+    try {
+      await platform.invokeMethod('startForegroundService');
+    } on PlatformException catch (_) {
+      debugPrint("Failed to start foreground service.");
+    }
   }
 
   runApp(const KeroSpaceApp());
@@ -39,12 +59,41 @@ class KeroSpaceApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: getIt<VoiceBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: getIt<VoiceBloc>()),
+        if (Platform.isWindows)
+          BlocProvider.value(value: getIt<ProcessWatcherBloc>()),
+      ],
       child: MaterialApp.router(
         title: 'Kero Space',
         theme: AppTheme.darkTheme,
         routerConfig: router,
+        shortcuts: {
+          ...WidgetsApp.defaultShortcuts,
+          const SingleActivator(LogicalKeyboardKey.keyN, control: true): const NavigateToIntent('/productivity'),
+          const SingleActivator(LogicalKeyboardKey.keyM, control: true, shift: true): const MarkAttendanceGlobalIntent(),
+          const SingleActivator(LogicalKeyboardKey.keyL, control: true): const NavigateToIntent('/health/search'),
+          const SingleActivator(LogicalKeyboardKey.slash, control: true): const StartVoiceIntent(),
+        },
+        actions: {
+          ...WidgetsApp.defaultActions,
+          NavigateToIntent: CallbackAction<NavigateToIntent>(
+            onInvoke: (intent) => router.go(intent.route),
+          ),
+          MarkAttendanceGlobalIntent: CallbackAction<MarkAttendanceGlobalIntent>(
+            onInvoke: (intent) {
+              getIt<ChurchBloc>().add(MarkAttendanceEvent(DateTime.now(), AttendanceType.liturgy));
+              return null;
+            },
+          ),
+          StartVoiceIntent: CallbackAction<StartVoiceIntent>(
+            onInvoke: (intent) {
+              getIt<VoiceBloc>().add(StartListeningEvent());
+              return null;
+            },
+          ),
+        },
         builder: (context, child) {
           return BlocListener<VoiceBloc, VoiceState>(
             listener: (context, state) {

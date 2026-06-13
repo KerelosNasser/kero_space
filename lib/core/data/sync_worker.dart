@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'sync_outbox_repository.dart';
 import 'isar_service.dart';
@@ -15,7 +16,9 @@ class SyncWorker {
       
       if (batch.isNotEmpty) {
         // Mocking HTTP Sync for now
-        debugPrint('Syncing ${batch.length} records to Docker backend...');
+        final baseUrl = Platform.isWindows ? 'localhost' : '192.168.1.100';
+        final endpoint = 'https://$baseUrl:8443';
+        debugPrint('Syncing ${batch.length} records to $endpoint...');
         
         await IsarService.instance.writeTxn(() async {
           for (var record in batch) {
