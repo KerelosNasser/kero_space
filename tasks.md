@@ -263,24 +263,24 @@ Validate all four OS-level platform channels before any Flutter feature work. Th
 
 ### Tasks
 
-- [ ] **6.1** `ChurchBloc` with all attendance and ministry states
-- [ ] **6.2** Mass Attendance tracker:
+- [x] **6.1** `ChurchBloc` with all attendance and ministry states
+- [x] **6.2** Mass Attendance tracker:
   - Single-tap mark attendance for today
   - Retroactive date picker (mark past dates)
   - Streak calculation (longest current streak, all-time longest)
   - Contribution grid UI (52-week × 7-day `CustomPainter`, iOS system purple or monochrome white/gray color scale)
   - Monthly/yearly statistics cards
-- [ ] **6.3** Confessions Log:
+- [x] **6.3** Confessions Log:
   - Passphrase setup screen (first time): derives AES-256-GCM key via `Argon2id(passphrase, randomSalt)`; salt stored in `flutter_secure_storage`; key NEVER stored
   - Session: user enters passphrase → key derived in memory → unlocks decryption for session lifetime → auto-locks after 10 minutes idle
   - Entry create: plaintext composed in memory → encrypted to bytes → stored as `List<int>` in Isar `ConfessionEntry.encryptedPayload`
   - Entry read: retrieve bytes → decrypt with session key → display
   - No backup, no sync, no cloud — `ConfessionEntry` is excluded from `SyncOutboxRepository`
-- [ ] **6.4** Ministry Management:
+- [x] **6.4** Ministry Management:
   - Member records CRUD (name, role, contact, join date)
   - Service task board (Kanban-style: TODO → IN_PROGRESS → DONE)
   - Lesson plan editor (structured Markdown with `flutter_quill`)
-- [ ] **6.5** Church notifications: local `flutter_local_notifications` for scheduled reminders (confession due, upcoming service task deadlines)
+- [x] **6.5** Church notifications: local `flutter_local_notifications` for scheduled reminders (confession due, upcoming service task deadlines)
 
 **DoD:** Confessions entry encrypted in Isar (verify via Isar Inspector — raw bytes not readable). Attendance streak calculates correctly across month boundaries. Ministry board persists task state.
 

@@ -42,4 +42,21 @@ class KeroSpacePlatformService {
   Future<void> dismissOverlay() async {
     await _methodChannel.invokeMethod('dismissOverlay');
   }
+
+  /// Syncs blacklist rules to Kotlin EncryptedSharedPreferences.
+  /// Call after every BlacklistRepository write.
+  Future<void> setBlacklistRules(String rulesJson) async {
+    await _methodChannel.invokeMethod('setBlacklistRules', {'rulesJson': rulesJson});
+  }
+
+  /// Start or stop an agent. agentId: 'accessibility' | 'usage_guard' | 'screen_event' | 'wake_word'
+  Future<void> toggleAgent(String agentId, bool enabled) async {
+    await _methodChannel.invokeMethod('toggleAgent', {'agentId': agentId, 'enabled': enabled});
+  }
+
+  /// Returns current enabled status of all 4 agents.
+  Future<Map<String, bool>> getAgentStatuses() async {
+    final result = await _methodChannel.invokeMapMethod<String, bool>('getAgentStatuses');
+    return result ?? {};
+  }
 }
