@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:kero_space/core/data/isar_service.dart';
+import 'package:kero_space/core/permissions/permission_repository.dart';
 
 // Productivity module
 import 'package:kero_space/features/productivity/data/repositories/productivity_repository.dart';
@@ -43,6 +44,7 @@ final getIt = GetIt.instance;
 void setupLocator() {
   // Common
   getIt.registerLazySingleton<Dio>(() => Dio());
+  getIt.registerLazySingleton<PermissionRepository>(() => PermissionRepository());
 
   // Productivity
   getIt.registerLazySingleton<ProductivityRepository>(() => ProductivityRepository());

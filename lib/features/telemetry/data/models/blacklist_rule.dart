@@ -22,11 +22,11 @@ class BlacklistRule {
 
   factory BlacklistRule.fromJson(Map<String, dynamic> json) => BlacklistRule(
     packageName: json['packageName'] as String,
-    allowedWindows: (json['allowedWindows'] as List<dynamic>)
+    allowedWindows: ((json['allowedWindows'] as List<dynamic>?) ?? [])
         .map((e) => TimeWindow.fromJson(e as Map<String, dynamic>))
         .toList(),
-    dailyQuotaMinutes: json['dailyQuotaMinutes'] as int,
-    decisionBreakSeconds: json['decisionBreakSeconds'] as int,
+    dailyQuotaMinutes: (json['dailyQuotaMinutes'] as int?) ?? 0,
+    decisionBreakSeconds: (json['decisionBreakSeconds'] as int?) ?? 30,
   );
 
   static List<BlacklistRule> listFromJson(String jsonStr) {

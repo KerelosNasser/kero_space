@@ -7,20 +7,25 @@ import 'isar_service.dart';
 import '../../features/telemetry/data/models/telemetry_collections.dart';
 
 /// Entrypoint for the headless FlutterEngine spawned by Android.
+///
+/// This isolate writes raw platform events (screen, accessibility, usage stats)
+/// to Isar. It communicates via `kero_space/bg/*` channels — dedicated to the
+/// headless engine. The main-engine channels (`kero_space/*`) serve the UI isolate.
 @pragma('vm:entry-point')
 void backgroundMain() async {
   WidgetsFlutterBinding.ensureInitialized();
-  debugPrint("KeroSpace: Background Isolate Started.");
+  debugPrint('KeroSpace BG: Background isolate started.');
 
   try {
     final dir = await getApplicationDocumentsDirectory();
     await IsarService.init(dir.path);
-    debugPrint("KeroSpace Background: Isar initialized.");
+    debugPrint('KeroSpace BG: Isar initialized.');
   } catch (e) {
-    debugPrint("KeroSpace Background: Failed to initialize Isar: $e");
+    debugPrint('KeroSpace BG: Failed to initialize Isar: $e');
   }
 
-  const EventChannel screenChannel = EventChannel('kero_space/screen_events');
+  // Screen events — background isolate writes to Isar.
+  const EventChannel screenChannel = EventChannel('kero_space/bg/screen_events');
   screenChannel.receiveBroadcastStream().listen(
     (event) async {
       if (!IsarService.isInitialized) return;
@@ -44,7 +49,8 @@ void backgroundMain() async {
     onError: (e) => debugPrint('KeroSpace BG: screenChannel error: $e'),
   );
 
-  const EventChannel accessChannel = EventChannel('kero_space/accessibility');
+  // Accessibility events — background isolate writes CLICK events to Isar.
+  const EventChannel accessChannel = EventChannel('kero_space/bg/accessibility');
   accessChannel.receiveBroadcastStream().listen(
     (event) async {
       if (!IsarService.isInitialized) return;
@@ -72,13 +78,8 @@ void backgroundMain() async {
     onError: (e) => debugPrint('KeroSpace BG: accessChannel error: $e'),
   );
 
-  const EventChannel wakeWordChannel = EventChannel('kero_space/wake_word');
-  wakeWordChannel.receiveBroadcastStream().listen(
-    (event) => debugPrint('KeroSpace BG: Wake Word Event: $event'),
-    onError: (e) => debugPrint('KeroSpace BG: wakeWordChannel error: $e'),
-  );
-
-  const EventChannel usageChannel = EventChannel('kero_space/usage_stats');
+  // Usage stats — background isolate upserts AppUsageRecords to Isar.
+  const EventChannel usageChannel = EventChannel('kero_space/bg/usage_stats');
   usageChannel.receiveBroadcastStream().listen(
     (event) async {
       if (!IsarService.isInitialized) return;

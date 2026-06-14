@@ -27,11 +27,10 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                     put("timestamp", System.currentTimeMillis())
                 }.toString()
 
+                // Push to both engines: main engine (UI/TelemetryBloc) and background engine (Isar).
                 KeroSpaceForegroundService.accessibilityEventSink?.success(json)
+                KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
 
-                // Direct Blocker Logic.
-                // BlacklistPreferencesStore.getBlockedPackages() uses an in-memory cache
-                // so this is a cheap Set lookup on the fast path (no I/O).
                 runBlockerLogic(packageName)
             }
 
@@ -53,7 +52,9 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                     put("timestamp", System.currentTimeMillis())
                 }.toString()
 
+                // Push to both engines: main engine (UI/TelemetryBloc) and background engine (Isar).
                 KeroSpaceForegroundService.accessibilityEventSink?.success(json)
+                KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
             }
         }
     }

@@ -6,7 +6,10 @@ import android.content.Intent
 import android.util.Log
 
 class KeroSpaceScreenReceiver : BroadcastReceiver() {
-    private val TAG = "KeroSpaceScreen"
+
+    companion object {
+        private const val TAG = "KeroSpaceScreen"
+    }
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
@@ -24,7 +27,9 @@ class KeroSpaceScreenReceiver : BroadcastReceiver() {
         // Construct JSON manually since we don't have Gson/Moshi setup specified yet
         val json = "{\"type\":\"$type\",\"timestamp\":$timestamp}"
         
-        // Push to Dart via EventChannel Sink
+        // Push to both engines so both the UI (TelemetryBloc) and
+        // the background isolate (Isar writer) receive the event.
         KeroSpaceForegroundService.screenEventSink?.success(json)
+        KeroSpaceForegroundService.bgScreenEventSink?.success(json)
     }
 }
