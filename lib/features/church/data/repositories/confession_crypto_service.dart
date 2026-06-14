@@ -100,10 +100,8 @@ class ConfessionCryptoService {
     try {
       final bool authenticated = await _localAuth.authenticate(
         localizedReason: 'Authenticate to unlock your confessions log',
-        options: const AuthenticationOptions(
-          biometricOnly: true,
-          stickyAuth: true,
-        ),
+        biometricOnly: true,
+        persistAcrossBackgrounding: true,
       );
       if (authenticated) {
         return await _secureStorage.read(key: _biometricPassphraseKey);

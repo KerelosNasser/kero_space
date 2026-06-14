@@ -11,6 +11,8 @@ abstract class ConfessionEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class CheckBiometricStatus extends ConfessionEvent {}
+
 class UnlockConfessionSession extends ConfessionEvent {
   final String passphrase;
   const UnlockConfessionSession(this.passphrase);
@@ -18,7 +20,19 @@ class UnlockConfessionSession extends ConfessionEvent {
   List<Object?> get props => [passphrase];
 }
 
+class UnlockWithBiometrics extends ConfessionEvent {}
+
+class EnableBiometrics extends ConfessionEvent {
+  final String passphrase;
+  const EnableBiometrics(this.passphrase);
+  @override
+  List<Object?> get props => [passphrase];
+}
+
+class DisableBiometrics extends ConfessionEvent {}
+
 class LockConfessionSession extends ConfessionEvent {}
+
 class SessionActivityDetected extends ConfessionEvent {}
 
 // States
@@ -28,7 +42,18 @@ abstract class ConfessionState extends Equatable {
   List<Object?> get props => [];
 }
 
-class ConfessionLocked extends ConfessionState {}
+class ConfessionLocked extends ConfessionState {
+  final bool isBiometricAvailable;
+  final bool isBiometricEnabled;
+
+  const ConfessionLocked({
+    this.isBiometricAvailable = false,
+    this.isBiometricEnabled = false,
+  });
+
+  @override
+  List<Object?> get props => [isBiometricAvailable, isBiometricEnabled];
+}
 
 class ConfessionUnlocking extends ConfessionState {}
 
@@ -46,7 +71,13 @@ class ConfessionBloc extends Bloc<ConfessionEvent, ConfessionState> {
   final ConfessionCryptoService _cryptoService;
   Timer? _idleTimer;
 
-  ConfessionBloc(this._cryptoService) : super(ConfessionLocked()) {
+  ConfessionBloc(this._cryptoService) : super(const ConfessionLocked()) {
+    on<CheckBiometricStatus>((event, emit) async {
+      final available = await _cryptoService.isBiometricsAvailable();
+      final enabled = await _cryptoService.isBiometricsEnabled();
+      emit(ConfessionLocked(isBiometricAvailable: available, isBiometricEnabled: enabled));
+    });
+
     on<UnlockConfessionSession>((event, emit) async {
       emit(ConfessionUnlocking());
       try {
@@ -58,9 +89,41 @@ class ConfessionBloc extends Bloc<ConfessionEvent, ConfessionState> {
       }
     });
 
-    on<LockConfessionSession>((event, emit) {
+    on<UnlockWithBiometrics>((event, emit) async {
+      emit(ConfessionUnlocking());
+      try {
+        final passphrase = await _cryptoService.retrievePassphraseWithBiometrics();
+        if (passphrase != null) {
+          final key = await _cryptoService.deriveKey(passphrase);
+          _resetIdleTimer();
+          emit(ConfessionUnlocked(key));
+        } else {
+          final available = await _cryptoService.isBiometricsAvailable();
+          final enabled = await _cryptoService.isBiometricsEnabled();
+          emit(ConfessionLocked(isBiometricAvailable: available, isBiometricEnabled: enabled));
+        }
+      } catch (e) {
+        emit(ConfessionUnlockFailed());
+      }
+    });
+
+    on<EnableBiometrics>((event, emit) async {
+      await _cryptoService.savePassphrase(event.passphrase);
+      final available = await _cryptoService.isBiometricsAvailable();
+      emit(ConfessionLocked(isBiometricAvailable: available, isBiometricEnabled: true));
+    });
+
+    on<DisableBiometrics>((event, emit) async {
+      await _cryptoService.disableBiometrics();
+      final available = await _cryptoService.isBiometricsAvailable();
+      emit(ConfessionLocked(isBiometricAvailable: available, isBiometricEnabled: false));
+    });
+
+    on<LockConfessionSession>((event, emit) async {
       _idleTimer?.cancel();
-      emit(ConfessionLocked());
+      final available = await _cryptoService.isBiometricsAvailable();
+      final enabled = await _cryptoService.isBiometricsEnabled();
+      emit(ConfessionLocked(isBiometricAvailable: available, isBiometricEnabled: enabled));
     });
 
     on<SessionActivityDetected>((event, emit) {

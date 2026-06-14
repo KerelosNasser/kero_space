@@ -13,6 +13,15 @@ class ConfessionAuthScreen extends StatefulWidget {
 
 class _ConfessionAuthScreenState extends State<ConfessionAuthScreen> {
   final TextEditingController _passphraseController = TextEditingController();
+  bool _enableBiometricsCheckbox = false;
+  bool _biometricsPrompted = false;
+  bool _autoBiometricsTriggered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<ConfessionBloc>().add(CheckBiometricStatus());
+  }
 
   @override
   void dispose() {
@@ -26,7 +35,23 @@ class _ConfessionAuthScreenState extends State<ConfessionAuthScreen> {
       backgroundColor: AppTheme.bgPrimary,
       body: BlocConsumer<ConfessionBloc, ConfessionState>(
         listener: (context, state) {
-          if (state is ConfessionUnlocked) {
+          if (state is ConfessionLocked) {
+            if (state.isBiometricAvailable && !state.isBiometricEnabled && !_biometricsPrompted) {
+              setState(() {
+                _enableBiometricsCheckbox = true;
+                _biometricsPrompted = true;
+              });
+            }
+            if (state.isBiometricEnabled && !_autoBiometricsTriggered) {
+              setState(() {
+                _autoBiometricsTriggered = true;
+              });
+              context.read<ConfessionBloc>().add(UnlockWithBiometrics());
+            }
+          } else if (state is ConfessionUnlocked) {
+            if (_enableBiometricsCheckbox) {
+              context.read<ConfessionBloc>().add(EnableBiometrics(_passphraseController.text));
+            }
             context.go('/church/confessions_log');
           } else if (state is ConfessionUnlockFailed) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -38,6 +63,10 @@ class _ConfessionAuthScreenState extends State<ConfessionAuthScreen> {
           if (state is ConfessionUnlocking) {
             return const Center(child: CircularProgressIndicator(color: AppTheme.accentViolet));
           }
+          final isLocked = state is ConfessionLocked;
+          final biometricAvailable = isLocked && state.isBiometricAvailable;
+          final biometricEnabled = isLocked && state.isBiometricEnabled;
+
           return Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -69,25 +98,81 @@ class _ConfessionAuthScreenState extends State<ConfessionAuthScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
+                    suffixIcon: biometricEnabled
+                        ? IconButton(
+                            icon: const Icon(Icons.fingerprint, color: AppTheme.accentViolet, size: 28),
+                            onPressed: () {
+                              context.read<ConfessionBloc>().add(UnlockWithBiometrics());
+                            },
+                          )
+                        : null,
                   ),
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentViolet,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                if (biometricAvailable && !biometricEnabled)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: _enableBiometricsCheckbox,
+                          activeColor: AppTheme.accentViolet,
+                          onChanged: (val) {
+                            setState(() {
+                              _enableBiometricsCheckbox = val ?? false;
+                            });
+                          },
+                        ),
+                        const Text(
+                          'Use biometrics next time',
+                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                        ),
+                      ],
                     ),
-                    onPressed: () {
-                      if (_passphraseController.text.isNotEmpty) {
-                        context.read<ConfessionBloc>().add(UnlockConfessionSession(_passphraseController.text));
-                      }
-                    },
-                    child: const Text('Unlock', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentViolet,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () {
+                            if (_passphraseController.text.isNotEmpty) {
+                              context.read<ConfessionBloc>().add(UnlockConfessionSession(_passphraseController.text));
+                            }
+                          },
+                          child: const Text('Unlock', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ),
+                    if (biometricEnabled) ...[
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        height: 50,
+                        width: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.bgSurface,
+                            foregroundColor: AppTheme.accentViolet,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(color: AppTheme.accentViolet, width: 1.5),
+                            ),
+                            padding: EdgeInsets.zero,
+                          ),
+                          onPressed: () {
+                            context.read<ConfessionBloc>().add(UnlockWithBiometrics());
+                          },
+                          child: const Icon(Icons.fingerprint, size: 28),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),

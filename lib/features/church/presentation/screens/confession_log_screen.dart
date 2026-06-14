@@ -5,7 +5,9 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kero_space/core/app_theme.dart';
 import '../bloc/confession_bloc.dart';
+import 'package:get_it/get_it.dart';
 import '../../data/repositories/encrypted_confessions_repo.dart';
+import '../../data/repositories/confession_crypto_service.dart';
 
 class ConfessionLogScreen extends StatefulWidget {
   final EncryptedIsarConfessionsRepo repo;
@@ -81,12 +83,31 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
             onPressed: () => context.go('/church'),
           ),
           actions: [
+            FutureBuilder<bool>(
+              future: GetIt.I<ConfessionCryptoService>().isBiometricsEnabled(),
+              builder: (context, snapshot) {
+                final isBiometricEnabled = snapshot.data ?? false;
+                if (!isBiometricEnabled) return const SizedBox.shrink();
+                return IconButton(
+                  icon: const Icon(Icons.fingerprint),
+                  tooltip: 'Disable Biometric Unlock',
+                  onPressed: () {
+                    context.read<ConfessionBloc>().add(DisableBiometrics());
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Biometric unlock disabled')),
+                    );
+                    setState(() {});
+                  },
+                );
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.lock_outline),
+              tooltip: 'Lock Session',
               onPressed: () {
                 context.read<ConfessionBloc>().add(LockConfessionSession());
               },
-            )
+            ),
           ],
         ),
         body: _isLoading 
