@@ -53,6 +53,7 @@ dependencies:
   path_provider: ^2.1.5
   table_calendar: any
   permission_handler: ^12.0.3
+  local_auth: any
   confetti: ^0.8.0
   animate_do: ^5.1.0
   workmanager: ^0.9.0+3
