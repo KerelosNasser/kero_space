@@ -28,7 +28,7 @@ object OverlayManager {
         }
 
         val text = TextView(context).apply {
-            this.text = "Decision Break\n\$packageName"
+            this.text = "Decision Break\n$packageName"
             setTextColor(Color.WHITE)
             textSize = 24f
             gravity = Gravity.CENTER
