@@ -131,7 +131,7 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                       ),
                     ),
                   ),
-                  const Divider(color: AppTheme.borderDivider),
+                  const Divider(color: AppTheme.bgElevated),
                   Expanded(
                     flex: 1,
                     child: ListView.builder(

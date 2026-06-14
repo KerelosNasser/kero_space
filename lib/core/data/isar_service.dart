@@ -4,7 +4,10 @@ import '../../features/telemetry/data/models/telemetry_collections.dart';
 import '../../features/productivity/data/models/productivity_collections.dart';
 import '../../features/health/data/models/health_collections.dart';
 import '../../features/finance/data/models/finance_collections.dart';
-import '../../features/church/data/models/church_collections.dart';
+import '../../features/church/data/models/mass_attendance.dart';
+import '../../features/church/data/models/confession_entry.dart';
+import '../../features/church/data/models/ministry_task.dart';
+import '../../features/church/data/models/ministry_member.dart';
 
 class IsarService {
   static late Isar _instance;
@@ -29,9 +32,11 @@ class IsarService {
         EGXHoldingSchema,
         EGXPriceSnapshotSchema,
         EGXWatchlistSchema,
+        CareerTaskSchema,
         MassAttendanceSchema,
         ConfessionEntrySchema,
         MinistryTaskSchema,
+        MinistryMemberSchema,
       ],
       directory: directory,
     );
