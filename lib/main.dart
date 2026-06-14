@@ -24,24 +24,32 @@ class NavigateToIntent extends Intent {
   final String route;
   const NavigateToIntent(this.route);
 }
-class MarkAttendanceGlobalIntent extends Intent { const MarkAttendanceGlobalIntent(); }
-class StartVoiceIntent extends Intent { const StartVoiceIntent(); }
+
+class MarkAttendanceGlobalIntent extends Intent {
+  const MarkAttendanceGlobalIntent();
+}
+
+class StartVoiceIntent extends Intent {
+  const StartVoiceIntent();
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final dir = await getApplicationDocumentsDirectory();
   await IsarService.init(dir.path);
-  
+
   // Set up dependency injection (GetIt)
   setupLocator();
 
   // Initialize background notification parser
   await NotificationParserService.initialize(IsarService.instance);
-  
+
   if (Platform.isWindows) {
     await WindowManagerService.init();
-    getIt.registerSingleton<ProcessWatcherBloc>(ProcessWatcherBloc()..add(ProcessWatcherStarted()));
+    getIt.registerSingleton<ProcessWatcherBloc>(
+      ProcessWatcherBloc()..add(ProcessWatcherStarted()),
+    );
   } else {
     const platform = MethodChannel('kero_space/main_methods');
     try {
@@ -71,22 +79,32 @@ class KeroSpaceApp extends StatelessWidget {
         routerConfig: router,
         shortcuts: {
           ...WidgetsApp.defaultShortcuts,
-          const SingleActivator(LogicalKeyboardKey.keyN, control: true): const NavigateToIntent('/productivity'),
-          const SingleActivator(LogicalKeyboardKey.keyM, control: true, shift: true): const MarkAttendanceGlobalIntent(),
-          const SingleActivator(LogicalKeyboardKey.keyL, control: true): const NavigateToIntent('/health/search'),
-          const SingleActivator(LogicalKeyboardKey.slash, control: true): const StartVoiceIntent(),
+          const SingleActivator(LogicalKeyboardKey.keyN, control: true):
+              const NavigateToIntent('/productivity'),
+          const SingleActivator(
+            LogicalKeyboardKey.keyM,
+            control: true,
+            shift: true,
+          ): const MarkAttendanceGlobalIntent(),
+          const SingleActivator(LogicalKeyboardKey.keyL, control: true):
+              const NavigateToIntent('/health/search'),
+          const SingleActivator(LogicalKeyboardKey.slash, control: true):
+              const StartVoiceIntent(),
         },
         actions: {
           ...WidgetsApp.defaultActions,
           NavigateToIntent: CallbackAction<NavigateToIntent>(
             onInvoke: (intent) => router.go(intent.route),
           ),
-          MarkAttendanceGlobalIntent: CallbackAction<MarkAttendanceGlobalIntent>(
-            onInvoke: (intent) {
-              getIt<ChurchBloc>().add(MarkAttendanceEvent(DateTime.now(), AttendanceType.liturgy));
-              return null;
-            },
-          ),
+          MarkAttendanceGlobalIntent:
+              CallbackAction<MarkAttendanceGlobalIntent>(
+                onInvoke: (intent) {
+                  getIt<ChurchBloc>().add(
+                    MarkAttendanceEvent(DateTime.now(), AttendanceType.liturgy),
+                  );
+                  return null;
+                },
+              ),
           StartVoiceIntent: CallbackAction<StartVoiceIntent>(
             onInvoke: (intent) {
               getIt<VoiceBloc>().add(StartListeningEvent());

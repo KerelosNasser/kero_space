@@ -44,5 +44,38 @@ class MainActivity : FlutterFragmentActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kero_space/calendar").setMethodCallHandler(
             CalendarChannelHandler(this)
         )
+
+        io.flutter.plugin.common.EventChannel(flutterEngine.dartExecutor.binaryMessenger, "kero_space/wake_word").setStreamHandler(
+            object : io.flutter.plugin.common.EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: io.flutter.plugin.common.EventChannel.EventSink?) {
+                    KeroSpaceForegroundService.wakeWordEventSink = events
+                }
+                override fun onCancel(arguments: Any?) {
+                    KeroSpaceForegroundService.wakeWordEventSink = null
+                }
+            }
+        )
+
+        io.flutter.plugin.common.EventChannel(flutterEngine.dartExecutor.binaryMessenger, "kero_space/screen_events").setStreamHandler(
+            object : io.flutter.plugin.common.EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: io.flutter.plugin.common.EventChannel.EventSink?) {
+                    KeroSpaceForegroundService.screenEventSink = events
+                }
+                override fun onCancel(arguments: Any?) {
+                    KeroSpaceForegroundService.screenEventSink = null
+                }
+            }
+        )
+
+        io.flutter.plugin.common.EventChannel(flutterEngine.dartExecutor.binaryMessenger, "kero_space/accessibility").setStreamHandler(
+            object : io.flutter.plugin.common.EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: io.flutter.plugin.common.EventChannel.EventSink?) {
+                    KeroSpaceForegroundService.accessibilityEventSink = events
+                }
+                override fun onCancel(arguments: Any?) {
+                    KeroSpaceForegroundService.accessibilityEventSink = null
+                }
+            }
+        )
     }
 }

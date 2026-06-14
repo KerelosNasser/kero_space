@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../shared/widgets/app_shell.dart';
 
 import '../features/productivity/presentation/screens/productivity_screen.dart';
+import '../features/productivity/presentation/bloc/productivity_bloc.dart';
 import '../features/productivity/presentation/screens/note_editor_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart' as kero_space_settings;
 import '../features/productivity/data/models/productivity_collections.dart';
@@ -83,7 +84,16 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/',
-              builder: (context, state) => const HomeScreen(),
+              builder: (context, state) => MultiBlocProvider(
+                providers: [
+                  BlocProvider.value(value: GetIt.I<ProductivityBloc>()),
+                  BlocProvider.value(value: GetIt.I<HealthBloc>()),
+                  BlocProvider.value(value: GetIt.I<FinanceBloc>()),
+                  BlocProvider.value(value: GetIt.I<ChurchBloc>()),
+                  BlocProvider.value(value: GetIt.I<kero_space_telemetry_bloc.TelemetryBloc>()),
+                ],
+                child: const HomeScreen(),
+              ),
             ),
           ],
         ),
