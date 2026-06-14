@@ -23,6 +23,10 @@ void backgroundMain() async {
   const EventChannel screenChannel = EventChannel('kero_space/screen_events');
   screenChannel.receiveBroadcastStream().listen((event) async {
     debugPrint("KeroSpace Background: Received Screen Event: $event");
+    if (!IsarService.isInitialized) {
+      debugPrint("KeroSpace Background: Isar not initialized yet. Skipping screen event.");
+      return;
+    }
     try {
       final data = jsonDecode(event as String);
       final type = data['type'] as String;
@@ -46,6 +50,10 @@ void backgroundMain() async {
   const EventChannel accessChannel = EventChannel('kero_space/accessibility');
   accessChannel.receiveBroadcastStream().listen((event) async {
     debugPrint("KeroSpace Background: Received Accessibility Event: $event");
+    if (!IsarService.isInitialized) {
+      debugPrint("KeroSpace Background: Isar not initialized yet. Skipping accessibility event.");
+      return;
+    }
     try {
       final data = jsonDecode(event);
       final type = data['type'] as String;
@@ -77,6 +85,10 @@ void backgroundMain() async {
   const EventChannel usageChannel = EventChannel('kero_space/usage_stats');
   usageChannel.receiveBroadcastStream().listen((event) async {
     debugPrint("KeroSpace Background: Received Usage Stats: $event");
+    if (!IsarService.isInitialized) {
+      debugPrint("KeroSpace Background: Isar not initialized yet. Skipping usage stats event.");
+      return;
+    }
     try {
       final List<dynamic> list = jsonDecode(event as String);
       final now = DateTime.now();

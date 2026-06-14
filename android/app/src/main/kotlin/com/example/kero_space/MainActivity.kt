@@ -67,29 +67,44 @@ class MainActivity : FlutterFragmentActivity() {
                     result.success(enabledPackages.contains(packageName))
                 }
                 "openAccessibilitySettings" -> {
-                    val intent = Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    try {
+                        val intent = Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        startActivity(intent)
+                        result.success(null)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to open accessibility settings", e)
+                        result.error("SETTINGS_ERROR", e.message, null)
                     }
-                    startActivity(intent)
-                    result.success(null)
                 }
                 "openUsageStatsSettings" -> {
-                    val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    try {
+                        val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        startActivity(intent)
+                        result.success(null)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to open usage access settings", e)
+                        result.error("SETTINGS_ERROR", e.message, null)
                     }
-                    startActivity(intent)
-                    result.success(null)
                 }
                 "openNotificationListenerSettings" -> {
-                    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                        Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                    } else {
-                        Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-                    }.apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    try {
+                        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                            Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                        } else {
+                            Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+                        }.apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        startActivity(intent)
+                        result.success(null)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to open notification settings", e)
+                        result.error("SETTINGS_ERROR", e.message, null)
                     }
-                    startActivity(intent)
-                    result.success(null)
                 }
                 else -> {
                     result.notImplemented()

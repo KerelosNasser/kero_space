@@ -11,7 +11,10 @@ import '../../features/church/data/models/ministry_member.dart';
 
 class IsarService {
   static late Isar _instance;
+  static bool _initialized = false;
+  
   static Isar get instance => _instance;
+  static bool get isInitialized => _initialized;
 
   static Future<void> init(String directory) async {
     _instance = await Isar.open(
@@ -40,5 +43,6 @@ class IsarService {
       ],
       directory: directory,
     );
+    _initialized = true;
   }
 }

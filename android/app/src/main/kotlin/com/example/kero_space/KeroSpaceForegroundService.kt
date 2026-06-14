@@ -223,7 +223,11 @@ class KeroSpaceForegroundService : Service() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
-        screenReceiver?.let { unregisterReceiver(it) }
+        try {
+            screenReceiver?.let { unregisterReceiver(it) }
+        } catch (e: Exception) {
+            // Safe unregister
+        }
         try {
             unregisterReceiver(usageStatsReceiver)
         } catch (e: Exception) {

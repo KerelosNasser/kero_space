@@ -30,18 +30,24 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                 try {
                     val blockedPackages = BlacklistPreferencesStore.getBlockedPackages(applicationContext)
                     if (blockedPackages.contains(packageName)) {
-                        Log.d(TAG, "Blacklisted package opened: $packageName. Showing overlay.")
                         val rulesJson = BlacklistPreferencesStore.getRulesJson(applicationContext)
                         var breakSeconds = 30
+                        var isAllowedWindow = false
                         val arr = JSONArray(rulesJson)
                         for (i in 0 until arr.length()) {
                             val obj = arr.getJSONObject(i)
                             if (obj.getString("packageName") == packageName) {
                                 breakSeconds = obj.optInt("decisionBreakSeconds", 30)
+                                isAllowedWindow = isCurrentTimeInAllowedWindows(obj)
                                 break
                             }
                         }
-                        OverlayManager.showOverlay(applicationContext, packageName, breakSeconds)
+                        if (!isAllowedWindow) {
+                            Log.d(TAG, "Blacklisted package opened: $packageName. Showing overlay.")
+                            OverlayManager.showOverlay(applicationContext, packageName, breakSeconds)
+                        } else {
+                            Log.d(TAG, "Blacklisted package $packageName is in allowed window. Access granted.")
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error running blocker logic", e)
@@ -68,6 +74,24 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                 KeroSpaceForegroundService.accessibilityEventSink?.success(json)
             }
         }
+    }
+
+    private fun isCurrentTimeInAllowedWindows(ruleObj: JSONObject): Boolean {
+        val windows = ruleObj.optJSONArray("allowedWindows") ?: return false
+        if (windows.length() == 0) return false
+        
+        val calendar = java.util.Calendar.getInstance()
+        val currentHour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+        
+        for (i in 0 until windows.length()) {
+            val window = windows.getJSONObject(i)
+            val startHour = window.optInt("startHour", 0)
+            val endHour = window.optInt("endHour", 24)
+            if (currentHour in startHour until endHour) {
+                return true
+            }
+        }
+        return false
     }
 
     override fun onInterrupt() {
