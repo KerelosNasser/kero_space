@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 
 import '../../domain/command_parser.dart';
 import '../../domain/parsed_intent.dart';
@@ -24,9 +24,9 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
   final FinanceBloc _financeBloc;
   final ChurchBloc _churchBloc;
 
-  final SpeechToText _speech = SpeechToText();
-  
-  static const EventChannel _wakeWordChannel = EventChannel('kero_space/wake_word');
+  static const EventChannel _wakeWordChannel = EventChannel(
+    'kero_space/wake_word',
+  );
   StreamSubscription? _wakeWordSubscription;
   Timer? _listenTimeout;
 
@@ -49,48 +49,42 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
   }
 
   void _initWakeWordListener() {
-    _wakeWordSubscription = _wakeWordChannel.receiveBroadcastStream().listen((event) {
-      add(WakeWordTriggered());
+    _wakeWordSubscription = _wakeWordChannel.receiveBroadcastStream().listen((
+      event,
+    ) {
+      if (event is String) {
+        try {
+          final data = jsonDecode(event);
+          if (data['type'] == 'WAKE_WORD_DETECTED') {
+            add(WakeWordTriggered());
+          } else if (data['type'] == 'TRANSCRIPTION_COMPLETE') {
+            add(SpeechFinalResultEvent(data['text']));
+          } else if (data['type'] == 'TRANSCRIPTION_PARTIAL') {
+            add(SpeechPartialResultEvent(data['text']));
+          }
+        } catch (_) {
+          add(WakeWordTriggered());
+        }
+      }
     });
   }
 
-  Future<void> _onWakeWordTriggered(WakeWordTriggered event, Emitter<VoiceState> emit) async {
+  Future<void> _onWakeWordTriggered(
+    WakeWordTriggered event,
+    Emitter<VoiceState> emit,
+  ) async {
     emit(VoiceWakeDetected());
     await Future.delayed(const Duration(milliseconds: 500));
     add(StartListeningEvent());
   }
 
-  Future<void> _onStartListening(StartListeningEvent event, Emitter<VoiceState> emit) async {
-    final available = await _speech.initialize(
-      options: [SpeechConfigOption('android', 'onDevice', 'true')]
-    );
-    
-    if (!available) {
-      emit(const VoiceFailure(
-        rawText: '', 
-        errorMessage: 'Offline speech not available — install a language pack in Android settings.',
-      ));
-      await Future.delayed(const Duration(seconds: 3));
-      emit(VoiceIdle());
-      return;
-    }
-
+  Future<void> _onStartListening(
+    StartListeningEvent event,
+    Emitter<VoiceState> emit,
+  ) async {
+    // Native WakeWordService has transitioned to CommandCapture mode
+    // and is already recording the microphone.
     emit(const VoiceListening());
-    
-    _speech.listen(
-      onResult: (result) {
-        if (result.finalResult) {
-          add(SpeechFinalResultEvent(result.recognizedWords));
-        } else {
-          add(SpeechPartialResultEvent(result.recognizedWords));
-        }
-      },
-      listenOptions: SpeechListenOptions(
-        listenMode: ListenMode.dictation,
-        cancelOnError: true,
-        partialResults: true,
-      ),
-    );
 
     _listenTimeout?.cancel();
     _listenTimeout = Timer(const Duration(seconds: 5), () {
@@ -100,33 +94,44 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
 
   void _onStopListening(StopListeningEvent event, Emitter<VoiceState> emit) {
     _listenTimeout?.cancel();
-    if (_speech.isListening) {
-      _speech.stop();
-    }
     if (state is VoiceListening) {
       emit(VoiceIdle());
     }
   }
 
-  void _onSpeechPartialResult(SpeechPartialResultEvent event, Emitter<VoiceState> emit) {
+  void _onSpeechPartialResult(
+    SpeechPartialResultEvent event,
+    Emitter<VoiceState> emit,
+  ) {
     if (state is VoiceListening) {
       emit(VoiceListening(partialText: event.text));
     }
   }
 
-  void _onSpeechFinalResult(SpeechFinalResultEvent event, Emitter<VoiceState> emit) {
+  void _onSpeechFinalResult(
+    SpeechFinalResultEvent event,
+    Emitter<VoiceState> emit,
+  ) {
     _listenTimeout?.cancel();
     emit(VoiceProcessing(event.text));
 
     final intent = _parser.parse(event.text);
     if (intent is UnknownIntent) {
-      emit(VoiceFailure(rawText: event.text, errorMessage: "I didn't understand that."));
+      emit(
+        VoiceFailure(
+          rawText: event.text,
+          errorMessage: "I didn't understand that.",
+        ),
+      );
     } else {
       emit(VoiceConfirmPending(intent));
     }
   }
 
-  Future<void> _onConfirmIntent(ConfirmIntentEvent event, Emitter<VoiceState> emit) async {
+  Future<void> _onConfirmIntent(
+    ConfirmIntentEvent event,
+    Emitter<VoiceState> emit,
+  ) async {
     if (state is VoiceConfirmPending) {
       final intent = (state as VoiceConfirmPending).intent;
       String msg = "Done!";
@@ -153,12 +158,14 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
         _productivityBloc.add(ProductivityEvent.createNote(note));
       } else if (intent is AddExpenseIntent) {
         msg = "Expense recorded";
-        _financeBloc.add(AddTransactionEvent(
-          amount: intent.amount,
-          type: 'EXPENSE',
-          category: 'Other',
-          vendor: intent.vendor ?? 'Voice',
-        ));
+        _financeBloc.add(
+          AddTransactionEvent(
+            amount: intent.amount,
+            type: 'EXPENSE',
+            category: 'Other',
+            vendor: intent.vendor ?? 'Voice',
+          ),
+        );
       } else if (intent is LogMealIntent) {
         msg = "Meal logged";
         final meal = MealEntry()
@@ -174,9 +181,11 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
         _healthBloc.add(LogMeal(meal));
       } else if (intent is MarkAttendanceIntent) {
         msg = "Attendance marked";
-        _churchBloc.add(MarkAttendanceEvent(intent.date, AttendanceType.liturgy));
+        _churchBloc.add(
+          MarkAttendanceEvent(intent.date, AttendanceType.liturgy),
+        );
       }
-      
+
       emit(VoiceSuccess(msg));
       await Future.delayed(const Duration(milliseconds: 1500));
       emit(VoiceIdle());
@@ -191,7 +200,6 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
   Future<void> close() {
     _wakeWordSubscription?.cancel();
     _listenTimeout?.cancel();
-    _speech.cancel();
     return super.close();
   }
 }

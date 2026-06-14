@@ -14,6 +14,11 @@ import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import ai.onnxruntime.OnnxTensor
+import ai.onnxruntime.OrtEnvironment
+import ai.onnxruntime.OrtSession
+import java.nio.FloatBuffer
+import java.util.Arrays
 
 class WakeWordService : Service() {
 
@@ -84,13 +89,60 @@ class WakeWordService : Service() {
                 isListening = true
                 Log.d(TAG, "Started listening on AudioRecord")
 
+                val env = OrtEnvironment.getEnvironment()
+                var session: OrtSession? = null
+                try {
+                    val modelBytes = applicationContext.assets.open("hey_kero.onnx").readBytes()
+                    session = env.createSession(modelBytes)
+                    Log.d(TAG, "ONNX model loaded successfully.")
+                } catch (e: Exception) {
+                    Log.w(TAG, "ONNX model 'hey_kero.onnx' not found in assets or failed to load.", e)
+                }
+
                 val buffer = ShortArray(160) // ~10ms chunk at 16kHz
+                val frameBuffer = FloatArray(16000) // 1 second rolling window
 
                 while (isListening) {
                     val readResult = audioRecord?.read(buffer, 0, buffer.size) ?: 0
                     if (readResult > 0) {
-                        // TODO Phase 2: Pass buffer to ONNX WakeWord model.
-                        // For Phase 1 validation, rely on the ADB broadcast trigger.
+                        // Shift frameBuffer
+                        System.arraycopy(frameBuffer, readResult, frameBuffer, 0, frameBuffer.size - readResult)
+                        for (i in 0 until readResult) {
+                            frameBuffer[frameBuffer.size - readResult + i] = buffer[i] / 32768.0f // Normalize to [-1, 1]
+                        }
+
+                        // Run inference if session exists
+                        session?.let { ortSession ->
+                            try {
+                                val inputName = ortSession.inputNames.iterator().next()
+                                val shape = longArrayOf(1, 16000)
+                                val tensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(frameBuffer), shape)
+                                
+                                val result = ortSession.run(mapOf(inputName to tensor))
+                                val outputArray = result[0].value
+                                
+                                // Handling possible 1D or 2D output array
+                                val confidence = if (outputArray is Array<*> && outputArray.isNotEmpty() && outputArray[0] is FloatArray) {
+                                    (outputArray as Array<FloatArray>)[0][0]
+                                } else if (outputArray is FloatArray && outputArray.isNotEmpty()) {
+                                    outputArray[0]
+                                } else {
+                                    0f
+                                }
+
+                                if (confidence > 0.85f) {
+                                    Log.d(TAG, "Wake word detected by ONNX! Confidence: $confidence")
+                                    emitWakeWordEvent("hey kero", confidence)
+                                    // Reset buffer to avoid duplicate triggers
+                                    Arrays.fill(frameBuffer, 0f)
+                                }
+                                
+                                result.close()
+                                tensor.close()
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Error running ONNX inference", e)
+                            }
+                        }
                     }
                 }
 
