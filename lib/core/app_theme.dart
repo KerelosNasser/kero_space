@@ -37,7 +37,7 @@ class AppTheme {
         bodyLarge: TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: textPrimary),
         labelSmall: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: textPrimary),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: bgSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -72,7 +72,7 @@ class AppTheme {
           return bgElevated;
         }),
       ),
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: accentPrimary,
         unselectedLabelColor: textSecondary,
         indicatorColor: accentPrimary,

@@ -22,6 +22,7 @@ import '../features/telemetry/presentation/bloc/telemetry_bloc.dart' as kero_spa
 import '../features/telemetry/presentation/bloc/telemetry_event.dart' as kero_space_telemetry_event;
 import '../features/telemetry/presentation/pages/telemetry_screen.dart' as kero_space_telemetry_screen;
 import '../features/church/presentation/screens/church_screen.dart';
+import '../features/church/presentation/bloc/church_bloc.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kero_space/features/church/presentation/bloc/church_bloc.dart';
 import 'package:kero_space/features/church/presentation/screens/attendance_screen.dart';
 import 'package:kero_space/features/church/presentation/screens/ministry_kanban_screen.dart';
 import 'package:kero_space/features/church/presentation/screens/confession_auth_screen.dart';

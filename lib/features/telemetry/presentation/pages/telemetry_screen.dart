@@ -103,15 +103,15 @@ class TelemetryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChart(List<double> weeklyData) {
+  Widget _buildChart(List<(DateTime, int)> weeklyData) {
     if (weeklyData.isEmpty) {
       return const Center(child: Text('No data yet', style: TextStyle(color: AppTheme.textSecondary)));
     }
     
     // Fallback if data isn't full 7 days
-    final data = List<double>.from(weeklyData);
+    final data = List<(DateTime, int)>.from(weeklyData);
     while (data.length < 7) {
-      data.add(0.0);
+      data.add((DateTime.now(), 0));
     }
 
     return BarChart(
@@ -140,7 +140,7 @@ class TelemetryScreen extends StatelessWidget {
         gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
         barGroups: List.generate(7, (index) {
-          final val = data[index] / (1000 * 60 * 60); // Convert to hours
+          final val = data[index].$2 / (1000 * 60 * 60); // Convert to hours
           return BarChartGroupData(
             x: index,
             barRods: [

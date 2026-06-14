@@ -88,9 +88,9 @@ class HomeScreen extends StatelessWidget {
         
         state.maybeWhen(
           loaded: (allTasks, dailyChecklist, allNotes) {
-            final pending = dailyChecklist.where((t) => t.completedAt == null).length;
+            final pending = dailyChecklist.where((t) => !t.isCompleted).length;
             subtitle = '$pending tasks pending';
-            metric = pending > 0 ? dailyChecklist.firstWhere((t) => t.completedAt == null, orElse: () => dailyChecklist.first).title : 'All Done!';
+            metric = pending > 0 ? dailyChecklist.firstWhere((t) => !t.isCompleted, orElse: () => dailyChecklist.first).title : 'All Done!';
           },
           orElse: () {},
         );

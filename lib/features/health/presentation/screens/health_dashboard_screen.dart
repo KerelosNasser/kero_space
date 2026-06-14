@@ -55,7 +55,7 @@ class HealthDashboardScreen extends StatelessWidget {
         subtitle: const Text('Adjusts macros to plant-based ratios', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
         value: state.isFastingMode,
         activeTrackColor: AppTheme.accentViolet,
-        activeColor: AppTheme.accentPrimary,
+        activeThumbColor: AppTheme.accentPrimary,
         inactiveTrackColor: AppTheme.bgElevated,
         inactiveThumbColor: AppTheme.textSecondary,
         onChanged: (val) {
