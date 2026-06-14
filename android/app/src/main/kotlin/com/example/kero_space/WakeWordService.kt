@@ -88,7 +88,7 @@ class WakeWordService : Service() {
     }
 
     private fun emitWakeWordEvent(text: String, confidence: Float) {
-        val json = "{\"type\":\"WAKE_WORD_DETECTED\",\"text\":\"\$text\",\"confidence\":\$confidence,\"timestamp\":\${System.currentTimeMillis()}}"
+        val json = "{\"type\":\"WAKE_WORD_DETECTED\",\"text\":\"$text\",\"confidence\":$confidence,\"timestamp\":${System.currentTimeMillis()}}"
         
         val launchIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)

@@ -31,16 +31,69 @@ class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-            if (call.method == "startForegroundService") {
-                val serviceIntent = Intent(this, KeroSpaceForegroundService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(serviceIntent)
-                } else {
-                    startService(serviceIntent)
+            when (call.method) {
+                "startForegroundService" -> {
+                    val serviceIntent = Intent(this, KeroSpaceForegroundService::class.java)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(serviceIntent)
+                    } else {
+                        startService(serviceIntent)
+                    }
+                    result.success("Started")
                 }
-                result.success("Started")
-            } else {
-                result.notImplemented()
+                "checkAccessibility" -> {
+                    result.success(isAccessibilityEnabled())
+                }
+                "checkUsageStats" -> {
+                    val appOps = getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+                    val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        appOps.unsafeCheckOpNoThrow(
+                            android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                            android.os.Process.myUid(),
+                            packageName
+                        )
+                    } else {
+                        @Suppress("DEPRECATION")
+                        appOps.checkOpNoThrow(
+                            android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                            android.os.Process.myUid(),
+                            packageName
+                        )
+                    }
+                    result.success(mode == android.app.AppOpsManager.MODE_ALLOWED)
+                }
+                "checkNotificationListener" -> {
+                    val enabledPackages = androidx.core.app.NotificationManagerCompat.getEnabledListenerPackages(applicationContext)
+                    result.success(enabledPackages.contains(packageName))
+                }
+                "openAccessibilitySettings" -> {
+                    val intent = Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    startActivity(intent)
+                    result.success(null)
+                }
+                "openUsageStatsSettings" -> {
+                    val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    startActivity(intent)
+                    result.success(null)
+                }
+                "openNotificationListenerSettings" -> {
+                    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                        Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                    } else {
+                        Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+                    }.apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    startActivity(intent)
+                    result.success(null)
+                }
+                else -> {
+                    result.notImplemented()
+                }
             }
         }
 
@@ -108,6 +161,17 @@ class MainActivity : FlutterFragmentActivity() {
                 }
                 override fun onCancel(arguments: Any?) {
                     KeroSpaceForegroundService.accessibilityEventSink = null
+                }
+            }
+        )
+
+        io.flutter.plugin.common.EventChannel(flutterEngine.dartExecutor.binaryMessenger, "kero_space/usage_stats").setStreamHandler(
+            object : io.flutter.plugin.common.EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: io.flutter.plugin.common.EventChannel.EventSink?) {
+                    KeroSpaceForegroundService.usageStatsEventSink = events
+                }
+                override fun onCancel(arguments: Any?) {
+                    KeroSpaceForegroundService.usageStatsEventSink = null
                 }
             }
         )

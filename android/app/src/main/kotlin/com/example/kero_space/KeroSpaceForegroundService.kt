@@ -26,11 +26,20 @@ class KeroSpaceForegroundService : Service() {
     private var flutterEngine: FlutterEngine? = null
     private var screenReceiver: KeroSpaceScreenReceiver? = null
 
+    private val usageStatsReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val payload = intent?.getStringExtra("payload") ?: return
+            Log.d(TAG, "Received USAGE_STATS_READY broadcast, forwarding to Dart")
+            usageStatsEventSink?.success(payload)
+        }
+    }
+
     // Channels exposed to other components to emit events to Dart
     companion object {
         var screenEventSink: EventChannel.EventSink? = null
         var accessibilityEventSink: EventChannel.EventSink? = null
         var wakeWordEventSink: EventChannel.EventSink? = null
+        var usageStatsEventSink: EventChannel.EventSink? = null
     }
 
     override fun onCreate() {
@@ -49,7 +58,19 @@ class KeroSpaceForegroundService : Service() {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_USER_PRESENT)
         }
-        registerReceiver(screenReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(screenReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(screenReceiver, filter)
+        }
+
+        // Register Usage Stats Receiver
+        val usageFilter = IntentFilter("com.example.kero_space.USAGE_STATS_READY")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(usageStatsReceiver, usageFilter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(usageStatsReceiver, usageFilter)
+        }
 
         // TODO: Start WakeWordService or bound it
         val wakeWordIntent = Intent(this, WakeWordService::class.java)
@@ -151,6 +172,17 @@ class KeroSpaceForegroundService : Service() {
                 }
             )
 
+            EventChannel(messenger, "kero_space/usage_stats").setStreamHandler(
+                object : EventChannel.StreamHandler {
+                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                        usageStatsEventSink = events
+                    }
+                    override fun onCancel(arguments: Any?) {
+                        usageStatsEventSink = null
+                    }
+                }
+            )
+
             MethodChannel(messenger, "kero_space/methods").setMethodCallHandler { call, result ->
                 when (call.method) {
                     "showOverlay" -> {
@@ -192,6 +224,11 @@ class KeroSpaceForegroundService : Service() {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
         screenReceiver?.let { unregisterReceiver(it) }
+        try {
+            unregisterReceiver(usageStatsReceiver)
+        } catch (e: Exception) {
+            // Safe unregister
+        }
         flutterEngine?.destroy()
         super.onDestroy()
     }

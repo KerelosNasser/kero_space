@@ -19,10 +19,10 @@ class KeroSpaceScreenReceiver : BroadcastReceiver() {
             else -> return
         }
 
-        Log.d(TAG, "Screen Event: \$type")
+        Log.d(TAG, "Screen Event: $type")
         
         // Construct JSON manually since we don't have Gson/Moshi setup specified yet
-        val json = "{\"type\":\"\$type\",\"timestamp\":\$timestamp}"
+        val json = "{\"type\":\"$type\",\"timestamp\":$timestamp}"
         
         // Push to Dart via EventChannel Sink
         KeroSpaceForegroundService.screenEventSink?.success(json)
