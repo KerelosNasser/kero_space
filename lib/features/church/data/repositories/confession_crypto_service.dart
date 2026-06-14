@@ -1,13 +1,19 @@
 import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
 
 class ConfessionCryptoService {
   final FlutterSecureStorage _secureStorage;
+  final LocalAuthentication _localAuth;
   static const _saltKey = 'confession_salt';
+  static const _biometricPassphraseKey = 'confession_biometric_passphrase';
 
-  ConfessionCryptoService({FlutterSecureStorage? secureStorage}) 
-      : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  ConfessionCryptoService({
+    FlutterSecureStorage? secureStorage,
+    LocalAuthentication? localAuth,
+  })  : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _localAuth = localAuth ?? LocalAuthentication();
 
   /// Derives the encryption key using Argon2id.
   Future<SecretKey> deriveKey(String passphrase) async {
@@ -62,5 +68,54 @@ class ConfessionCryptoService {
     );
 
     return utf8.decode(clearTextBytes);
+  }
+
+  /// Checks if the device supports biometrics and has registered biometrics.
+  Future<bool> isBiometricsAvailable() async {
+    try {
+      final bool canCheck = await _localAuth.canCheckBiometrics;
+      final bool isSupported = await _localAuth.isDeviceSupported();
+      return canCheck && isSupported;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Checks if biometrics has been enabled by checking if the passphrase exists.
+  Future<bool> isBiometricsEnabled() async {
+    final stored = await _secureStorage.read(key: _biometricPassphraseKey);
+    return stored != null;
+  }
+
+  /// Securely stores the passphrase for biometric login.
+  Future<void> savePassphrase(String passphrase) async {
+    await _secureStorage.write(
+      key: _biometricPassphraseKey,
+      value: passphrase,
+    );
+  }
+
+  /// Authenticates using biometrics and returns the stored passphrase.
+  Future<String?> retrievePassphraseWithBiometrics() async {
+    try {
+      final bool authenticated = await _localAuth.authenticate(
+        localizedReason: 'Authenticate to unlock your confessions log',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+        ),
+      );
+      if (authenticated) {
+        return await _secureStorage.read(key: _biometricPassphraseKey);
+      }
+    } catch (_) {
+      return null;
+    }
+    return null;
+  }
+
+  /// Disables biometric login by deleting the stored passphrase.
+  Future<void> disableBiometrics() async {
+    await _secureStorage.delete(key: _biometricPassphraseKey);
   }
 }
