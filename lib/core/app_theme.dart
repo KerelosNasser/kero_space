@@ -37,6 +37,79 @@ class AppTheme {
         bodyLarge: TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: textPrimary),
         labelSmall: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: textPrimary),
       ),
+      cardTheme: CardTheme(
+        color: bgSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: bgPrimary,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: textPrimary),
+        iconTheme: IconThemeData(color: accentPrimary),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: bgPrimary,
+        elevation: 0,
+        selectedItemColor: accentPrimary,
+        unselectedItemColor: textDisabled,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: accentPrimary,
+        foregroundColor: bgPrimary,
+        elevation: 4,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return accentPrimary;
+          return textSecondary;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return accentViolet;
+          return bgElevated;
+        }),
+      ),
+      tabBarTheme: const TabBarTheme(
+        labelColor: accentPrimary,
+        unselectedLabelColor: textSecondary,
+        indicatorColor: accentPrimary,
+        indicatorSize: TabBarIndicatorSize.tab,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: bgSurface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: accentCyan, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFF38383A),
+        thickness: 1,
+        space: 1,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: accentCyan,
+          foregroundColor: accentPrimary,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
+      ),
     );
   }
 }

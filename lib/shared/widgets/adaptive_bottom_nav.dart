@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kero_space/core/app_theme.dart';
 
 class AdaptiveBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -10,12 +11,25 @@ class AdaptiveBottomNav extends StatelessWidget {
     required this.onTap,
   });
 
+  Color _getActiveColor(int index) {
+    switch (index) {
+      case 0: return AppTheme.accentPrimary;
+      case 1: return AppTheme.accentCyan;
+      case 2: return AppTheme.accentMint;
+      case 3: return AppTheme.accentGold;
+      case 4: return AppTheme.accentViolet;
+      case 5: return AppTheme.accentGold;
+      default: return AppTheme.accentPrimary;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
+      selectedItemColor: _getActiveColor(currentIndex),
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),

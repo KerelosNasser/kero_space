@@ -324,3 +324,9 @@ To ensure the reliability of the Omniscient Layer and its integrations, all futu
    - Before claiming any work is complete, you MUST run static analysis: `flutter analyze` for Dart code, and Android Lint/Detekt for Kotlin.
    - You MUST run a full debug build (`flutter build apk --debug` or `./gradlew assembleDebug`) to verify that native code compiles correctly without syntax or dependency errors.
    - Never commit code that fails analysis, has unresolved warnings, or fails to build. Evidence of success (build output/test output) must precede assertions of completion.
+
+3. **Production Quality Standards (Anti-Placeholder Protocol)**:
+   - **No Lazy Implementation:** You are forbidden from creating "placeholder" pages, returning simple `Center(child: Text('Placeholder'))` widgets, or committing code with hardcoded generic colors (like `Colors.black` or `Colors.green`) in place of the established design system tokens (`AppTheme`).
+   - **No Unimplemented Features:** If a screen or feature is requested, it must be built to a production-ready standard, complete with proper layout, robust error handling, loading states, and alignment with the `AppTheme` design system. If a feature is too complex to complete in one step, build a functionally complete MVP, not a blank placeholder.
+   - **Strict Design System Compliance:** All UI elements must strictly adhere to the tokens defined in `lib/core/app_theme.dart`. Do not invent raw color or typography tokens inline.
+   - **Complete Navigation:** All routes in `router.dart` must point to fully implemented screens with proper BLoC injection. Nested navigation must be implemented cleanly without Hero tag collisions (e.g., using `DefaultTabController` instead of nested `BottomNavigationBar`s).
