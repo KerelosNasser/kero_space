@@ -150,19 +150,19 @@
 
 | Task ID | Description | Status | Priority | Assigned Agent | Start Date | End Date | Notes |
 |---------|-------------|--------|----------|----------------|------------|----------|-------|
-| T001 | Fix Isar Schema Registration | ⏳ Pending | CRITICAL | Agent-1 | 2025-06-14 | TBD | Must fix before any new features |
-| T002 | Replace Hardcoded Colors - Onboarding | ⏳ Pending | CRITICAL | Agent-1 | 2025-06-14 | TBD | First file in batch |
-| T003 | Implement WakeWordService ONNX | ⏳ Pending | CRITICAL | Agent-2 | 2025-06-14 | TBD | Core voice feature |
-| T004 | Fix VoiceBloc Whisper Integration | ⏳ Pending | CRITICAL | Agent-2 | 2025-06-14 | TBD | Voice commands functional |
-| T005 | Complete OverlayManager | ⏳ Pending | CRITICAL | Agent-3 | 2025-06-14 | TBD | Blocker feature complete |
-| T006 | Fix ProductivityBloc String Interpolation | ⏳ Pending | HIGH | Agent-1 | 2025-06-14 | TBD | Quick win |
-| T007 | Fix FinanceBloc Performance | ⏳ Pending | HIGH | Agent-4 | 2025-06-14 | TBD | Performance critical |
-| T008 | Register NotificationParserService | ⏳ Pending | HIGH | Agent-5 | 2025-06-14 | TBD | Architecture fix |
-| T009 | Fix SettingsScreen Hardcoded Colors | ⏳ Pending | MEDIUM | Agent-1 | 2025-06-14 | TBD | Part of batch |
-| T010 | Fix ErrorSnackBar Hardcoded Colors | ⏳ Pending | MEDIUM | Agent-2 | 2025-06-14 | TBD | Part of batch |
-| T011 | Fix PermissionBanner Hardcoded Colors | ⏳ Pending | MEDIUM | Agent-3 | 2025-06-14 | TBD | Part of batch |
-| T012 | Fix Shimmer Primitives Hardcoded Colors | ⏳ Pending | MEDIUM | Agent-4 | 2025-06-14 | TBD | Part of batch |
-| T013 | Fix Finance Widgets Hardcoded Colors | ⏳ Pending | MEDIUM | Agent-5 | 2025-06-14 | TBD | Part of batch |
+| T001 | Fix Isar Schema Registration | ✅ Done | CRITICAL | Agent-1 | 2025-06-14 | TBD | Must fix before any new features |
+| T002 | Replace Hardcoded Colors - Onboarding | ✅ Done | CRITICAL | Agent-1 | 2025-06-14 | TBD | First file in batch |
+| T003 | Implement WakeWordService ONNX | ✅ Done | CRITICAL | Agent-2 | 2025-06-14 | TBD | Core voice feature |
+| T004 | Fix VoiceBloc Whisper Integration | ✅ Done | CRITICAL | Agent-2 | 2025-06-14 | TBD | Voice commands functional |
+| T005 | Complete OverlayManager | ✅ Done | CRITICAL | Agent-3 | 2025-06-14 | TBD | Blocker feature complete |
+| T006 | Fix ProductivityBloc String Interpolation | ✅ Done | HIGH | Agent-1 | 2025-06-14 | TBD | Quick win |
+| T007 | Fix FinanceBloc Performance | ✅ Done | HIGH | Agent-4 | 2025-06-14 | TBD | Performance critical |
+| T008 | Register NotificationParserService | ✅ Done | HIGH | Agent-5 | 2025-06-14 | TBD | Architecture fix |
+| T009 | Fix SettingsScreen Hardcoded Colors | ✅ Done | MEDIUM | Agent-1 | 2025-06-14 | TBD | Part of batch |
+| T010 | Fix ErrorSnackBar Hardcoded Colors | ✅ Done | MEDIUM | Agent-2 | 2025-06-14 | TBD | Part of batch |
+| T011 | Fix PermissionBanner Hardcoded Colors | ✅ Done | MEDIUM | Agent-3 | 2025-06-14 | TBD | Part of batch |
+| T012 | Fix Shimmer Primitives Hardcoded Colors | ✅ Done | MEDIUM | Agent-4 | 2025-06-14 | TBD | Part of batch |
+| T013 | Fix Finance Widgets Hardcoded Colors | ✅ Done | MEDIUM | Agent-5 | 2025-06-14 | TBD | Part of batch |
 
 ---
 

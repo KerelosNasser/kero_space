@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kero_space/features/finance/data/models/finance_collections.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
+import '../../../../core/app_theme.dart';
 
 class CareerTab extends StatelessWidget {
   final FinanceLoaded state;
@@ -186,8 +187,8 @@ class CareerTab extends StatelessWidget {
                 ),
               const Divider(),
               ListTile(
-                title: const Text('Delete Task', style: TextStyle(color: Colors.red)),
-                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Delete Task', style: TextStyle(color: AppTheme.accentRose)),
+                leading: const Icon(Icons.delete, color: AppTheme.accentRose),
                 onTap: () {
                   context.read<FinanceBloc>().add(DeleteCareerTaskEvent(task.id));
                   Navigator.pop(dialogContext);

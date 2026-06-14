@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/app_theme.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 
 class PortfolioTab extends StatelessWidget {
@@ -26,7 +27,7 @@ class PortfolioTab extends StatelessWidget {
                     child: Text(
                       'Your watchlist is empty.\nAdd a ticker like COMI to track it.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
                     ),
                   )
                 : ListView.builder(
@@ -48,7 +49,7 @@ class PortfolioTab extends StatelessWidget {
                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon: Icon(Icons.delete, color: AppTheme.accentRose),
                                 onPressed: () {
                                   context.read<FinanceBloc>().add(RemoveFromWatchlistEvent(stock.ticker));
                                 },

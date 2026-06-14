@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
+import '../../../../core/app_theme.dart';
 
 class CorrelationTab extends StatelessWidget {
   final FinanceLoaded state;
@@ -52,16 +53,16 @@ class CorrelationTab extends StatelessWidget {
                   LineChartBarData(
                     spots: earningsSpots,
                     isCurved: true,
-                    color: Colors.green,
+                    color: AppTheme.accentMint,
                     barWidth: 3,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: true, color: Colors.green.withValues(alpha: 0.1)),
+                    belowBarData: BarAreaData(show: true, color: AppTheme.accentMint.withValues(alpha: 0.1)),
                   ),
                   LineChartBarData(
                     spots: caloricSpots,
                     isCurved: true,
-                    color: Colors.orange,
+                    color: AppTheme.accentGold,
                     barWidth: 3,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
@@ -74,9 +75,9 @@ class CorrelationTab extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildLegendItem(Colors.green, 'Net Earnings (EGP)'),
+              _buildLegendItem(AppTheme.accentMint, 'Net Earnings (EGP)'),
               const SizedBox(width: 16),
-              _buildLegendItem(Colors.orange, 'Caloric Intake (kcal)'),
+              _buildLegendItem(AppTheme.accentGold, 'Caloric Intake (kcal)'),
             ],
           ),
         ],

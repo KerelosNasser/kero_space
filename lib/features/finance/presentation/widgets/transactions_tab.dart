@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
+import '../../../../core/app_theme.dart';
 
 class TransactionsTab extends StatelessWidget {
   final FinanceLoaded state;
@@ -12,7 +13,7 @@ class TransactionsTab extends StatelessWidget {
       return const Center(
         child: Text(
           'No transactions recorded yet.',
-          style: TextStyle(color: Colors.grey, fontSize: 16),
+          style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
         ),
       );
     }
@@ -26,14 +27,14 @@ class TransactionsTab extends StatelessWidget {
         return ListTile(
           leading: Icon(
             isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-            color: isIncome ? Colors.green : Colors.red,
+            color: isIncome ? AppTheme.accentMint : AppTheme.accentRose,
           ),
           title: Text(tx.vendor ?? 'Unknown Vendor'),
           subtitle: Text('${tx.category} • ${tx.date.toString().substring(0, 10)}'),
           trailing: Text(
             '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} EGP',
             style: TextStyle(
-              color: isIncome ? Colors.green : Colors.red,
+              color: isIncome ? AppTheme.accentMint : AppTheme.accentRose,
               fontWeight: FontWeight.bold,
             ),
           ),

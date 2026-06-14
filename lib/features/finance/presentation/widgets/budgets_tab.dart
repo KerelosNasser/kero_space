@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
+import '../../../../core/app_theme.dart';
 
 class BudgetsTab extends StatelessWidget {
   final FinanceLoaded state;
@@ -12,7 +13,7 @@ class BudgetsTab extends StatelessWidget {
       return const Center(
         child: Text(
           'No budgets configured.',
-          style: TextStyle(color: Colors.grey, fontSize: 16),
+          style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
         ),
       );
     }
@@ -47,15 +48,15 @@ class BudgetsTab extends StatelessWidget {
                   value: percentage,
                   minHeight: 8,
                   borderRadius: BorderRadius.circular(4),
-                  backgroundColor: Colors.grey[800],
-                  color: percentage >= 1.0 ? Colors.red : Colors.blue,
+                  backgroundColor: AppTheme.bgElevated,
+                  color: percentage >= 1.0 ? AppTheme.accentRose : AppTheme.accentCyan,
                 ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('${spent.toStringAsFixed(2)} EGP spent', style: const TextStyle(color: Colors.grey)),
-                    Text('${budget.monthlyLimit.toStringAsFixed(2)} EGP limit', style: const TextStyle(color: Colors.grey)),
+                    Text('${spent.toStringAsFixed(2)} EGP spent', style: const TextStyle(color: AppTheme.textSecondary)),
+                    Text('${budget.monthlyLimit.toStringAsFixed(2)} EGP limit', style: const TextStyle(color: AppTheme.textSecondary)),
                   ],
                 ),
               ],
