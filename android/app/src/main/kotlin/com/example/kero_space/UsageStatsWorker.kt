@@ -2,60 +2,70 @@ package com.example.kero_space
 
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.content.Intent
 import android.util.Log
+import androidx.work.ListenableWorker.Result
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Calendar
 
+/**
+ * Periodic WorkManager task that queries Android UsageStatsManager every 15 minutes
+ * and broadcasts the result to [KeroSpaceForegroundService] for forwarding to Dart.
+ */
 class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
     Worker(appContext, workerParams) {
 
-    private val TAG = "KeroSpaceUsageStats"
+    companion object {
+        private const val TAG = "KeroSpaceUsageStats"
+    }
 
-    override fun doWork(): androidx.work.ListenableWorker.Result {
+    override fun doWork(): Result {
         Log.d(TAG, "doWork: Querying UsageStatsManager")
-        
-        val usageStatsManager = applicationContext.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        
+
+        val usageStatsManager = applicationContext
+            .getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+
         val calendar = Calendar.getInstance()
         val endTime = calendar.timeInMillis
-        calendar.add(Calendar.MINUTE, -15) // Query last 15 minutes
+        calendar.add(Calendar.MINUTE, -15)
         val startTime = calendar.timeInMillis
 
+        // INTERVAL_BEST: lets Android pick the smallest available interval that covers
+        // our 15-minute window. INTERVAL_DAILY would return daily aggregates regardless
+        // of the requested time window, making the window parameters meaningless.
         val usageStatsList = usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
+            UsageStatsManager.INTERVAL_BEST,
             startTime,
-            endTime
+            endTime,
         )
 
         if (usageStatsList.isNullOrEmpty()) {
-            Log.d(TAG, "No usage stats found. Does the app have permission?")
-            return androidx.work.ListenableWorker.Result.success()
+            Log.w(TAG, "No usage stats returned. Check PACKAGE_USAGE_STATS permission.")
+            // Return success to avoid WorkManager retrying — permission must be granted by user.
+            return Result.success()
         }
 
         val jsonArray = JSONArray()
-        
         for (usageStats in usageStatsList) {
             if (usageStats.totalTimeInForeground > 0) {
-                val obj = JSONObject().apply {
+                jsonArray.put(JSONObject().apply {
                     put("packageName", usageStats.packageName)
                     put("foregroundTimeMs", usageStats.totalTimeInForeground)
                     put("lastTimeUsed", usageStats.lastTimeUsed)
-                }
-                jsonArray.put(obj)
+                })
             }
         }
 
-        // Ideally, we emit this to Dart if Dart is listening.
-        // However, this is a background worker. 
-        // We can use a broadcast intent to the ForegroundService, which will forward it to Dart.
-        
-        val intent = android.content.Intent("com.example.kero_space.USAGE_STATS_READY")
-        intent.putExtra("payload", jsonArray.toString())
+        Log.d(TAG, "Queried ${jsonArray.length()} apps with foreground time. Broadcasting.")
+
+        val intent = Intent("com.example.kero_space.USAGE_STATS_READY").apply {
+            putExtra("payload", jsonArray.toString())
+        }
         applicationContext.sendBroadcast(intent)
 
-        return androidx.work.ListenableWorker.Result.success()
+        return Result.success()
     }
 }

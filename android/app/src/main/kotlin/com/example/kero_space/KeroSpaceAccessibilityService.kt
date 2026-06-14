@@ -8,7 +8,10 @@ import org.json.JSONObject
 import com.example.kero_space.telemetry.BlacklistPreferencesStore
 
 class KeroSpaceAccessibilityService : AccessibilityService() {
-    private val TAG = "KeroSpaceAccess"
+
+    companion object {
+        private const val TAG = "KeroSpaceAccess"
+    }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
@@ -17,7 +20,7 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
                 val packageName = event.packageName?.toString() ?: return
                 Log.d(TAG, "Window State Changed: $packageName")
-                
+
                 val json = JSONObject().apply {
                     put("type", "WINDOW_STATE")
                     put("packageName", packageName)
@@ -26,42 +29,21 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
 
                 KeroSpaceForegroundService.accessibilityEventSink?.success(json)
 
-                // Direct Blocker Logic
-                try {
-                    val blockedPackages = BlacklistPreferencesStore.getBlockedPackages(applicationContext)
-                    if (blockedPackages.contains(packageName)) {
-                        val rulesJson = BlacklistPreferencesStore.getRulesJson(applicationContext)
-                        var breakSeconds = 30
-                        var isAllowedWindow = false
-                        val arr = JSONArray(rulesJson)
-                        for (i in 0 until arr.length()) {
-                            val obj = arr.getJSONObject(i)
-                            if (obj.getString("packageName") == packageName) {
-                                breakSeconds = obj.optInt("decisionBreakSeconds", 30)
-                                isAllowedWindow = isCurrentTimeInAllowedWindows(obj)
-                                break
-                            }
-                        }
-                        if (!isAllowedWindow) {
-                            Log.d(TAG, "Blacklisted package opened: $packageName. Showing overlay.")
-                            OverlayManager.showOverlay(applicationContext, packageName, breakSeconds)
-                        } else {
-                            Log.d(TAG, "Blacklisted package $packageName is in allowed window. Access granted.")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error running blocker logic", e)
-                }
+                // Direct Blocker Logic.
+                // BlacklistPreferencesStore.getBlockedPackages() uses an in-memory cache
+                // so this is a cheap Set lookup on the fast path (no I/O).
+                runBlockerLogic(packageName)
             }
+
             AccessibilityEvent.TYPE_VIEW_CLICKED -> {
                 val packageName = event.packageName?.toString() ?: ""
                 val className = event.className?.toString() ?: ""
                 val viewId = event.source?.viewIdResourceName ?: ""
-                
-                // Privacy: Do not log clicks if it's a password field or numeric pattern
-                if (viewId.contains("password", ignoreCase = true) || viewId.contains("pin", ignoreCase = true)) {
-                    return
-                }
+
+                // Privacy: skip password / PIN fields.
+                if (viewId.contains("password", ignoreCase = true) ||
+                    viewId.contains("pin", ignoreCase = true)
+                ) return
 
                 val json = JSONObject().apply {
                     put("type", "CLICK")
@@ -76,20 +58,58 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * Checks if [packageName] is blocked and shows the overlay if not in an allowed window.
+     *
+     * Performance note: [BlacklistPreferencesStore.getBlockedPackages] caches its result
+     * in memory and only re-reads EncryptedSharedPreferences when [saveRulesJson] is called.
+     * Safe to call on every window-state event.
+     */
+    private fun runBlockerLogic(packageName: String) {
+        try {
+            val blocked = BlacklistPreferencesStore.getBlockedPackages(applicationContext)
+            if (!blocked.contains(packageName)) return
+
+            val rulesJson = BlacklistPreferencesStore.getRulesJson(applicationContext)
+            var breakSeconds = 30
+            var isAllowedWindow = false
+
+            val arr = JSONArray(rulesJson)
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                if (obj.getString("packageName") == packageName) {
+                    breakSeconds = obj.optInt("decisionBreakSeconds", 30)
+                    isAllowedWindow = isCurrentTimeInAllowedWindows(obj)
+                    break
+                }
+            }
+
+            if (!isAllowedWindow) {
+                Log.d(TAG, "Blacklisted package opened: $packageName — showing overlay for ${breakSeconds}s")
+                OverlayManager.showOverlay(applicationContext, packageName, breakSeconds)
+            } else {
+                Log.d(TAG, "Blacklisted package $packageName is in allowed window — access granted")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in blocker logic for $packageName", e)
+        }
+    }
+
+    /**
+     * Returns true if the current hour falls within any of the rule's allowed windows.
+     * Windows are half-open intervals: [startHour, endHour).
+     */
     private fun isCurrentTimeInAllowedWindows(ruleObj: JSONObject): Boolean {
         val windows = ruleObj.optJSONArray("allowedWindows") ?: return false
         if (windows.length() == 0) return false
-        
-        val calendar = java.util.Calendar.getInstance()
-        val currentHour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
-        
+
+        val currentHour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+
         for (i in 0 until windows.length()) {
             val window = windows.getJSONObject(i)
             val startHour = window.optInt("startHour", 0)
             val endHour = window.optInt("endHour", 24)
-            if (currentHour in startHour until endHour) {
-                return true
-            }
+            if (currentHour in startHour until endHour) return true
         }
         return false
     }

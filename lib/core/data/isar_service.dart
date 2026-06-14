@@ -12,11 +12,16 @@ import '../../features/church/data/models/ministry_member.dart';
 class IsarService {
   static late Isar _instance;
   static bool _initialized = false;
-  
-  static Isar get instance => _instance;
+
+  static Isar get instance {
+    assert(_initialized, 'IsarService.init() must be called before accessing instance.');
+    return _instance;
+  }
+
   static bool get isInitialized => _initialized;
 
   static Future<void> init(String directory) async {
+    if (_initialized) return; // Idempotent — safe to call from multiple isolates.
     _instance = await Isar.open(
       [
         SyncOutboxRecordSchema,
@@ -42,6 +47,7 @@ class IsarService {
         MinistryMemberSchema,
       ],
       directory: directory,
+      name: 'kero_space',
     );
     _initialized = true;
   }

@@ -6,75 +6,107 @@ import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
 
+/**
+ * Manages the decision-break overlay window.
+ *
+ * All view mutations happen on the main thread via [mainHandler].
+ * [overlayShowing] is the single source-of-truth for whether the overlay
+ * is currently visible — it is set synchronously before posting to the handler
+ * to prevent duplicate showOverlay calls racing through the null-check.
+ */
 object OverlayManager {
+
+    private const val TAG = "OverlayManager"
+
+    private val mainHandler = Handler(Looper.getMainLooper())
     private var windowManager: WindowManager? = null
     private var overlayView: LinearLayout? = null
-    private var handler: Handler = Handler(Looper.getMainLooper())
+
+    /** Set synchronously to true when a show is scheduled, false when dismissed. */
+    @Volatile private var overlayShowing = false
 
     fun showOverlay(context: Context, packageName: String, durationSeconds: Int) {
-        if (overlayView != null) return // Already showing
-
-        windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-
-        overlayView = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.parseColor("#E6000000")) // 90% Black
-            gravity = Gravity.CENTER
+        if (overlayShowing) {
+            Log.d(TAG, "showOverlay called but overlay already showing — ignoring")
+            return
         }
-
-        val text = TextView(context).apply {
-            this.text = "Decision Break\n$packageName"
-            setTextColor(Color.WHITE)
-            textSize = 24f
-            gravity = Gravity.CENTER
+        if (durationSeconds <= 0) {
+            Log.w(TAG, "showOverlay called with durationSeconds=$durationSeconds — ignoring")
+            return
         }
-        overlayView?.addView(text)
+        overlayShowing = true
 
-        val layoutFlag: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-        } else {
-            @Suppress("DEPRECATION")
-            WindowManager.LayoutParams.TYPE_PHONE
-        }
+        mainHandler.post {
+            if (overlayView != null) return@post // Already added to WindowManager
 
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            layoutFlag,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-            PixelFormat.TRANSLUCENT
-        )
+            windowManager = context.applicationContext
+                .getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        handler.post {
-            try {
-                windowManager?.addView(overlayView, params)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val layout = LinearLayout(context.applicationContext).apply {
+                orientation = LinearLayout.VERTICAL
+                setBackgroundColor(Color.parseColor("#E6000000")) // 90% Black
+                gravity = Gravity.CENTER
             }
-        }
 
-        // Dismiss after duration
-        handler.postDelayed({
-            dismissOverlay()
-        }, durationSeconds * 1000L)
+            layout.addView(TextView(context.applicationContext).apply {
+                text = "Decision Break\n$packageName"
+                setTextColor(Color.WHITE)
+                textSize = 24f
+                gravity = Gravity.CENTER
+            })
+
+            val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            } else {
+                @Suppress("DEPRECATION")
+                WindowManager.LayoutParams.TYPE_PHONE
+            }
+
+            val params = WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                layoutFlag,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                PixelFormat.TRANSLUCENT,
+            )
+
+            try {
+                windowManager?.addView(layout, params)
+                overlayView = layout
+                Log.d(TAG, "Overlay shown for $packageName (${durationSeconds}s)")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to add overlay view", e)
+                overlayShowing = false
+                return@post
+            }
+
+            // Auto-dismiss after duration
+            mainHandler.postDelayed({ dismissOverlay() }, durationSeconds * 1000L)
+        }
     }
 
     fun dismissOverlay() {
-        handler.post {
-            if (overlayView != null) {
-                try {
-                    windowManager?.removeView(overlayView)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+        mainHandler.post {
+            val view = overlayView ?: run {
+                overlayShowing = false
+                return@post
+            }
+            try {
+                windowManager?.removeView(view)
+                Log.d(TAG, "Overlay dismissed")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to remove overlay view", e)
+            } finally {
                 overlayView = null
+                overlayShowing = false
             }
         }
     }
