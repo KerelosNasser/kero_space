@@ -25,6 +25,7 @@ import '../features/telemetry/presentation/pages/telemetry_screen.dart' as kero_
 import '../features/church/presentation/screens/church_screen.dart';
 import '../features/church/presentation/screens/confession_log_screen.dart';
 import '../features/church/presentation/bloc/church_bloc.dart';
+import '../features/church/presentation/bloc/confession_bloc.dart';
 import '../features/church/data/repositories/encrypted_confessions_repo.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 
@@ -100,8 +101,11 @@ final router = GoRouter(
     GoRoute(
       path: '/church/confessions_log',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => BlocProvider.value(
-        value: GetIt.I<ChurchBloc>(),
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: GetIt.I<ChurchBloc>()),
+          BlocProvider.value(value: GetIt.I<ConfessionBloc>()),
+        ],
         child: ConfessionLogScreen(repo: GetIt.I<EncryptedIsarConfessionsRepo>()),
       ),
     ),
@@ -161,8 +165,11 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/church',
-              builder: (context, state) => BlocProvider.value(
-                value: GetIt.I<ChurchBloc>()..add(LoadChurchData()),
+              builder: (context, state) => MultiBlocProvider(
+                providers: [
+                  BlocProvider.value(value: GetIt.I<ChurchBloc>()..add(LoadChurchData())),
+                  BlocProvider.value(value: GetIt.I<ConfessionBloc>()),
+                ],
                 child: const ChurchScreen(),
               ),
             ),

@@ -33,11 +33,11 @@ class KeroSpaceForegroundService : Service() {
          * Architecture: Two separate Flutter engines run concurrently:
          *
          *   1. MAIN engine (MainActivity) — serves the UI isolate.
-         *      Registers handlers on `kero_space/*` channels.
+         *      Registers handlers on kero_space/... channels.
          *      These sinks are managed by MainActivity.setupEventChannels().
          *
          *   2. HEADLESS engine (KeroSpaceForegroundService) — serves backgroundMain.
-         *      Registers handlers on `kero_space/bg/*` channels.
+         *      Registers handlers on kero_space/bg/... channels.
          *      These sinks are managed below.
          *
          * KeroSpaceScreenReceiver and KeroSpaceAccessibilityService push to BOTH sets
@@ -186,8 +186,8 @@ class KeroSpaceForegroundService : Service() {
      * Registers background-isolate-specific channels on the HEADLESS engine's messenger.
      *
      * Channel naming convention:
-     *   - `kero_space/*`     → main engine (UI isolate) — registered in MainActivity
-     *   - `kero_space/bg/*`  → headless engine (backgroundMain isolate) — registered here
+     *   - kero_space/...     → main engine (UI isolate) — registered in MainActivity
+     *   - kero_space/bg/...  → headless engine (backgroundMain isolate) — registered here
      *
      * This separation ensures each engine's binary messenger only delivers events to its
      * own Dart isolate. Shared sinks between engines are NOT possible because each engine

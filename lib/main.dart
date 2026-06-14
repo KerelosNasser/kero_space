@@ -52,11 +52,10 @@ void main() async {
     );
   } else {
     const platform = MethodChannel('kero_space/main_methods');
-    try {
-      await platform.invokeMethod('startForegroundService');
-    } on PlatformException catch (_) {
-      debugPrint("Failed to start foreground service.");
-    }
+    // Start foreground service asynchronously to prevent blocking the main UI thread during app startup.
+    platform.invokeMethod('startForegroundService').catchError((e) {
+      debugPrint("Failed to start foreground service: $e");
+    });
   }
 
   runApp(const KeroSpaceApp());

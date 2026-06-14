@@ -1,8 +1,28 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kero_space/core/app_theme.dart';
+import 'package:kero_space/core/di/injection.dart';
+import 'package:kero_space/core/permissions/permission_repository.dart';
+
+class PermissionItem {
+  final String title;
+  final String description;
+  final IconData icon;
+  final Future<bool> Function() check;
+  final Future<void> Function() request;
+
+  PermissionItem({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.check,
+    required this.request,
+  });
+}
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -11,35 +31,108 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final Map<Permission, bool> _status = {
-    Permission.notification: false,
-    Permission.microphone: false,
-  };
+class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBindingObserver {
+  late final List<PermissionItem> _permissions;
+  final Map<String, bool> _status = {};
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    final repo = getIt<PermissionRepository>();
+    _permissions = [
+      PermissionItem(
+        title: 'Notifications',
+        description: 'Required to show the persistent background service and timer alerts.',
+        icon: Icons.notifications_active,
+        check: () => Permission.notification.isGranted,
+        request: () => Permission.notification.request().then((_) {}),
+      ),
+      PermissionItem(
+        title: 'Microphone',
+        description: 'Required for the offline Wake Word detection. Audio never leaves your device.',
+        icon: Icons.mic,
+        check: () => Permission.microphone.isGranted,
+        request: () => Permission.microphone.request().then((_) {}),
+      ),
+      PermissionItem(
+        title: 'Ignore Battery Optimizations',
+        description: 'Prevents the OS from killing background monitoring agents.',
+        icon: Icons.battery_saver,
+        check: () => repo.hasBatteryOptimizationExemption(),
+        request: () => repo.openBatteryOptimizationSettings(),
+      ),
+      PermissionItem(
+        title: 'Accessibility Service',
+        description: 'Required for the Mindless Scrolling Blocker overlay and Click Logger.',
+        icon: Icons.accessibility_new,
+        check: () => repo.hasAccessibilityService(),
+        request: () => repo.openAccessibilitySettings(),
+      ),
+      PermissionItem(
+        title: 'App Usage Access',
+        description: 'Allows querying daily app usage stats to enforce blocker quotas.',
+        icon: Icons.assessment_outlined,
+        check: () => repo.hasUsageStats(),
+        request: () => repo.openUsageStatsSettings(),
+      ),
+      PermissionItem(
+        title: 'Notification Listener',
+        description: 'Allows parsing transaction notifications to track expenses automatically.',
+        icon: Icons.message_outlined,
+        check: () => repo.hasNotificationListener(),
+        request: () => repo.openNotificationListenerSettings(),
+      ),
+    ];
+
     _checkPermissions();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkPermissions();
+    }
   }
 
   Future<void> _checkPermissions() async {
-    final notif = await Permission.notification.isGranted;
-    final mic = await Permission.microphone.isGranted;
-    setState(() {
-      _status[Permission.notification] = notif;
-      _status[Permission.microphone] = mic;
-    });
+    final Map<String, bool> temp = {};
+    for (final item in _permissions) {
+      temp[item.title] = await item.check();
+    }
+    if (mounted) {
+      setState(() {
+        _status.clear();
+        _status.addAll(temp);
+      });
+    }
   }
 
-  Future<void> _requestPermission(Permission p) async {
-    await p.request();
-    _checkPermissions();
+  Future<void> _requestPermission(PermissionItem item) async {
+    await item.request();
+    await _checkPermissions();
   }
 
   Future<void> _finishOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', true);
+
+    if (Platform.isAndroid) {
+      const platform = MethodChannel('kero_space/main_methods');
+      try {
+        await platform.invokeMethod('startForegroundService');
+      } catch (e) {
+        debugPrint("Failed to start foreground service: $e");
+      }
+    }
+
     if (mounted) {
       context.go('/');
     }
@@ -56,7 +149,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(24.0),
                 children: [
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 24),
                   const Icon(Icons.shield_outlined, size: 80, color: AppTheme.accentGold),
                   const SizedBox(height: 24),
                   const Text(
@@ -70,50 +163,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 48),
-                  
-                  _buildPermissionTile(
-                    title: 'Notifications',
-                    description: 'Required to show the persistent background service and timer alerts.',
-                    icon: Icons.notifications_active,
-                    permission: Permission.notification,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPermissionTile(
-                    title: 'Microphone',
-                    description: 'Required for the offline Wake Word detection. Audio never leaves your device.',
-                    icon: Icons.mic,
-                    permission: Permission.microphone,
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.bgSurface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppTheme.bgElevated),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.settings_applications, color: AppTheme.accentGold),
-                            const SizedBox(width: 16),
-                            const Expanded(
-                              child: Text('Advanced Permissions', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'App Usage & Accessibility permissions are required for the systemic blocker. You will be prompted for these in the settings when using those features.',
-                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const SizedBox(height: 32),
+                  ..._permissions.map((p) => _buildPermissionTile(p)),
                 ],
               ),
             ),
@@ -139,51 +190,71 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildPermissionTile({
-    required String title,
-    required String description,
-    required IconData icon,
-    required Permission permission,
-  }) {
-    final isGranted = _status[permission] ?? false;
-    
+  Widget _buildPermissionTile(PermissionItem item) {
+    final isGranted = _status[item.title] ?? false;
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.bgSurface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isGranted ? Colors.green.withValues(alpha: 0.3) : AppTheme.bgElevated,
+          width: 1.5,
+        ),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: AppTheme.bgElevated,
+            decoration: BoxDecoration(
+              color: isGranted ? Colors.green.withValues(alpha: 0.1) : AppTheme.bgElevated,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppTheme.accentGold),
+            child: Icon(
+              item.icon,
+              color: isGranted ? Colors.green : AppTheme.accentGold,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
+                Text(
+                  item.title,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(description, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                Text(
+                  item.description,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(width: 16),
           if (isGranted)
-            const Icon(Icons.check_circle, color: Colors.green, size: 32)
+            const Icon(Icons.check_circle, color: Colors.green, size: 28)
           else
-            TextButton(
-              style: TextButton.styleFrom(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.bgElevated,
                 foregroundColor: AppTheme.accentGold,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
-              onPressed: () => _requestPermission(permission),
+              onPressed: () => _requestPermission(item),
               child: const Text('Grant'),
             ),
         ],
