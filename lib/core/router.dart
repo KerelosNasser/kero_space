@@ -21,19 +21,8 @@ import 'package:get_it/get_it.dart';
 import '../features/telemetry/presentation/bloc/telemetry_bloc.dart' as kero_space_telemetry_bloc;
 import '../features/telemetry/presentation/bloc/telemetry_event.dart' as kero_space_telemetry_event;
 import '../features/telemetry/presentation/pages/telemetry_screen.dart' as kero_space_telemetry_screen;
-
-class PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const PlaceholderScreen({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text('Placeholder for $title')),
-    );
-  }
-}
+import '../features/church/presentation/screens/church_screen.dart';
+import '../features/home/presentation/screens/home_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -93,7 +82,7 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/',
-              builder: (context, state) => const PlaceholderScreen(title: 'Home / Dashboard'),
+              builder: (context, state) => const HomeScreen(),
             ),
           ],
         ),
@@ -131,7 +120,10 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/church',
-              builder: (context, state) => const PlaceholderScreen(title: 'Church'),
+              builder: (context, state) => BlocProvider.value(
+                value: GetIt.I<ChurchBloc>()..add(LoadChurchData()),
+                child: const ChurchScreen(),
+              ),
             ),
           ],
         ),

@@ -16,8 +16,6 @@ class FinanceHomeScreen extends StatefulWidget {
 }
 
 class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
-  int _currentIndex = 0;
-
   @override
   void initState() {
     super.initState();
@@ -49,17 +47,28 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Finance Module'),
-      ),
-      body: BlocBuilder<FinanceBloc, FinanceState>(
-        builder: (context, state) {
-          if (state is FinanceLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is FinanceLoaded) {
-              return IndexedStack(
-                index: _currentIndex,
+    return DefaultTabController(
+      length: 5,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Finance Module'),
+          bottom: const TabBar(
+            isScrollable: true,
+            tabs: [
+              Tab(icon: Icon(Icons.list), text: 'Txns'),
+              Tab(icon: Icon(Icons.pie_chart), text: 'Budgets'),
+              Tab(icon: Icon(Icons.trending_up), text: 'Portfolio'),
+              Tab(icon: Icon(Icons.insights), text: 'Correlation'),
+              Tab(icon: Icon(Icons.work), text: 'Career'),
+            ],
+          ),
+        ),
+        body: BlocBuilder<FinanceBloc, FinanceState>(
+          builder: (context, state) {
+            if (state is FinanceLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is FinanceLoaded) {
+              return TabBarView(
                 children: [
                   TransactionsTab(state: state),
                   BudgetsTab(state: state),
@@ -68,25 +77,13 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
                   CareerTab(state: state),
                 ],
               );
-          } else if (state is FinanceError) {
-            return Center(child: Text('Error: ${state.message}'));
-          }
-          return const Center(child: Text('Initialize Finance'));
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        type: BottomNavigationBarType.fixed, // Needed for >3 items
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Txns'),
-          BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: 'Budgets'),
-          BottomNavigationBarItem(icon: Icon(Icons.trending_up), label: 'Portfolio'),
-          BottomNavigationBarItem(icon: Icon(Icons.insights), label: 'Correlation'),
-          BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Career'),
-        ],
+            } else if (state is FinanceError) {
+              return Center(child: Text('Error: ${state.message}'));
+            }
+            return const Center(child: Text('Initialize Finance'));
+          },
+        ),
       ),
     );
   }
-
 }

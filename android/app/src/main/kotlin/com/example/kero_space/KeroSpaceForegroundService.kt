@@ -81,7 +81,14 @@ class KeroSpaceForegroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             var serviceTypes = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                serviceTypes = serviceTypes or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                val hasMicPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+                    this, android.Manifest.permission.RECORD_AUDIO
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                if (hasMicPermission) {
+                    serviceTypes = serviceTypes or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                } else {
+                    Log.w(TAG, "Record audio permission not granted. Excluding microphone FGS type.")
+                }
             }
             startForeground(1, notification, serviceTypes)
         } else {
@@ -178,6 +185,7 @@ class KeroSpaceForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForegroundServiceWithNotification()
         return START_STICKY
     }
 
@@ -204,11 +212,7 @@ class KeroSpaceForegroundService : Service() {
             "wake_word" -> {
                 val intent = Intent(this, WakeWordService::class.java)
                 if (enabled) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(intent)
-                    } else {
-                        startService(intent)
-                    }
+                    startService(intent)
                 } else stopService(intent)
             }
             "usage_guard" -> {
