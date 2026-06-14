@@ -30,25 +30,22 @@ class TelemetryScreen extends StatelessWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Hero(
-                    tag: 'hero-telemetry',
-                    child: Material(
-                      color: Colors.transparent,
-                      child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: AppTheme.bgSurface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: const Border(left: BorderSide(color: AppTheme.accentGold, width: 4)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('TODAY\'S SCREEN TIME', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1.2)),
-                            const SizedBox(height: 8),
-                            Text('${hours.toStringAsFixed(1)} hours', style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-                          ],
-                        ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppTheme.bgSurface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: const Border(left: BorderSide(color: AppTheme.accentGold, width: 4)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('TODAY\'S SCREEN TIME', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1.2)),
+                          const SizedBox(height: 8),
+                          Text('${hours.toStringAsFixed(1)} hours', style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                        ],
                       ),
                     ),
                   ),

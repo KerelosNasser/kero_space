@@ -75,6 +75,7 @@ class KeroSpaceApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Kero Space',
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         routerConfig: router,
         shortcuts: {

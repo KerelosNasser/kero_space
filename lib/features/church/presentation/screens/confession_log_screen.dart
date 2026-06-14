@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kero_space/core/app_theme.dart';
 import '../bloc/confession_bloc.dart';
 import '../../data/repositories/encrypted_confessions_repo.dart';
 
@@ -65,15 +67,19 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
     return BlocListener<ConfessionBloc, ConfessionState>(
       listener: (context, state) {
         if (state is ConfessionLocked) {
-          Navigator.of(context).pushReplacementNamed('/confession_auth');
+          context.go('/church');
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: AppTheme.bgPrimary,
         appBar: AppBar(
-          title: const Text('Confessions Log', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.black,
-          iconTheme: const IconThemeData(color: Colors.white),
+          title: const Text('Confessions Log', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+          backgroundColor: AppTheme.bgPrimary,
+          iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/church'),
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.lock_outline),
@@ -84,7 +90,7 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
           ],
         ),
         body: _isLoading 
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFFBF5AF2)))
+            ? const Center(child: CircularProgressIndicator(color: AppTheme.accentViolet))
             : Column(
                 children: [
                   Expanded(
@@ -93,7 +99,7 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                       padding: const EdgeInsets.all(16.0),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1C1C1E),
+                          color: AppTheme.bgSurface,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
@@ -114,7 +120,7 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                               child: Align(
                                 alignment: Alignment.centerRight,
                                 child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFBF5AF2)),
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentViolet),
                                   onPressed: _saveConfession,
                                   child: const Text('Save Encrypted', style: TextStyle(color: Colors.white)),
                                 ),
@@ -125,7 +131,7 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                       ),
                     ),
                   ),
-                  const Divider(color: Color(0xFF38383A)),
+                  const Divider(color: AppTheme.borderDivider),
                   Expanded(
                     flex: 1,
                     child: ListView.builder(
@@ -145,13 +151,13 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1C1C1E),
+                            color: AppTheme.bgSurface,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('${date.toLocal()}'.split('.')[0], style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              Text('${date.toLocal()}'.split('.')[0], style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                               const SizedBox(height: 8),
                               QuillEditor.basic(
                                 controller: QuillController(document: doc, selection: const TextSelection.collapsed(offset: 0), readOnly: true),

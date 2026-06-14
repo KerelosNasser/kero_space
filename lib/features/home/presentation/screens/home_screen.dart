@@ -185,28 +185,25 @@ class HomeScreen extends StatelessWidget {
     required String route,
     required String heroTag,
   }) {
-    return Hero(
-      tag: heroTag,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => context.go(route),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.bgSurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border(left: BorderSide(color: accentColor, width: 3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(domainLabel, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
-                const SizedBox(height: 8),
-                Text(heroMetric, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
-              ],
-            ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.go(route),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.bgSurface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border(left: BorderSide(color: accentColor, width: 3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(domainLabel, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+              const SizedBox(height: 8),
+              Text(heroMetric, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
+            ],
           ),
         ),
       ),

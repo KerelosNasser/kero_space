@@ -23,15 +23,37 @@ import '../features/telemetry/presentation/bloc/telemetry_bloc.dart' as kero_spa
 import '../features/telemetry/presentation/bloc/telemetry_event.dart' as kero_space_telemetry_event;
 import '../features/telemetry/presentation/pages/telemetry_screen.dart' as kero_space_telemetry_screen;
 import '../features/church/presentation/screens/church_screen.dart';
+import '../features/church/presentation/screens/confession_log_screen.dart';
 import '../features/church/presentation/bloc/church_bloc.dart';
+import '../features/church/data/repositories/encrypted_confessions_repo.dart';
 import '../features/home/presentation/screens/home_screen.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
+  redirect: (context, state) async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+    final isOnboarding = state.matchedLocation == '/onboarding';
+
+    if (!hasSeenOnboarding && !isOnboarding) {
+      return '/onboarding';
+    } else if (hasSeenOnboarding && isOnboarding) {
+      return '/';
+    }
+    return null;
+  },
   routes: [
+    GoRoute(
+      path: '/onboarding',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const OnboardingScreen(),
+    ),
     // --- Detail Routes (Full Screen) ---
     GoRoute(
       path: '/note_editor',
@@ -74,6 +96,14 @@ final router = GoRouter(
           child: MealLogScreen(ingredient: ingredient),
         );
       },
+    ),
+    GoRoute(
+      path: '/church/confessions_log',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider.value(
+        value: GetIt.I<ChurchBloc>(),
+        child: ConfessionLogScreen(repo: GetIt.I<EncryptedIsarConfessionsRepo>()),
+      ),
     ),
 
     // --- Stateful Shell Routes ---
