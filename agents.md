@@ -315,18 +315,41 @@ The app must request `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` from the user during
 
 To ensure the reliability of the Omniscient Layer and its integrations, all future development on background services, features, or any app functionalities MUST strictly adhere to the following rules:
 
-1. **Test-Driven Development (TDD)**:
-   - Before writing implementation code for any new service, functionality, or BLoC, you MUST write failing unit tests or integration tests.
-   - For native Android code (Kotlin), use JUnit/Robolectric or instrumented tests to verify Intents, Service bindings, and Room/Isar interactions.
-   - For Dart code, use `flutter test` for BLoCs, repositories, and UI widgets.
+### 1. Skill-First Execution Protocol (SUPERSEDES ALL)
+Before touching any code, you MUST identify the correct skill(s) and invoke them via the skill tool. Never proceed with raw implementation without a loaded skill guiding the workflow.
+- **New Features / Refactors / Complex Additions:**
+  - `brainstorming` → Explore context, ask questions, define scope.
+  - `multi-agent-brainstorming` → Structured peer-review to surface hidden assumptions and failure modes before design is approved.
+  - `writing-plans` → Convert approved design into bite-sized, atomic tasks.
+  - `subagent-driven-development` → Execute tasks using fresh subagents per task with mandatory two-stage review (spec compliance, then code quality).
+- **Bug Fixes:**
+  - `systematic-debugging` → Follow the 4-phase root-cause investigation (Reproduce → Analyze → Hypothesize → Fix). No symptom-only patches.
+  - `audit-skills` → If the bug involves security boundaries, native channels, or data leakage, perform a non-intrusive static analysis of the affected code first.
+- **UI / UX Work:**
+  - `ui-ux-pro-max` → Apply Toss-inspired design system consistency and accessibility standards.
+  - `ux-audit` → Audit screens against Nielsen's heuristics and StyleSeed guidelines.
+  - `ux-copy` → Ensure all microcopy (buttons, empty states, errors, toasts) follows the Toss voice.
+### 6. Language & Framework Best Practices
+- **Flutter/Dart Code:** Always invoke the `flutter-expert` skill before writing or modifying any Flutter/Dart code. Stay current with 2026 best practices (e.g., `flutter_lints` analysis, latest `go_router` or `bloc` patterns, Dart 3 features).
+- **Kotlin Code:** Always invoke the `kotlin-specialist` skill before writing or modifying any Kotlin/Android code. Stay current with 2026 best practices (e.g., coroutines, Flow, latest AndroidX APIs).
+- **Package Documentation:** Before installing or using any package that is new to the codebase, you MUST read its documentation (e.g., `pub.dev` for Flutter packages) to understand its API, setup requirements, and best usage patterns. Do not rely on memory alone.
+- **Periodic Best Practice Check:** Before starting a major feature or refactor, briefly verify that the approach aligns with the latest 2026 best practices for the relevant framework (Flutter or Kotlin).
 
-2. **Mandatory Build & Analysis Checks**:
-   - Before claiming any work is complete, you MUST run static analysis: `flutter analyze` for Dart code, and Android Lint/Detekt for Kotlin.
-   - You MUST run a full debug build (`flutter build apk --debug` or `./gradlew assembleDebug`) to verify that native code compiles correctly without syntax or dependency errors.
-   - Never commit code that fails analysis, has unresolved warnings, or fails to build. Evidence of success (build output/test output) must precede assertions of completion.
+### 2. Small-Task Constraint
+No large monolithic tasks are permitted. If a task is estimated to require more than 2 hours of focused work, it MUST be decomposed into multiple smaller sub-tasks before execution begins. Each sub-task should be independently verifiable and committed separately.
 
-3. **Production Quality Standards (Anti-Placeholder Protocol)**:
-   - **No Lazy Implementation:** You are forbidden from creating "placeholder" pages, returning simple `Center(child: Text('Placeholder'))` widgets, or committing code with hardcoded generic colors (like `Colors.black` or `Colors.green`) in place of the established design system tokens (`AppTheme`).
-   - **No Unimplemented Features:** If a screen or feature is requested, it must be built to a production-ready standard, complete with proper layout, robust error handling, loading states, and alignment with the `AppTheme` design system. If a feature is too complex to complete in one step, build a functionally complete MVP, not a blank placeholder.
-   - **Strict Design System Compliance:** All UI elements must strictly adhere to the tokens defined in `lib/core/app_theme.dart`. Do not invent raw color or typography tokens inline.
-   - **Complete Navigation:** All routes in `router.dart` must point to fully implemented screens with proper BLoC injection. Nested navigation must be implemented cleanly without Hero tag collisions (e.g., using `DefaultTabController` instead of nested `BottomNavigationBar`s).
+### 3. Test-Driven Development (TDD)
+- Before writing implementation code for any new service, functionality, or BLoC, you MUST write failing unit tests or integration tests.
+- For native Android code (Kotlin), use JUnit/Robolectric or instrumented tests to verify Intents, Service bindings, and Room/Isar interactions.
+- For Dart code, use `flutter test` for BLoCs, repositories, and UI widgets.
+
+### 4. Mandatory Build & Analysis Checks
+- Before claiming any work is complete, you MUST run static analysis: `flutter analyze` for Dart code, and Android Lint/Detekt for Kotlin.
+- You MUST run a full debug build (`flutter build apk --debug` or `./gradlew assembleDebug`) to verify that native code compiles correctly without syntax or dependency errors.
+- Never commit code that fails analysis, has unresolved warnings, or fails to build. Evidence of success (build output/test output) must precede assertions of completion.
+
+### 5. Production Quality Standards (Anti-Placeholder Protocol)
+- **No Lazy Implementation:** You are forbidden from creating "placeholder" pages, returning simple `Center(child: Text('Placeholder'))` widgets, or committing code with hardcoded generic colors (like `Colors.black` or `Colors.green`) in place of the established design system tokens (`AppTheme`).
+- **No Unimplemented Features:** If a screen or feature is requested, it must be built to a production-ready standard, complete with proper layout, robust error handling, loading states, and alignment with the `AppTheme` design system. If a feature is too complex to complete in one step, build a functionally complete MVP, not a blank placeholder.
+- **Strict Design System Compliance:** All UI elements must strictly adhere to the tokens defined in `lib/core/app_theme.dart`. Do not invent raw color or typography tokens inline.
+- **Complete Navigation:** All routes in `router.dart` must point to fully implemented screens with proper BLoC injection. Nested navigation must be implemented cleanly without Hero tag collisions (e.g., using `DefaultTabController` instead of nested `BottomNavigationBar`s).

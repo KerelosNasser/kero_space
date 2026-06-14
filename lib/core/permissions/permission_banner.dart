@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_theme.dart';
 
 class PermissionBanner extends StatelessWidget {
   final String message;
@@ -15,30 +16,30 @@ class PermissionBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.amber.shade800,
+      color: AppTheme.accentGold,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: SafeArea(
         bottom: false,
         child: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.white),
+            const Icon(Icons.warning_amber_rounded, color: AppTheme.textPrimary),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
               ),
             ),
             TextButton(
               onPressed: onEnable,
               style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
+                foregroundColor: AppTheme.textPrimary,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
               child: const Text('Enable →'),
             ),
             IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 20),
+              icon: const Icon(Icons.close, color: AppTheme.textPrimary, size: 20),
               onPressed: onDismiss,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),

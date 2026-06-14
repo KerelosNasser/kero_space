@@ -43,7 +43,7 @@ void main() async {
   setupLocator();
 
   // Initialize background notification parser
-  await NotificationParserService.initialize(IsarService.instance);
+  await getIt<NotificationParserService>().initialize(IsarService.instance);
 
   if (Platform.isWindows) {
     await WindowManagerService.init();

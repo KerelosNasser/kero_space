@@ -34,6 +34,18 @@ class TelemetryBloc extends Bloc<TelemetryEvent, TelemetryState> {
 
     _screenSub = _screenRepo.watchChanges().listen((_) => add(LoadTelemetryDashboard()));
     _usageSub = _usageRepo.watchChanges().listen((_) => add(LoadTelemetryDashboard()));
+
+    _pruneData();
+  }
+
+  Future<void> _pruneData() async {
+    try {
+      await _screenRepo.pruneOldData();
+      await _usageRepo.pruneOldData();
+      await _clickRepo.pruneOldData();
+    } catch (_) {
+      // Silently fail if pruning fails
+    }
   }
 
   Future<void> _onLoadDashboard(

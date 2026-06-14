@@ -40,7 +40,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
         allNotes: allNotes,
       ));
     } catch (e) {
-      emit(ProductivityState.error("Failed to load productivity data: \$e"));
+      emit(ProductivityState.error("Failed to load productivity data: $e"));
     }
   }
 
@@ -49,7 +49,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.saveTask(event.task);
       add(const ProductivityEvent.loadData()); // Refresh state
     } catch (e) {
-      emit(ProductivityState.error("Failed to create task: \$e"));
+      emit(ProductivityState.error('Failed to create task: $e'));
     }
   }
 
@@ -58,7 +58,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.saveTask(event.task);
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error("Failed to update task: \$e"));
+      emit(ProductivityState.error("Failed to update task: $e"));
     }
   }
 
@@ -67,7 +67,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.completeTaskRecursively(event.taskId);
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error("Failed to complete task: \$e"));
+      emit(ProductivityState.error("Failed to complete task: $e"));
     }
   }
 
@@ -76,7 +76,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.deleteTaskRecursively(event.taskId);
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error("Failed to delete task: \$e"));
+      emit(ProductivityState.error('Failed to delete task: $e'));
     }
   }
 
@@ -94,7 +94,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error("Failed to create note: \$e"));
+      emit(ProductivityState.error('Failed to create note: $e'));
     }
   }
 
@@ -103,7 +103,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.saveNote(event.note);
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error("Failed to update note: \$e"));
+      emit(ProductivityState.error("Failed to update note: $e"));
     }
   }
 }

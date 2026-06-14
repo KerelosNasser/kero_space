@@ -10,6 +10,7 @@ part 'calendar_state.dart';
 
 class CalendarBloc extends Bloc<CalendarEventBlocEvent, CalendarState> {
   final LocalCalendarRepository repository;
+  List<CalendarEvent>? _cachedCopticEvents;
 
   CalendarBloc(this.repository) : super(const CalendarState.loading()) {
     on<LoadCalendarEvents>(_onLoadEvents);
@@ -20,30 +21,34 @@ class CalendarBloc extends Bloc<CalendarEventBlocEvent, CalendarState> {
     try {
       final events = await repository.getLocalEvents();
       
-      // Generate Coptic Fasting Events for Current, Prev, and Next Year
-      final now = DateTime.now();
-      for (int year = now.year - 1; year <= now.year + 1; year++) {
-        final startOfYear = DateTime(year, 1, 1);
-        final endOfYear = DateTime(year, 12, 31);
-        
-        for (int i = 0; i <= endOfYear.difference(startOfYear).inDays; i++) {
-          final currentDate = startOfYear.add(Duration(days: i));
-          final fastType = CopticComputus.getFastType(currentDate);
+      if (_cachedCopticEvents == null) {
+        _cachedCopticEvents = [];
+        final now = DateTime.now();
+        for (int year = now.year - 1; year <= now.year + 1; year++) {
+          final startOfYear = DateTime(year, 1, 1);
+          final endOfYear = DateTime(year, 12, 31);
           
-          if (fastType != FastType.none) {
-            events.add(
-              CalendarEvent()
-                ..deviceId = 'coptic_computus'
-                ..platform = 'dart'
-                ..title = _getFastName(fastType)
-                ..startTime = currentDate
-                ..endTime = currentDate.add(const Duration(days: 1))
-                ..source = 'COPTIC'
-                ..allDay = true,
-            );
+          for (int i = 0; i <= endOfYear.difference(startOfYear).inDays; i++) {
+            final currentDate = startOfYear.add(Duration(days: i));
+            final fastType = CopticComputus.getFastType(currentDate);
+            
+            if (fastType != FastType.none) {
+              _cachedCopticEvents!.add(
+                CalendarEvent()
+                  ..deviceId = 'coptic_computus'
+                  ..platform = 'dart'
+                  ..title = _getFastName(fastType)
+                  ..startTime = currentDate
+                  ..endTime = currentDate.add(const Duration(days: 1))
+                  ..source = 'COPTIC'
+                  ..allDay = true,
+              );
+            }
           }
         }
       }
+
+      events.addAll(_cachedCopticEvents!);
 
       // Sort chronologically
       events.sort((a, b) => a.startTime.compareTo(b.startTime));

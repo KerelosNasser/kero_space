@@ -24,6 +24,7 @@ import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
 // Finance module
 import 'package:kero_space/features/finance/data/repositories/finance_repository.dart';
 import 'package:kero_space/features/finance/data/repositories/egx_scraper_service.dart';
+import 'package:kero_space/features/finance/data/repositories/notification_parser_service.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 
 // Voice module
@@ -77,6 +78,9 @@ void setupLocator() {
       egxScraperService: getIt<EGXScraperService>(),
       nutritionRepository: getIt<NutritionRepository>(),
     ),
+  );
+  getIt.registerLazySingleton<NotificationParserService>(
+    () => NotificationParserService(),
   );
 
   // Church

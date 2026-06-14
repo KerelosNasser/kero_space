@@ -3,13 +3,15 @@ import 'package:kero_space/features/finance/data/models/finance_collections.dart
 import 'dart:isolate';
 import 'dart:ui';
 import 'package:isar/isar.dart';
+import 'package:injectable/injectable.dart';
 
+@lazySingleton
 class NotificationParserService {
   static const String _isolateName = 'notification_listener_isolate';
-  static ReceivePort? _port;
-  static Isar? _isarInstance;
+  ReceivePort? _port;
+  Isar? _isarInstance;
 
-  static Future<void> initialize(Isar isar) async {
+  Future<void> initialize(Isar isar) async {
     _isarInstance = isar;
     
     // Register port for background isolate communication
@@ -34,7 +36,7 @@ class NotificationParserService {
     }
   }
 
-  static void _handleNotification(NotificationEvent event) {
+  void _handleNotification(NotificationEvent event) {
     final String content = event.text ?? '';
     final String title = event.title ?? '';
     final String package = event.packageName ?? '';
@@ -59,7 +61,7 @@ class NotificationParserService {
     }
   }
 
-  static Transaction? _parseText(String content) {
+  Transaction? _parseText(String content) {
     // 1. Vodafone Cash patterns
     final vfReceiveMatch = RegExp(r'received\s+([\d,\.]+)\s*EGP\s+from\s+([\d\w]+)', caseSensitive: false).firstMatch(content);
     if (vfReceiveMatch != null) {
@@ -110,7 +112,7 @@ class NotificationParserService {
     return null;
   }
 
-  static String _autoCategorize(String vendor) {
+  String _autoCategorize(String vendor) {
     final v = vendor.toLowerCase();
     if (v.contains('uber') || v.contains('indrive') || v.contains('careem')) return 'Transport';
     if (v.contains('vodafone') || v.contains('we') || v.contains('orange') || v.contains('etisalat')) return 'Bills & Telecom';

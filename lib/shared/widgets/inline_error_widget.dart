@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/app_theme.dart';
 
 class InlineErrorWidget extends StatelessWidget {
   final String message;
@@ -21,7 +22,7 @@ class InlineErrorWidget extends StatelessWidget {
             const Icon(
               Icons.warning_amber_rounded,
               size: 64,
-              color: Colors.amber,
+              color: AppTheme.accentGold,
             ),
             const SizedBox(height: 16),
             Text(
@@ -33,7 +34,7 @@ class InlineErrorWidget extends StatelessWidget {
             Text(
               message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
+                    color: AppTheme.textSecondary,
                   ),
               textAlign: TextAlign.center,
             ),
@@ -43,8 +44,8 @@ class InlineErrorWidget extends StatelessWidget {
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.amber.shade800,
+                foregroundColor: AppTheme.textPrimary,
+                backgroundColor: AppTheme.accentGold,
               ),
             ),
           ],

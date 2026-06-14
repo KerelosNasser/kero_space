@@ -42,4 +42,11 @@ class ClickLogRepository {
     }
     return density;
   }
+
+  Future<void> pruneOldData({int daysToKeep = 30}) async {
+    final threshold = DateTime.now().subtract(Duration(days: daysToKeep));
+    await _isar.writeTxn(() async {
+      await _isar.telemetryEvents.filter().timestampLessThan(threshold).deleteAll();
+    });
+  }
 }

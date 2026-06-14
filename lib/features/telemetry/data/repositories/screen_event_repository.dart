@@ -60,4 +60,11 @@ class ScreenEventRepository {
   }
 
   Stream<void> watchChanges() => _isar.screenEvents.watchLazy();
+
+  Future<void> pruneOldData({int daysToKeep = 30}) async {
+    final threshold = DateTime.now().subtract(Duration(days: daysToKeep));
+    await _isar.writeTxn(() async {
+      await _isar.screenEvents.filter().timestampLessThan(threshold).deleteAll();
+    });
+  }
 }

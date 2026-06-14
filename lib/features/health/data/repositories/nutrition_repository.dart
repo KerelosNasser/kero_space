@@ -85,6 +85,14 @@ class NutritionRepository {
         .findAll();
   }
 
+  Future<List<MealEntry>> getMealsInRange(DateTime start, DateTime end) async {
+    final isar = IsarService.instance;
+    return await isar.mealEntrys
+        .filter()
+        .timestampBetween(start, end)
+        .findAll();
+  }
+
   Future<UserProfile?> getUserProfile() async {
     final isar = IsarService.instance;
     // Assuming there's only one user profile for the local device

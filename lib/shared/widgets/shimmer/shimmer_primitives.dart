@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../core/app_theme.dart';
 
 class ShimmerBox extends StatelessWidget {
   final double width;
@@ -16,13 +17,13 @@ class ShimmerBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.white10,
-      highlightColor: Colors.white24,
+      baseColor: AppTheme.bgElevated,
+      highlightColor: AppTheme.accentPrimary.withValues(alpha: 0.1),
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.accentPrimary,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
       ),
@@ -38,13 +39,13 @@ class ShimmerCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.white10,
-      highlightColor: Colors.white24,
+      baseColor: AppTheme.bgElevated,
+      highlightColor: AppTheme.accentPrimary.withValues(alpha: 0.1),
       child: Container(
         width: diameter,
         height: diameter,
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: AppTheme.accentPrimary,
           shape: BoxShape.circle,
         ),
       ),

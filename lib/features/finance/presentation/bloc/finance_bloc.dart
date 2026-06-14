@@ -76,13 +76,15 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       final userProfile = await _nutritionRepository.getUserProfile();
       final double baselineBMR = userProfile?.bmrTarget ?? 2000.0;
 
+      final allMealsInRange = await _nutritionRepository.getMealsInRange(sevenDaysAgo, now.add(const Duration(days: 1)));
+
       for (int i = 6; i >= 0; i--) {
         final date = now.subtract(Duration(days: i));
         final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
         
         rollingWealth += dailyWealthDelta[dateKey] ?? 0;
         
-        final meals = await _nutritionRepository.getDailyMeals(date);
+        final meals = allMealsInRange.where((m) => m.timestamp.year == date.year && m.timestamp.month == date.month && m.timestamp.day == date.day).toList();
         double totalCalories = meals.fold(0.0, (sum, meal) => sum + meal.calories);
         double surplus = totalCalories - baselineBMR; 
 

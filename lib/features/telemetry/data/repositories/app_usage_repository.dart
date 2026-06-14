@@ -36,4 +36,11 @@ class AppUsageRepository {
   }
 
   Stream<void> watchChanges() => _isar.appUsageRecords.watchLazy();
+
+  Future<void> pruneOldData({int daysToKeep = 30}) async {
+    final threshold = DateTime.now().subtract(Duration(days: daysToKeep));
+    await _isar.writeTxn(() async {
+      await _isar.appUsageRecords.filter().dateLessThan(threshold).deleteAll();
+    });
+  }
 }
