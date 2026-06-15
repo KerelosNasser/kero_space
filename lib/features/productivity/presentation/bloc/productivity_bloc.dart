@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:kero_space/core/di/injection.dart';
 
 import '../../data/models/productivity_collections.dart';
 import '../../data/repositories/productivity_repository.dart';
@@ -14,7 +15,8 @@ part 'productivity_bloc.freezed.dart';
 class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
   final ProductivityRepository _repository;
 
-  ProductivityBloc(this._repository) : super(const ProductivityState.loading()) {
+  ProductivityBloc(this._repository)
+    : super(const ProductivityState.loading()) {
     on<_LoadData>(_onLoadData);
     on<_CreateTask>(_onCreateTask);
     on<_UpdateTask>(_onUpdateTask);
@@ -26,7 +28,10 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     on<_AutoScheduleTasks>(_onAutoScheduleTasks);
   }
 
-  Future<void> _onLoadData(_LoadData event, Emitter<ProductivityState> emit) async {
+  Future<void> _onLoadData(
+    _LoadData event,
+    Emitter<ProductivityState> emit,
+  ) async {
     emit(const ProductivityState.loading());
     try {
       await _repository.performCarryForwardLogic();
@@ -35,17 +40,22 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       final dailyChecklist = await _repository.getDailyChecklist();
       final allNotes = await _repository.getAllNotes();
 
-      emit(ProductivityState.loaded(
-        allTasks: allTasks,
-        dailyChecklist: dailyChecklist,
-        allNotes: allNotes,
-      ));
+      emit(
+        ProductivityState.loaded(
+          allTasks: allTasks,
+          dailyChecklist: dailyChecklist,
+          allNotes: allNotes,
+        ),
+      );
     } catch (e) {
       emit(ProductivityState.error('Failed to load. Please try again.'));
     }
   }
 
-  Future<void> _onCreateTask(_CreateTask event, Emitter<ProductivityState> emit) async {
+  Future<void> _onCreateTask(
+    _CreateTask event,
+    Emitter<ProductivityState> emit,
+  ) async {
     try {
       await _repository.saveTask(event.task);
       add(const ProductivityEvent.loadData());
@@ -54,7 +64,10 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     }
   }
 
-  Future<void> _onUpdateTask(_UpdateTask event, Emitter<ProductivityState> emit) async {
+  Future<void> _onUpdateTask(
+    _UpdateTask event,
+    Emitter<ProductivityState> emit,
+  ) async {
     try {
       await _repository.saveTask(event.task);
       add(const ProductivityEvent.loadData());
@@ -63,7 +76,10 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     }
   }
 
-  Future<void> _onCompleteTask(_CompleteTask event, Emitter<ProductivityState> emit) async {
+  Future<void> _onCompleteTask(
+    _CompleteTask event,
+    Emitter<ProductivityState> emit,
+  ) async {
     try {
       await _repository.completeTaskRecursively(event.taskId);
       add(const ProductivityEvent.loadData());
@@ -72,7 +88,10 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     }
   }
 
-  Future<void> _onDeleteTask(_DeleteTask event, Emitter<ProductivityState> emit) async {
+  Future<void> _onDeleteTask(
+    _DeleteTask event,
+    Emitter<ProductivityState> emit,
+  ) async {
     try {
       await _repository.deleteTaskRecursively(event.taskId);
       add(const ProductivityEvent.loadData());
@@ -81,22 +100,34 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     }
   }
 
-  Future<void> _onCreateNote(_CreateNote event, Emitter<ProductivityState> emit) async {
+  Future<void> _onCreateNote(
+    _CreateNote event,
+    Emitter<ProductivityState> emit,
+  ) async {
     try {
       final aiService = getIt<AIService>();
       final allTasks = await _repository.getAllTasks();
-      final taskMap = allTasks.map((t) => {'id': t.id, 'title': t.title}).toList();
+      final taskMap = allTasks
+          .map((t) => {'id': t.id, 'title': t.title})
+          .toList();
 
-      final linkedIds = await aiService.extractLinkedEntityIds(event.note.quillDelta, taskMap);
+      final linkedIds = await aiService.extractLinkedEntityIds(
+        event.note.quillDelta,
+        taskMap,
+      );
       event.note.linkedTaskIds = linkedIds;
 
       await _repository.saveNote(event.note);
 
       // Bidirectional linking: Update tasks to reference this Note
       for (int taskId in linkedIds) {
-        final task = allTasks.firstWhere((t) => t.id == taskId, orElse: () => Task()..id = 0);
+        final task = allTasks.firstWhere(
+          (t) => t.id == taskId,
+          orElse: () => Task()..id = 0,
+        );
         if (task.id != 0 && !task.linkedNoteIds.contains(event.note.id)) {
-          task.linkedNoteIds = List.from(task.linkedNoteIds)..add(event.note.id);
+          task.linkedNoteIds = List.from(task.linkedNoteIds)
+            ..add(event.note.id);
           await _repository.saveTask(task);
         }
       }
@@ -107,7 +138,8 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
           orElse: () => Task()..id = 0,
         );
         if (task.id != 0 && !task.linkedNoteIds.contains(event.note.id)) {
-          task.linkedNoteIds = List.from(task.linkedNoteIds)..add(event.note.id);
+          task.linkedNoteIds = List.from(task.linkedNoteIds)
+            ..add(event.note.id);
           await _repository.saveTask(task);
         }
       }
@@ -118,21 +150,33 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     }
   }
 
-  Future<void> _onUpdateNote(_UpdateNote event, Emitter<ProductivityState> emit) async {
+  Future<void> _onUpdateNote(
+    _UpdateNote event,
+    Emitter<ProductivityState> emit,
+  ) async {
     try {
       final aiService = getIt<AIService>();
       final allTasks = await _repository.getAllTasks();
-      final taskMap = allTasks.map((t) => {'id': t.id, 'title': t.title}).toList();
+      final taskMap = allTasks
+          .map((t) => {'id': t.id, 'title': t.title})
+          .toList();
 
-      final linkedIds = await aiService.extractLinkedEntityIds(event.note.quillDelta, taskMap);
+      final linkedIds = await aiService.extractLinkedEntityIds(
+        event.note.quillDelta,
+        taskMap,
+      );
       event.note.linkedTaskIds = linkedIds;
 
       await _repository.saveNote(event.note);
 
       for (int taskId in linkedIds) {
-        final task = allTasks.firstWhere((t) => t.id == taskId, orElse: () => Task()..id = 0);
+        final task = allTasks.firstWhere(
+          (t) => t.id == taskId,
+          orElse: () => Task()..id = 0,
+        );
         if (task.id != 0 && !task.linkedNoteIds.contains(event.note.id)) {
-          task.linkedNoteIds = List.from(task.linkedNoteIds)..add(event.note.id);
+          task.linkedNoteIds = List.from(task.linkedNoteIds)
+            ..add(event.note.id);
           await _repository.saveTask(task);
         }
       }
@@ -143,7 +187,10 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     }
   }
 
-  Future<void> _onCreateProjectWithSubtasks(_CreateProjectWithSubtasks event, Emitter<ProductivityState> emit) async {
+  Future<void> _onCreateProjectWithSubtasks(
+    _CreateProjectWithSubtasks event,
+    Emitter<ProductivityState> emit,
+  ) async {
     try {
       final project = Task()
         ..title = event.title
@@ -153,7 +200,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
         ..platform = 'local'
         ..createdAt = DateTime.now()
         ..updatedAt = DateTime.now();
-      
+
       await _repository.saveTask(project);
 
       for (var sub in event.subtasks) {
@@ -175,15 +222,24 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     }
   }
 
-  Future<void> _onAutoScheduleTasks(_AutoScheduleTasks event, Emitter<ProductivityState> emit) async {
+  Future<void> _onAutoScheduleTasks(
+    _AutoScheduleTasks event,
+    Emitter<ProductivityState> emit,
+  ) async {
     try {
       final allTasks = await _repository.getAllTasks();
-      final unscheduled = allTasks.where((t) => !t.isCompleted && t.dueDate == null).toList();
-      
+      final unscheduled = allTasks
+          .where((t) => !t.isCompleted && t.dueDate == null)
+          .toList();
+
       if (unscheduled.isEmpty) return;
 
       final aiService = AIService();
-      final mappedTasks = unscheduled.map((t) => {'id': t.id, 'title': t.title, 'energyLevel': t.energyLevel}).toList();
+      final mappedTasks = unscheduled
+          .map(
+            (t) => {'id': t.id, 'title': t.title, 'energyLevel': t.energyLevel},
+          )
+          .toList();
       final schedule = await aiService.autoScheduleTasks(mappedTasks);
 
       for (var task in unscheduled) {

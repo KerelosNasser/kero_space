@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:table_calendar/table_calendar.dart';
-
 import '../bloc/productivity_bloc.dart';
 import '../bloc/calendar_bloc.dart';
 import '../widgets/daily_checklist.dart';
@@ -27,10 +25,9 @@ class ProductivityScreen extends StatefulWidget {
   State<ProductivityScreen> createState() => _ProductivityScreenState();
 }
 
-class _ProductivityScreenState extends State<ProductivityScreen> {
+class _ProductivityScreenState extends State<ProductivityScreen> with SingleTickerProviderStateMixin {
   static const _methodsChannel = MethodChannel('kero_space/methods');
   int _selectedEnergyLevel = 2; // Default to Medium
-  DateTime _selectedDay = DateTime.now();
 
   void _startDeepWork() async {
     try {
