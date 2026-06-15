@@ -66,7 +66,8 @@ class WakeWordService : Service() {
         handlerThread.start()
         handler = Handler(handlerThread.looper)
 
-        if (BuildConfig.DEBUG) {
+        val isDebuggable = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        if (isDebuggable) {
             val filter = IntentFilter("com.example.kero_space.WAKE_WORD_TRIGGER")
             ContextCompat.registerReceiver(this, mockTriggerReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
             mockReceiverRegistered = true

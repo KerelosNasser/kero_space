@@ -45,7 +45,7 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                     viewId.contains("secret", ignoreCase = true)
                 ) return
 
-                val rawText = event.text?.joinToString(" ").ifEmpty { null }
+                val rawText = event.text?.joinToString(" ")?.ifEmpty { null }
                 val sanitizedText = sanitizeText(rawText, viewId)
 
                 val rect = Rect()
