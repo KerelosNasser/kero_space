@@ -9,6 +9,7 @@ import '../bloc/calendar_bloc.dart';
 import '../widgets/daily_checklist.dart';
 import '../widgets/project_cards_view.dart';
 import '../widgets/notes_masonry_grid.dart';
+import '../widgets/calendar_tab_view.dart';
 import '../../data/models/productivity_collections.dart';
 
 import 'package:flutter/services.dart';
@@ -29,6 +30,7 @@ class ProductivityScreen extends StatefulWidget {
 class _ProductivityScreenState extends State<ProductivityScreen> {
   static const _methodsChannel = MethodChannel('kero_space/methods');
   int _selectedEnergyLevel = 2; // Default to Medium
+  DateTime _selectedDay = DateTime.now();
 
   void _startDeepWork() async {
     try {
@@ -76,9 +78,6 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
                   onRetry: () => context.read<ProductivityBloc>().add(const ProductivityEvent.loadData()),
                 ),
                 loaded: (allTasks, dailyChecklist, allNotes) {
-                  // Filter checklist by energy level
-                  final filteredChecklist = dailyChecklist.where((t) => (t.energyLevel ?? 2) == _selectedEnergyLevel).toList();
-                  
                   // Check if there are any high priority tasks pending for enforcement
                   final hasHighPriorityPending = dailyChecklist.any((t) => !t.isCompleted && (t.energyLevel == 3));
                   _updateTaskGatedMode(hasHighPriorityPending);
@@ -134,42 +133,48 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
                             ),
                           ),
 
-                          // Energy Filters
+                          // Energy Filters & Checklist isolated
                           SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                              child: SegmentedButton<int>(
-                                segments: const [
-                                  ButtonSegment(value: 1, label: Text('Low Energy'), icon: Icon(Icons.battery_2_bar)),
-                                  ButtonSegment(value: 2, label: Text('Medium Energy'), icon: Icon(Icons.battery_5_bar)),
-                                  ButtonSegment(value: 3, label: Text('High Focus'), icon: Icon(Icons.battery_full)),
-                                ],
-                                selected: {_selectedEnergyLevel},
-                                onSelectionChanged: (Set<int> newSelection) {
-                                  setState(() {
-                                    _selectedEnergyLevel = newSelection.first;
-                                  });
-                                },
-                              ),
+                            child: StatefulBuilder(
+                              builder: (context, setEnergyState) {
+                                final filteredChecklist = dailyChecklist.where((t) => (t.energyLevel ?? 2) == _selectedEnergyLevel).toList();
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                      child: SegmentedButton<int>(
+                                        segments: const [
+                                          ButtonSegment(value: 1, label: Text('Low Energy'), icon: Icon(Icons.battery_2_bar)),
+                                          ButtonSegment(value: 2, label: Text('Medium Energy'), icon: Icon(Icons.battery_5_bar)),
+                                          ButtonSegment(value: 3, label: Text('High Focus'), icon: Icon(Icons.battery_full)),
+                                        ],
+                                        selected: {_selectedEnergyLevel},
+                                        onSelectionChanged: (Set<int> newSelection) {
+                                          setEnergyState(() {
+                                            _selectedEnergyLevel = newSelection.first;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    if (filteredChecklist.isEmpty)
+                                      const Padding(padding: EdgeInsets.all(32.0), child: Text("No tasks for this energy level today."))
+                                    else
+                                      ListView.builder(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemCount: filteredChecklist.length,
+                                        itemBuilder: (context, index) {
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                            child: TaskRow(task: filteredChecklist[index]),
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                );
+                              }
                             ),
-                          ),
-                          
-                          // Filtered Checklist
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            sliver: filteredChecklist.isEmpty 
-                              ? const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(32.0), child: Text("No tasks for this energy level today."))))
-                              : SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 8.0),
-                                        child: TaskRow(task: filteredChecklist[index]),
-                                      );
-                                    },
-                                    childCount: filteredChecklist.length,
-                                  ),
-                                ),
                           ),
                           const SliverToBoxAdapter(child: SizedBox(height: 100)),
                         ],
@@ -182,63 +187,7 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
                       NotesMasonryGrid(notes: allNotes),
 
                       // Tab 4: Calendar
-                      BlocBuilder<CalendarBloc, CalendarState>(
-                        builder: (context, calState) {
-                          return calState.when(
-                            loading: () => const Center(child: CircularProgressIndicator()),
-                            error: (msg) => Center(child: Text("Error: $msg")),
-                            loaded: (events) {
-                              return Column(
-                                children: [
-                                  TableCalendar(
-                                    firstDay: DateTime.utc(2020, 10, 16),
-                                    lastDay: DateTime.utc(2030, 3, 14),
-                                    focusedDay: DateTime.now(),
-                                    eventLoader: (day) {
-                                      return events.where((e) => 
-                                        e.startTime.year == day.year && 
-                                        e.startTime.month == day.month && 
-                                        e.startTime.day == day.day
-                                      ).toList();
-                                    },
-                                    calendarFormat: CalendarFormat.month,
-                                    calendarBuilders: CalendarBuilders(
-                                      markerBuilder: (context, date, eventList) {
-                                        if (eventList.isEmpty) return const SizedBox();
-                                        
-                                        final hasCoptic = eventList.any((e) => (e as CalendarEvent).source == 'COPTIC');
-                                        return Positioned(
-                                          bottom: 1,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                               color: hasCoptic ? AppTheme.accentViolet : AppTheme.accentCyan,
-                                            ),
-                                            width: 7.0,
-                                            height: 7.0,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount: events.length,
-                                      itemBuilder: (context, index) {
-                                        final event = events[index];
-                                        return ListTile(
-                                          title: Text(event.title),
-                                          subtitle: Text("${event.startTime.toLocal()} - ${event.source}"),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
+                      CalendarTabView(allTasks: allTasks),
                     ],
                   );
                 },
