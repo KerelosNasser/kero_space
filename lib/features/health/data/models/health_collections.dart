@@ -12,6 +12,8 @@ class HealthRecord {
   late DateTime timestamp;
 }
 
+enum MealType { breakfast, lunch, dinner, snack }
+
 @collection
 class MealEntry {
   Id id = Isar.autoIncrement;
@@ -24,6 +26,8 @@ class MealEntry {
   late double carbs;
   late double fat;
   late DateTime timestamp;
+  @enumerated
+  MealType mealType = MealType.snack;
 }
 
 @collection

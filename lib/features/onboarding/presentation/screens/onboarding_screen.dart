@@ -7,6 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/core/di/injection.dart';
 import 'package:kero_space/core/permissions/permission_repository.dart';
+import 'package:kero_space/features/health/data/repositories/health_connect_repository.dart' as keroHealthRepo;
+import 'package:kero_space/features/health/data/models/health_collections.dart' as keroHealthModels;
+import 'package:kero_space/core/data/isar_service.dart' as keroIsar;
 
 import 'package:kero_space/core/permissions/permission_item.dart';
 import 'package:kero_space/core/permissions/permission_tile.dart';
@@ -21,6 +24,11 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBindingObserver {
   late final List<PermissionItem> _permissions;
   final Map<String, bool> _status = {};
+  
+  bool _isFastingMode = false;
+  double _weight = 70.0;
+  double _height = 175.0;
+  int _age = 25;
 
   @override
   void initState() {
@@ -71,6 +79,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
         check: () => repo.hasNotificationListener(),
         request: () => repo.openNotificationListenerSettings(),
       ),
+      PermissionItem(
+        title: 'Health Connect',
+        description: 'Allows fetching steps, heart rate, and sleep automatically.',
+        icon: Icons.favorite_outline,
+        check: () => getIt<keroHealthRepo.HealthConnectRepository>().requestPermissions().then((v) => v),
+        request: () => getIt<keroHealthRepo.HealthConnectRepository>().requestPermissions().then((_) {}),
+      ),
     ];
 
     _checkPermissions();
@@ -110,6 +125,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
   Future<void> _finishOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', true);
+
+    // Save Health Profile
+    final bmr = (10 * _weight) + (6.25 * _height) - (5 * _age) + 5;
+    final tdee = bmr * 1.55; // default moderate activity
+    final profile = keroHealthModels.UserProfile()
+      ..deviceId = 'local'
+      ..platform = 'Android'
+      ..height = _height
+      ..weight = _weight
+      ..age = _age
+      ..activityLevel = 1.55
+      ..bmrTarget = tdee
+      ..timestamp = DateTime.now();
+
+    final isar = keroIsar.IsarService.instance;
+    await isar.writeTxn(() async {
+      await isar.userProfiles.put(profile);
+    });
+    await prefs.setBool('fasting_mode', _isFastingMode);
 
     if (Platform.isAndroid) {
       const platform = MethodChannel('kero_space/main_methods');
@@ -156,6 +190,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
                         isGranted: _status[p.title] ?? false,
                         onRequest: () => _requestPermission(p),
                       )),
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Health Profile (Optional)',
+                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('Coptic Fasting Mode', style: TextStyle(color: AppTheme.textPrimary)),
+                    value: _isFastingMode,
+                    activeColor: AppTheme.accentPrimary,
+                    onChanged: (val) => setState(() => _isFastingMode = val),
+                  ),
+                  TextFormField(
+                    initialValue: _weight.toString(),
+                    decoration: const InputDecoration(labelText: 'Weight (kg)', labelStyle: TextStyle(color: AppTheme.textSecondary)),
+                    style: const TextStyle(color: AppTheme.textPrimary),
+                    keyboardType: TextInputType.number,
+                    onChanged: (val) => _weight = double.tryParse(val) ?? 70.0,
+                  ),
+                  TextFormField(
+                    initialValue: _height.toString(),
+                    decoration: const InputDecoration(labelText: 'Height (cm)', labelStyle: TextStyle(color: AppTheme.textSecondary)),
+                    style: const TextStyle(color: AppTheme.textPrimary),
+                    keyboardType: TextInputType.number,
+                    onChanged: (val) => _height = double.tryParse(val) ?? 175.0,
+                  ),
+                  TextFormField(
+                    initialValue: _age.toString(),
+                    decoration: const InputDecoration(labelText: 'Age', labelStyle: TextStyle(color: AppTheme.textSecondary)),
+                    style: const TextStyle(color: AppTheme.textPrimary),
+                    keyboardType: TextInputType.number,
+                    onChanged: (val) => _age = int.tryParse(val) ?? 25,
+                  ),
                   const SizedBox(height: 100), // padding for the bottom button
                 ],
               ),

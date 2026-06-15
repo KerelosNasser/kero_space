@@ -1048,23 +1048,29 @@ const MealEntrySchema = CollectionSchema(
       name: r'grams',
       type: IsarType.double,
     ),
-    r'name': PropertySchema(
+    r'mealType': PropertySchema(
       id: 5,
+      name: r'mealType',
+      type: IsarType.byte,
+      enumMap: _MealEntrymealTypeEnumValueMap,
+    ),
+    r'name': PropertySchema(
+      id: 6,
       name: r'name',
       type: IsarType.string,
     ),
     r'platform': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'platform',
       type: IsarType.string,
     ),
     r'protein': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'protein',
       type: IsarType.double,
     ),
     r'timestamp': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'timestamp',
       type: IsarType.dateTime,
     )
@@ -1106,10 +1112,11 @@ void _mealEntrySerialize(
   writer.writeString(offsets[2], object.deviceId);
   writer.writeDouble(offsets[3], object.fat);
   writer.writeDouble(offsets[4], object.grams);
-  writer.writeString(offsets[5], object.name);
-  writer.writeString(offsets[6], object.platform);
-  writer.writeDouble(offsets[7], object.protein);
-  writer.writeDateTime(offsets[8], object.timestamp);
+  writer.writeByte(offsets[5], object.mealType.index);
+  writer.writeString(offsets[6], object.name);
+  writer.writeString(offsets[7], object.platform);
+  writer.writeDouble(offsets[8], object.protein);
+  writer.writeDateTime(offsets[9], object.timestamp);
 }
 
 MealEntry _mealEntryDeserialize(
@@ -1125,10 +1132,13 @@ MealEntry _mealEntryDeserialize(
   object.fat = reader.readDouble(offsets[3]);
   object.grams = reader.readDouble(offsets[4]);
   object.id = id;
-  object.name = reader.readString(offsets[5]);
-  object.platform = reader.readString(offsets[6]);
-  object.protein = reader.readDouble(offsets[7]);
-  object.timestamp = reader.readDateTime(offsets[8]);
+  object.mealType =
+      _MealEntrymealTypeValueEnumMap[reader.readByteOrNull(offsets[5])] ??
+          MealType.breakfast;
+  object.name = reader.readString(offsets[6]);
+  object.platform = reader.readString(offsets[7]);
+  object.protein = reader.readDouble(offsets[8]);
+  object.timestamp = reader.readDateTime(offsets[9]);
   return object;
 }
 
@@ -1150,17 +1160,33 @@ P _mealEntryDeserializeProp<P>(
     case 4:
       return (reader.readDouble(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (_MealEntrymealTypeValueEnumMap[reader.readByteOrNull(offset)] ??
+          MealType.breakfast) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 8:
+      return (reader.readDouble(offset)) as P;
+    case 9:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _MealEntrymealTypeEnumValueMap = {
+  'breakfast': 0,
+  'lunch': 1,
+  'dinner': 2,
+  'snack': 3,
+};
+const _MealEntrymealTypeValueEnumMap = {
+  0: MealType.breakfast,
+  1: MealType.lunch,
+  2: MealType.dinner,
+  3: MealType.snack,
+};
 
 Id _mealEntryGetId(MealEntry object) {
   return object.id;
@@ -1685,6 +1711,59 @@ extension MealEntryQueryFilter
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> mealTypeEqualTo(
+      MealType value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'mealType',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> mealTypeGreaterThan(
+    MealType value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'mealType',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> mealTypeLessThan(
+    MealType value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'mealType',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> mealTypeBetween(
+    MealType lower,
+    MealType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'mealType',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> nameEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -2130,6 +2209,18 @@ extension MealEntryQuerySortBy on QueryBuilder<MealEntry, MealEntry, QSortBy> {
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByMealType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'mealType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByMealTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'mealType', Sort.desc);
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -2253,6 +2344,18 @@ extension MealEntryQuerySortThenBy
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByMealType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'mealType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByMealTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'mealType', Sort.desc);
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -2335,6 +2438,12 @@ extension MealEntryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByMealType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'mealType');
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2397,6 +2506,12 @@ extension MealEntryQueryProperty
   QueryBuilder<MealEntry, double, QQueryOperations> gramsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'grams');
+    });
+  }
+
+  QueryBuilder<MealEntry, MealType, QQueryOperations> mealTypeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'mealType');
     });
   }
 

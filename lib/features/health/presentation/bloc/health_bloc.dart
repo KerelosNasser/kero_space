@@ -60,6 +60,7 @@ class HealthState extends Equatable {
   
   final double bmrTarget;
   final bool isFastingMode;
+  final List<MealEntry> todayMeals;
   
   final String? errorMessage;
 
@@ -74,6 +75,7 @@ class HealthState extends Equatable {
     this.dailyFat = 0,
     this.bmrTarget = 2000,
     this.isFastingMode = false,
+    this.todayMeals = const [],
     this.errorMessage,
   });
 
@@ -88,6 +90,7 @@ class HealthState extends Equatable {
     double? dailyFat,
     double? bmrTarget,
     bool? isFastingMode,
+    List<MealEntry>? todayMeals,
     bool clearError = false,
     String? errorMessage,
   }) {
@@ -102,14 +105,14 @@ class HealthState extends Equatable {
       dailyFat: dailyFat ?? this.dailyFat,
       bmrTarget: bmrTarget ?? this.bmrTarget,
       isFastingMode: isFastingMode ?? this.isFastingMode,
+      todayMeals: todayMeals ?? this.todayMeals,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 
-  @override
   List<Object?> get props => [
         status, steps, heartRate, sleepMinutes, dailyCalories, dailyProtein,
-        dailyCarbs, dailyFat, bmrTarget, isFastingMode, errorMessage
+        dailyCarbs, dailyFat, bmrTarget, isFastingMode, todayMeals, errorMessage
       ];
 }
 
@@ -179,6 +182,7 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
         dailyFat: fat,
         bmrTarget: bmr,
         isFastingMode: isFasting,
+        todayMeals: meals,
         clearError: true,
       ));
     } catch (e) {

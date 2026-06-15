@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
 import 'package:kero_space/core/app_theme.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:kero_space/shared/widgets/shimmer/health_skeleton.dart';
 import 'package:kero_space/shared/widgets/inline_error_widget.dart';
 
@@ -34,15 +34,97 @@ class HealthDashboardScreen extends StatelessWidget {
             );
           }
 
-          return ListView(
+          double caloriesRatio = state.bmrTarget > 0 ? state.dailyCalories / state.bmrTarget : 0;
+
+          return Padding(
             padding: const EdgeInsets.all(16.0),
-            children: [
-              _buildFastingToggle(context, state),
-              const SizedBox(height: 16),
-              _buildNutritionSummary(context, state),
-              const SizedBox(height: 16),
-              _buildBiometrics(context, state),
-            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 24),
+                // The Top Big Circle
+                SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircularProgressIndicator(
+                        value: caloriesRatio,
+                        strokeWidth: 15,
+                        backgroundColor: AppTheme.bgElevated,
+                        color: caloriesRatio > 1.0 ? AppTheme.accentRose : AppTheme.accentMint,
+                        strokeCap: StrokeCap.round,
+                      ),
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('${state.dailyCalories.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 36, color: AppTheme.textPrimary)),
+                            Text('/ ${state.bmrTarget.toInt()} kcal', style: const TextStyle(fontSize: 16, color: AppTheme.textSecondary)),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // The Middle 3 Squares
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSquareCard(Icons.directions_walk, '${state.steps.toInt()}', 'Steps', AppTheme.accentCyan),
+                    _buildSquareCard(Icons.favorite, '${state.heartRate.toInt()}', 'HR (bpm)', AppTheme.accentRose),
+                    _buildSquareCard(Icons.bedtime, (state.sleepMinutes / 60).toStringAsFixed(1), 'Sleep (h)', AppTheme.accentGold),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("Today's Meals", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                ),
+                const SizedBox(height: 16),
+                // The Bottom List
+                Expanded(
+                  child: state.todayMeals.isEmpty
+                      ? const Center(child: Text("No meals logged yet today.", style: TextStyle(color: AppTheme.textSecondary)))
+                      : ListView.builder(
+                          itemCount: state.todayMeals.length,
+                          itemBuilder: (context, index) {
+                            final meal = state.todayMeals[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12.0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.bgElevated,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(Icons.fastfood, color: AppTheme.accentViolet),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(meal.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                                        const SizedBox(height: 4),
+                                        Text('${DateFormat.jm().format(meal.timestamp)} • ${meal.mealType.name.toUpperCase()}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                                      ],
+                                    ),
+                                  ),
+                                  Text('${meal.calories.toInt()} kcal', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                )
+              ],
+            ),
           );
         },
       ),
@@ -53,164 +135,23 @@ class HealthDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFastingToggle(BuildContext context, HealthState state) {
-    return Card(
-      child: SwitchListTile(
-        title: const Text('Coptic Fasting Mode', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
-        subtitle: const Text('Adjusts macros to plant-based ratios', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-        value: state.isFastingMode,
-        activeTrackColor: AppTheme.accentViolet,
-        activeThumbColor: AppTheme.accentPrimary,
-        inactiveTrackColor: AppTheme.bgElevated,
-        inactiveThumbColor: AppTheme.textSecondary,
-        onChanged: (val) {
-          context.read<HealthBloc>().add(ToggleFastingMode(val));
-        },
+  Widget _buildSquareCard(IconData icon, String value, String label, Color iconColor) {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: AppTheme.bgElevated,
+        borderRadius: BorderRadius.circular(12),
       ),
-    );
-  }
-
-  Widget _buildNutritionSummary(BuildContext context, HealthState state) {
-    double caloriesRatio = state.bmrTarget > 0 ? state.dailyCalories / state.bmrTarget : 0;
-    
-    // Macro Pie Chart Data
-    final totalMacros = state.dailyProtein + state.dailyCarbs + state.dailyFat;
-    final proRatio = totalMacros > 0 ? (state.dailyProtein / totalMacros) * 100 : 33.0;
-    final carbRatio = totalMacros > 0 ? (state.dailyCarbs / totalMacros) * 100 : 33.0;
-    final fatRatio = totalMacros > 0 ? (state.dailyFat / totalMacros) * 100 : 34.0;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Today\'s Nutrition', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                SizedBox(
-                  height: 120,
-                  width: 120,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CircularProgressIndicator(
-                        value: caloriesRatio,
-                        strokeWidth: 10,
-                        backgroundColor: AppTheme.bgElevated,
-                        color: caloriesRatio > 1.0 ? AppTheme.accentRose : AppTheme.accentMint,
-                        strokeCap: StrokeCap.round,
-                      ),
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('${state.dailyCalories.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppTheme.textPrimary)),
-                            Text('/ ${state.bmrTarget.toInt()} kcal', style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 100,
-                  width: 100,
-                  child: PieChart(
-                    PieChartData(
-                      sectionsSpace: 2,
-                      centerSpaceRadius: 20,
-                      sections: [
-                        PieChartSectionData(
-                          color: AppTheme.accentCyan,
-                          value: proRatio,
-                          title: '',
-                          radius: 20,
-                        ),
-                        PieChartSectionData(
-                          color: AppTheme.accentGold,
-                          value: carbRatio,
-                          title: '',
-                          radius: 20,
-                        ),
-                        PieChartSectionData(
-                          color: AppTheme.accentRose,
-                          value: fatRatio,
-                          title: '',
-                          radius: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildMacroLegend('Protein', '${state.dailyProtein.toStringAsFixed(0)}g', AppTheme.accentCyan),
-                    const SizedBox(height: 8),
-                    _buildMacroLegend('Carbs', '${state.dailyCarbs.toStringAsFixed(0)}g', AppTheme.accentGold),
-                    const SizedBox(height: 8),
-                    _buildMacroLegend('Fat', '${state.dailyFat.toStringAsFixed(0)}g', AppTheme.accentRose),
-                  ],
-                )
-              ],
-            )
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: iconColor, size: 24),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary)),
+          Text(label, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+        ],
       ),
-    );
-  }
-
-  Widget _buildMacroLegend(String label, String value, Color color) {
-    return Row(
-      children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
-            Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBiometrics(BuildContext context, HealthState state) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Biometrics', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildBioIcon(Icons.directions_walk, '${state.steps.toInt()}', 'Steps'),
-                _buildBioIcon(Icons.favorite, '${state.heartRate.toInt()}', 'HR (bpm)'),
-                _buildBioIcon(Icons.bedtime, (state.sleepMinutes / 60).toStringAsFixed(1), 'Sleep (hrs)'),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBioIcon(IconData icon, String value, String label) {
-    return Column(
-      children: [
-        Icon(icon, size: 32, color: AppTheme.accentMint),
-        const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-        Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-      ],
     );
   }
 }

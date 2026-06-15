@@ -16,6 +16,8 @@ class MealLogScreen extends StatefulWidget {
 class _MealLogScreenState extends State<MealLogScreen> {
   double grams = 100.0;
   late final TextEditingController _gramsController;
+  DateTime _selectedTime = DateTime.now();
+  MealType _selectedMealType = MealType.snack;
 
   @override
   void initState() {
@@ -56,6 +58,50 @@ class _MealLogScreenState extends State<MealLogScreen> {
                 });
               },
             ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<MealType>(
+                    value: _selectedMealType,
+                    decoration: const InputDecoration(labelText: 'Meal Type'),
+                    items: MealType.values.map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type.name.toUpperCase()),
+                    )).toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedMealType = val);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: InkWell(
+                    onTap: () async {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.fromDateTime(_selectedTime),
+                      );
+                      if (time != null) {
+                        setState(() {
+                          _selectedTime = DateTime(
+                            _selectedTime.year,
+                            _selectedTime.month,
+                            _selectedTime.day,
+                            time.hour,
+                            time.minute,
+                          );
+                        });
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(labelText: 'Time'),
+                      child: Text('${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 32),
             Text('Calories: ${totalCalories.toStringAsFixed(1)} kcal', style: const TextStyle(fontSize: 18)),
             Text('Protein: ${totalProtein.toStringAsFixed(1)} g', style: const TextStyle(fontSize: 18)),
@@ -65,7 +111,7 @@ class _MealLogScreenState extends State<MealLogScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => _saveMeal(totalCalories, totalProtein, totalCarbs, totalFat),
+                onPressed: () => _saveMeal(totalCalories, totalProtein, totalCarbs, totalFat, _selectedTime, _selectedMealType),
                 child: const Text('Save Meal'),
               ),
             )
@@ -75,7 +121,7 @@ class _MealLogScreenState extends State<MealLogScreen> {
     );
   }
 
-  void _saveMeal(double cals, double pro, double carbs, double fat) async {
+  void _saveMeal(double cals, double pro, double carbs, double fat, DateTime time, MealType type) async {
     final state = context.read<HealthBloc>().state;
     
     if (state.isFastingMode && !widget.ingredient.isFastingCompliant) {
@@ -107,7 +153,8 @@ class _MealLogScreenState extends State<MealLogScreen> {
       ..protein = pro
       ..carbs = carbs
       ..fat = fat
-      ..timestamp = DateTime.now();
+      ..timestamp = time
+      ..mealType = type;
 
     if (mounted) {
       context.read<HealthBloc>().add(LogMeal(entry));
