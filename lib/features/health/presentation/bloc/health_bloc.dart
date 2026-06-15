@@ -110,6 +110,7 @@ class HealthState extends Equatable {
     );
   }
 
+  @override
   List<Object?> get props => [
         status, steps, heartRate, sleepMinutes, dailyCalories, dailyProtein,
         dailyCarbs, dailyFat, bmrTarget, isFastingMode, todayMeals, errorMessage

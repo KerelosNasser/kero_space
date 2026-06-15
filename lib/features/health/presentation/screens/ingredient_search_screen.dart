@@ -78,8 +78,8 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
                           height: 56,
                           decoration: BoxDecoration(
                             color: ing.isFastingCompliant 
-                                ? AppTheme.accentMint.withOpacity(0.1) 
-                                : AppTheme.accentRose.withOpacity(0.1),
+                                ? AppTheme.accentMint.withValues(alpha: 0.1) 
+                                : AppTheme.accentRose.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -113,7 +113,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.accentMint.withOpacity(0.15),
+                                        color: AppTheme.accentMint.withValues(alpha: 0.15),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Text(
@@ -144,6 +144,11 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
                 );
               },
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/health/scan'),
+        backgroundColor: AppTheme.accentViolet,
+        child: const Icon(Icons.camera_alt, color: AppTheme.textPrimary),
+      ),
     );
   }
 
@@ -151,7 +156,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

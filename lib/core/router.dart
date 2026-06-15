@@ -12,6 +12,7 @@ import '../features/health/presentation/screens/health_dashboard_screen.dart';
 import '../features/health/presentation/screens/calorie_config_screen.dart';
 import '../features/health/presentation/screens/ingredient_search_screen.dart';
 import '../features/health/presentation/screens/meal_log_screen.dart';
+import '../features/health/presentation/screens/food_scanner_screen.dart';
 import '../features/health/data/models/health_collections.dart';
 import '../features/health/presentation/bloc/health_bloc.dart';
 import '../features/finance/presentation/screens/finance_home_screen.dart';
@@ -106,6 +107,11 @@ final router = GoRouter(
           child: MealLogScreen(ingredient: ingredient),
         );
       },
+    ),
+    GoRoute(
+      path: '/health/scan',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const FoodScannerScreen(),
     ),
     GoRoute(
       path: '/church/confessions_log',

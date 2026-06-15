@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   static const Color bgPrimary = Color(0xFF000000);
+  static const Color bgBase = Color(0xFF000000);
   static const Color bgSurface = Color(0xFF1C1C1E);
   static const Color bgElevated = Color(0xFF2C2C2E);
   static const Color bgOverlay = Color(0x99000000);
+  static const Color divider = Color(0xFF38383A);
 
   static const Color accentPrimary = Color(0xFFFFFFFF);
   static const Color accentCyan = Color(0xFF0A84FF);

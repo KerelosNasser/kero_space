@@ -63,7 +63,7 @@ class _MealLogScreenState extends State<MealLogScreen> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<MealType>(
-                    value: _selectedMealType,
+                    initialValue: _selectedMealType,
                     decoration: const InputDecoration(labelText: 'Meal Type'),
                     items: MealType.values.map((type) => DropdownMenuItem(
                       value: type,

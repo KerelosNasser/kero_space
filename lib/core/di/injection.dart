@@ -21,6 +21,8 @@ import 'package:kero_space/features/church/presentation/bloc/confession_bloc.dar
 import 'package:kero_space/features/health/data/repositories/health_connect_repository.dart';
 import 'package:kero_space/features/health/data/repositories/nutrition_repository.dart';
 import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
+import 'package:kero_space/features/health/data/services/barcode_service.dart';
+import 'package:kero_space/features/health/data/services/ai_scanner_service.dart';
 
 // Finance module
 import 'package:kero_space/features/finance/data/repositories/finance_repository.dart';
@@ -60,6 +62,8 @@ void setupLocator() {
     () => HealthConnectRepository(),
   );
   getIt.registerLazySingleton<NutritionRepository>(() => NutritionRepository());
+  getIt.registerLazySingleton<BarcodeService>(() => BarcodeService(getIt<Dio>()));
+  getIt.registerLazySingleton<AiScannerService>(() => AiScannerService(getIt<Dio>()));
   getIt.registerLazySingleton<HealthBloc>(
     () => HealthBloc(
       getIt<HealthConnectRepository>(),

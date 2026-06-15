@@ -7,9 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/core/di/injection.dart';
 import 'package:kero_space/core/permissions/permission_repository.dart';
-import 'package:kero_space/features/health/data/repositories/health_connect_repository.dart' as keroHealthRepo;
-import 'package:kero_space/features/health/data/models/health_collections.dart' as keroHealthModels;
-import 'package:kero_space/core/data/isar_service.dart' as keroIsar;
+import 'package:kero_space/features/health/data/repositories/health_connect_repository.dart' as kero_health_repo;
+import 'package:kero_space/features/health/data/models/health_collections.dart' as kero_health_models;
+import 'package:kero_space/core/data/isar_service.dart' as kero_isar;
 
 import 'package:kero_space/core/permissions/permission_item.dart';
 import 'package:kero_space/core/permissions/permission_tile.dart';
@@ -83,8 +83,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
         title: 'Health Connect',
         description: 'Allows fetching steps, heart rate, and sleep automatically.',
         icon: Icons.favorite_outline,
-        check: () => getIt<keroHealthRepo.HealthConnectRepository>().requestPermissions().then((v) => v),
-        request: () => getIt<keroHealthRepo.HealthConnectRepository>().requestPermissions().then((_) {}),
+        check: () => getIt<kero_health_repo.HealthConnectRepository>().requestPermissions().then((v) => v),
+        request: () => getIt<kero_health_repo.HealthConnectRepository>().requestPermissions().then((_) {}),
       ),
     ];
 
@@ -129,7 +129,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
     // Save Health Profile
     final bmr = (10 * _weight) + (6.25 * _height) - (5 * _age) + 5;
     final tdee = bmr * 1.55; // default moderate activity
-    final profile = keroHealthModels.UserProfile()
+    final profile = kero_health_models.UserProfile()
       ..deviceId = 'local'
       ..platform = 'Android'
       ..height = _height
@@ -139,7 +139,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
       ..bmrTarget = tdee
       ..timestamp = DateTime.now();
 
-    final isar = keroIsar.IsarService.instance;
+    final isar = kero_isar.IsarService.instance;
     await isar.writeTxn(() async {
       await isar.userProfiles.put(profile);
     });
@@ -200,7 +200,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
                   SwitchListTile(
                     title: const Text('Coptic Fasting Mode', style: TextStyle(color: AppTheme.textPrimary)),
                     value: _isFastingMode,
-                    activeColor: AppTheme.accentPrimary,
+                    activeThumbColor: AppTheme.accentPrimary,
                     onChanged: (val) => setState(() => _isFastingMode = val),
                   ),
                   TextFormField(
