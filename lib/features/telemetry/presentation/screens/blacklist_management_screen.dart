@@ -42,8 +42,10 @@ class _State extends State<BlacklistManagementScreen> {
           .toList()
         ..sort((a, b) => (usageMap[b.packageName] ?? 0).compareTo(usageMap[a.packageName] ?? 0));
 
-      return Column(children: [
-        Padding(
+      return Scaffold(
+        appBar: AppBar(title: const Text('Configure App Blockers')),
+        body: Column(children: [
+          Padding(
           padding: const EdgeInsets.all(16),
           child: TextField(
             onChanged: (v) => setState(() => _query = v),
@@ -75,7 +77,8 @@ class _State extends State<BlacklistManagementScreen> {
                   );
                 },
               )),
-      ]);
+        ]),
+      );
     });
   }
 }

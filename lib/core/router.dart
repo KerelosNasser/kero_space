@@ -22,6 +22,7 @@ import 'package:get_it/get_it.dart';
 import '../features/telemetry/presentation/bloc/telemetry_bloc.dart' as kero_space_telemetry_bloc;
 import '../features/telemetry/presentation/bloc/telemetry_event.dart' as kero_space_telemetry_event;
 import '../features/telemetry/presentation/pages/telemetry_screen.dart' as kero_space_telemetry_screen;
+import '../features/telemetry/presentation/screens/blacklist_management_screen.dart' as kero_space_blacklist_screen;
 import '../features/church/presentation/screens/church_screen.dart';
 import '../features/church/presentation/screens/confession_log_screen.dart';
 import '../features/church/presentation/bloc/church_bloc.dart';
@@ -70,6 +71,14 @@ final router = GoRouter(
       path: '/settings',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const kero_space_settings.SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/telemetry/blacklist',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider.value(
+        value: GetIt.I<kero_space_telemetry_bloc.TelemetryBloc>()..add(const kero_space_telemetry_event.LoadBlacklist()),
+        child: const kero_space_blacklist_screen.BlacklistManagementScreen(),
+      ),
     ),
     GoRoute(
       path: '/health/config',

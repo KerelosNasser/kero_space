@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:kero_space/core/app_theme.dart';
@@ -16,6 +17,13 @@ class TelemetryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Telemetry'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.block, color: AppTheme.accentRose),
+            tooltip: 'Configure App Blockers',
+            onPressed: () => context.push('/telemetry/blacklist'),
+          ),
+        ],
       ),
       body: BlocBuilder<TelemetryBloc, TelemetryState>(
         builder: (context, state) {

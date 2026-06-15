@@ -5,6 +5,15 @@ import 'dart:ui';
 import 'package:isar/isar.dart';
 import 'package:injectable/injectable.dart';
 
+@pragma('vm:entry-point')
+void notificationCallback(NotificationEvent event) {
+  final SendPort? send = IsolateNameServer.lookupPortByName('notification_listener_isolate');
+  if (send != null) {
+    send.send(event);
+  }
+}
+
+@pragma('vm:entry-point')
 @lazySingleton
 class NotificationParserService {
   static const String _isolateName = 'notification_listener_isolate';
@@ -25,16 +34,10 @@ class NotificationParserService {
     });
 
     // Start listening
-    await NotificationsListener.initialize(callbackHandle: _callback);
+    await NotificationsListener.initialize(callbackHandle: notificationCallback);
   }
 
-  @pragma('vm:entry-point')
-  static void _callback(NotificationEvent event) {
-    final SendPort? send = IsolateNameServer.lookupPortByName(_isolateName);
-    if (send != null) {
-      send.send(event);
-    }
-  }
+
 
   void _handleNotification(NotificationEvent event) {
     final String content = event.text ?? '';
