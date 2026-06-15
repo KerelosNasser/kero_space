@@ -45,6 +45,105 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
     }
   }
 
+  void _showProjectDetails(BuildContext context, Task project, List<Task> subtasks) {
+    final bloc = context.read<ProductivityBloc>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => BlocProvider.value(
+        value: bloc,
+        child: BlocBuilder<ProductivityBloc, ProductivityState>(
+          builder: (context, state) {
+            List<Task> currentSubtasks = subtasks;
+            state.maybeWhen(
+              loaded: (allTasks, _, __) {
+                currentSubtasks = allTasks.where((t) => t.parentId == project.id).toList();
+              },
+              orElse: () {},
+            );
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.8,
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.folder, size: 32, color: AppTheme.accentGold),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            project.title,
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: currentSubtasks.isEmpty
+                      ? const Center(child: Text("No tasks in this project yet.", style: TextStyle(color: AppTheme.textSecondary)))
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: currentSubtasks.length,
+                          itemBuilder: (context, index) {
+                            final task = currentSubtasks[index];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppTheme.accentViolet.withValues(alpha: 0.2)),
+                              ),
+                              child: ListTile(
+                                leading: Checkbox(
+                                  value: task.isCompleted,
+                                  activeColor: AppTheme.accentMint,
+                                  onChanged: (val) {
+                                    if (val == true && !task.isCompleted) {
+                                      context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(task.id));
+                                    }
+                                  },
+                                ),
+                                title: Text(
+                                  task.title, 
+                                  style: TextStyle(
+                                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                                    color: task.isCompleted ? AppTheme.textSecondary : AppTheme.textPrimary,
+                                  )
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: AppTheme.textSecondary),
+                                  onPressed: () => context.read<ProductivityBloc>().add(ProductivityEvent.deleteTask(task.id)),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                  ),
+                ],
+              ),
+            );
+          }
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final projects = widget.allTasks.where((t) => t.type == TaskType.project).toList();
@@ -109,7 +208,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
 
                 return GestureDetector(
                   onTap: () {
-                    // Navigate to unified project screen
+                    _showProjectDetails(context, project, subtasks);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(16.0),
