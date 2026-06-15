@@ -31,10 +31,15 @@ object AgentManager {
             "wake_word" -> {
                 val intent = Intent(context, WakeWordService::class.java)
                 if (enabled) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        context.startForegroundService(intent)
+                    val hasMic = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    if (hasMic) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            context.startForegroundService(intent)
+                        } else {
+                            context.startService(intent)
+                        }
                     } else {
-                        context.startService(intent)
+                        Log.w(TAG, "Cannot start WakeWordService: RECORD_AUDIO permission not granted")
                     }
                 } else {
                     context.stopService(intent)

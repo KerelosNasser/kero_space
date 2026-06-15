@@ -94,10 +94,15 @@ class KeroSpaceForegroundService : Service() {
         startForegroundWithNotification()
         registerReceivers()
         startFlutterEngine()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(Intent(this, WakeWordService::class.java))
+        val hasMic = ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+        if (hasMic) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(Intent(this, WakeWordService::class.java))
+            } else {
+                startService(Intent(this, WakeWordService::class.java))
+            }
         } else {
-            startService(Intent(this, WakeWordService::class.java))
+            Log.w(TAG, "RECORD_AUDIO not granted — skipping WakeWordService startup")
         }
     }
 
