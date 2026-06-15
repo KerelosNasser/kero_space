@@ -43,6 +43,12 @@ class ScreenEventRepository {
         lastWake = null;
       }
     }
+    
+    // If the screen is currently awake, add the time from lastWake to 'to'
+    if (lastWake != null && to.isAfter(lastWake)) {
+      totalMs += to.difference(lastWake).inMilliseconds;
+    }
+    
     return totalMs;
   }
 

@@ -3,11 +3,12 @@ import 'package:installed_apps/installed_apps.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kero_space/core/app_theme.dart';
-import '../../data/models/blacklist_rule.dart';
+
 import '../bloc/telemetry_bloc.dart';
 import '../bloc/telemetry_event.dart';
 import '../bloc/telemetry_state.dart';
 import '../widgets/app_usage_tile.dart';
+import '../widgets/rule_configuration_sheet.dart';
 
 class BlacklistManagementScreen extends StatefulWidget {
   const BlacklistManagementScreen({super.key});
@@ -64,8 +65,12 @@ class _State extends State<BlacklistManagementScreen> {
                   return AppUsageTile(
                     app: app, foregroundMs: usageMap[app.packageName],
                     isBlacklisted: blacklisted.contains(app.packageName),
-                    onAdd: () => context.read<TelemetryBloc>().add(
-                      AddBlacklistRule(BlacklistRule(packageName: app.packageName, decisionBreakSeconds: 30))),
+                    onAdd: () async {
+                      final rule = await RuleConfigurationSheet.show(context, app.packageName);
+                      if (rule != null && context.mounted) {
+                        context.read<TelemetryBloc>().add(AddBlacklistRule(rule));
+                      }
+                    },
                     onRemove: () => context.read<TelemetryBloc>().add(RemoveBlacklistRule(app.packageName)),
                   );
                 },

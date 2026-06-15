@@ -14,25 +14,29 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
         private const val TAG = "KeroSpaceAccess"
     }
 
+    private var currentContext: String = SubAppDetector.CONTEXT_NORMAL
+    private var currentPackage: String = ""
+    private var contextStartTime: Long = 0
+    private var isBlockedByQuota: Boolean = false
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
 
         when (event.eventType) {
-            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> {
                 val packageName = event.packageName?.toString() ?: return
-                Log.d(TAG, "Window State Changed: $packageName")
-
-                val json = JSONObject().apply {
-                    put("type", "WINDOW_STATE")
-                    put("packageName", packageName)
-                    put("timestamp", System.currentTimeMillis())
-                }.toString()
-
-                // Push to both engines: main engine (UI/TelemetryBloc) and background engine (Isar).
-                KeroSpaceForegroundService.accessibilityEventSink?.success(json)
-                KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
-
-                runBlockerLogic(packageName)
+                if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+                    Log.d(TAG, "Window State Changed: $packageName")
+                    val json = JSONObject().apply {
+                        put("type", "WINDOW_STATE")
+                        put("packageName", packageName)
+                        put("timestamp", System.currentTimeMillis())
+                    }.toString()
+                    KeroSpaceForegroundService.accessibilityEventSink?.success(json)
+                    KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
+                }
+                runBlockerLogic(packageName, event)
             }
 
             AccessibilityEvent.TYPE_VIEW_CLICKED -> {
@@ -91,20 +95,23 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
         return sanitized
     }
 
-    /**
-     * Checks if [packageName] is blocked and shows the overlay if not in an allowed window.
-     *
-     * Performance note: [BlacklistPreferencesStore.getBlockedPackages] caches its result
-     * in memory and only re-reads EncryptedSharedPreferences when [saveRulesJson] is called.
-     * Safe to call on every window-state event.
-     */
-    private fun runBlockerLogic(packageName: String) {
+    private fun runBlockerLogic(packageName: String, event: AccessibilityEvent) {
         try {
             val blocked = BlacklistPreferencesStore.getBlockedPackages(applicationContext)
-            if (!blocked.contains(packageName)) return
+            if (!blocked.contains(packageName)) {
+                if (currentPackage != packageName) {
+                    CounterOverlayManager.dismissCounter()
+                    currentPackage = packageName
+                    currentContext = SubAppDetector.CONTEXT_NORMAL
+                }
+                return
+            }
 
             val rulesJson = BlacklistPreferencesStore.getRulesJson(applicationContext)
             var breakSeconds = 30
+            var sessionLimitMinutes: Int? = null
+            var subAppTarget: String? = null
+            var isStrict = true
             var isAllowedWindow = false
 
             val arr = JSONArray(rulesJson)
@@ -112,24 +119,70 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                 val obj = arr.getJSONObject(i)
                 if (obj.getString("packageName") == packageName) {
                     breakSeconds = obj.optInt("decisionBreakSeconds", 30)
+                    if (obj.has("sessionLimitMinutes")) sessionLimitMinutes = obj.optInt("sessionLimitMinutes")
+                    if (obj.has("subAppTarget")) subAppTarget = obj.getString("subAppTarget")
+                    if (obj.has("strictMode")) isStrict = obj.optBoolean("strictMode", true)
                     isAllowedWindow = isCurrentTimeInAllowedWindows(obj)
                     break
                 }
             }
+            
+            val detectedContext = SubAppDetector.detectContext(packageName, event)
+            
+            // Check if context changed
+            if (currentPackage != packageName || currentContext != detectedContext) {
+                currentPackage = packageName
+                currentContext = detectedContext
+                contextStartTime = System.currentTimeMillis()
+                isBlockedByQuota = false
+            }
 
-            if (!isAllowedWindow) {
-                if (OverlayManager.hasBreakBeenTakenRecently(packageName)) {
-                    Log.d(TAG, "Blacklisted package $packageName opened but break already taken recently — allowing")
-                    recordBlockerDecision(packageName, "granted")
+            // Standard blacklist logic if no sub-app targeting or target matches
+            if (subAppTarget == null || subAppTarget == detectedContext) {
+                
+                // Advanced session limits
+                if (sessionLimitMinutes != null && sessionLimitMinutes > 0) {
+                    val timeSpentMs = System.currentTimeMillis() - contextStartTime
+                    val limitMs = sessionLimitMinutes * 60 * 1000L
+                    
+                    if (timeSpentMs > limitMs) {
+                        if (!isBlockedByQuota) {
+                            CounterOverlayManager.dismissCounter()
+                            OverlayManager.showOverlay(applicationContext, packageName, 999999) // Strict block
+                            recordBlockerDecision(packageName, "blocked_by_quota")
+                            isBlockedByQuota = true
+                        }
+                    } else {
+                        if (isBlockedByQuota) {
+                            // User went back to normal context, dismiss block
+                            OverlayManager.dismissOverlay(packageName)
+                            isBlockedByQuota = false
+                        }
+                        // Show counter pill
+                        CounterOverlayManager.showCounter(applicationContext, detectedContext, limitMs - timeSpentMs)
+                    }
+                    return
+                }
+                
+                if (!isAllowedWindow) {
+                    if (OverlayManager.hasBreakBeenTakenRecently(packageName)) {
+                        recordBlockerDecision(packageName, "granted")
+                    } else {
+                        OverlayManager.showOverlay(applicationContext, packageName, breakSeconds)
+                        recordBlockerDecision(packageName, "blocked")
+                    }
                 } else {
-                    Log.d(TAG, "Blacklisted package opened: $packageName — showing overlay for ${breakSeconds}s")
-                    OverlayManager.showOverlay(applicationContext, packageName, breakSeconds)
-                    recordBlockerDecision(packageName, "blocked")
+                    recordBlockerDecision(packageName, "granted")
                 }
             } else {
-                Log.d(TAG, "Blacklisted package $packageName is in allowed window — access granted")
-                recordBlockerDecision(packageName, "granted")
+                // If user is in the app, but NOT in the targeted sub-app, remove any restrictions/counters
+                if (isBlockedByQuota) {
+                    OverlayManager.dismissOverlay(packageName)
+                    isBlockedByQuota = false
+                }
+                CounterOverlayManager.dismissCounter()
             }
+            
         } catch (e: Exception) {
             Log.e(TAG, "Error in blocker logic for $packageName", e)
         }
