@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kero_space/core/app_theme.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/parsed_intent.dart';
@@ -28,7 +29,7 @@ class VoiceBottomSheet extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: AppTheme.bgPrimary.withValues(alpha: 0.1),
                   blurRadius: 10,
                   spreadRadius: 2,
                 )
@@ -52,7 +53,7 @@ class VoiceBottomSheet extends StatelessWidget {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.3),
+                          color: AppTheme.textDisabled.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -117,7 +118,7 @@ class VoiceBottomSheet extends StatelessWidget {
     if (state is VoiceConfirmPending) {
       return Column(
         children: [
-          const Icon(Icons.check_circle_outline, color: Colors.green, size: 48),
+          const Icon(Icons.check_circle_outline, color: AppTheme.accentMint, size: 48),
           const SizedBox(height: 16),
           Text(
             "Confirm Action",
@@ -152,7 +153,7 @@ class VoiceBottomSheet extends StatelessWidget {
     if (state is VoiceSuccess) {
       return Column(
         children: [
-          const Icon(Icons.check_circle, color: Colors.green, size: 64),
+          const Icon(Icons.check_circle, color: AppTheme.accentMint, size: 64),
           const SizedBox(height: 16),
           Text(
             state.message,
@@ -165,7 +166,7 @@ class VoiceBottomSheet extends StatelessWidget {
     if (state is VoiceFailure) {
       return Column(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 48),
+          const Icon(Icons.warning_amber_rounded, color: AppTheme.accentGold, size: 48),
           const SizedBox(height: 16),
           Text(
             state.errorMessage,
@@ -176,7 +177,7 @@ class VoiceBottomSheet extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               "Heard: \"${state.rawText}\"",
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],

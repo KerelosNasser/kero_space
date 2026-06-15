@@ -28,6 +28,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _dockerUrlController.dispose();
+    super.dispose();
+  }
+
   Future<void> _saveDockerUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('docker_url', url);

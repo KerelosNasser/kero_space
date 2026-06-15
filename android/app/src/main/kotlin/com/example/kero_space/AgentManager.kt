@@ -5,7 +5,9 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -29,17 +31,28 @@ object AgentManager {
             "wake_word" -> {
                 val intent = Intent(context, WakeWordService::class.java)
                 if (enabled) {
-                    context.startService(intent)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(intent)
+                    } else {
+                        context.startService(intent)
+                    }
                 } else {
                     context.stopService(intent)
                 }
             }
             "usage_guard" -> {
                 if (enabled) {
+                    val constraints = Constraints.Builder()
+                        .setRequiresBatteryNotLow(true)
+                        .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                        .build()
+                    val workRequest = PeriodicWorkRequestBuilder<UsageStatsWorker>(15, TimeUnit.MINUTES)
+                        .setConstraints(constraints)
+                        .build()
                     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                         USAGE_WORK_NAME,
                         ExistingPeriodicWorkPolicy.KEEP,
-                        PeriodicWorkRequestBuilder<UsageStatsWorker>(15, TimeUnit.MINUTES).build(),
+                        workRequest,
                     )
                 } else {
                     WorkManager.getInstance(context).cancelUniqueWork(USAGE_WORK_NAME)
@@ -69,15 +82,9 @@ object AgentManager {
     fun buildAgentStatusMap(context: Context): Map<String, Boolean> = mapOf(
         "accessibility" to isAccessibilityEnabled(context),
         "usage_guard" to isUsageGuardScheduled(context),
-        "screen_event" to isServiceRunning(context, KeroSpaceForegroundService::class.java),
-        "wake_word" to isServiceRunning(context, WakeWordService::class.java),
+        "screen_event" to KeroSpaceForegroundService.isRunning,
+        "wake_word" to WakeWordService.isRunning,
     )
-
-    @Suppress("DEPRECATION")
-    private fun isServiceRunning(context: Context, cls: Class<*>): Boolean =
-        (context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager)
-            .getRunningServices(Int.MAX_VALUE)
-            .any { it.service.className == cls.name }
 
     fun isAccessibilityEnabled(context: Context): Boolean {
         val svc = "${context.packageName}/${KeroSpaceAccessibilityService::class.java.name}"
@@ -87,9 +94,18 @@ object AgentManager {
         ) ?: "").contains(svc)
     }
 
-    private fun isUsageGuardScheduled(context: Context): Boolean =
-        WorkManager.getInstance(context)
-            .getWorkInfosForUniqueWork(USAGE_WORK_NAME)
-            .get()
-            .any { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING }
+    private fun isUsageGuardScheduled(context: Context): Boolean {
+        return try {
+            WorkManager.getInstance(context)
+                .getWorkInfosForUniqueWork(USAGE_WORK_NAME)
+                .get(2, java.util.concurrent.TimeUnit.SECONDS)
+                .any { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING }
+        } catch (e: java.util.concurrent.TimeoutException) {
+            Log.w(TAG, "isUsageGuardScheduled timed out — returning false")
+            false
+        } catch (e: Exception) {
+            Log.e(TAG, "isUsageGuardScheduled error", e)
+            false
+        }
+    }
 }

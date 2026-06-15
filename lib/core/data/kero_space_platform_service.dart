@@ -6,6 +6,42 @@ import 'package:path_provider/path_provider.dart';
 import 'isar_service.dart';
 import '../../features/telemetry/data/models/telemetry_collections.dart';
 
+String _sanitizeClickJson(String rawJson) {
+  try {
+    final data = jsonDecode(rawJson) as Map<String, dynamic>;
+    final viewId = (data['viewId'] as String?) ?? '';
+
+    if (viewId.toLowerCase().contains('password') ||
+        viewId.toLowerCase().contains('pin') ||
+        viewId.toLowerCase().contains('secret')) {
+      data['text'] = '[REDACTED]';
+    }
+
+    if (data['text'] is String) {
+      data['text'] = (data['text'] as String).replaceAll(
+        RegExp(r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b'),
+        '[CARD_REDACTED]',
+      );
+    }
+
+    if (viewId.toLowerCase().contains('email') ||
+        viewId.toLowerCase().contains('login') ||
+        viewId.toLowerCase().contains('username') ||
+        viewId.toLowerCase().contains('signin')) {
+      if (data['text'] is String) {
+        data['text'] = (data['text'] as String).replaceAll(
+          RegExp(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'),
+          '[EMAIL_REDACTED]',
+        );
+      }
+    }
+
+    return jsonEncode(data);
+  } catch (_) {
+    return rawJson;
+  }
+}
+
 /// Entrypoint for the headless FlutterEngine spawned by Android.
 ///
 /// This isolate writes raw platform events (screen, accessibility, usage stats)
@@ -64,7 +100,7 @@ void backgroundMain() async {
             ..deviceId = 'android'
             ..platform = 'android'
             ..name = 'click'
-            ..dataJson = raw
+            ..dataJson = _sanitizeClickJson(raw)
             ..timestamp = DateTime.fromMillisecondsSinceEpoch(timestampMs);
           await IsarService.instance.writeTxn(
             () => IsarService.instance.telemetryEvents.put(clickEvent),

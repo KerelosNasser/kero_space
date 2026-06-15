@@ -32,6 +32,7 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
 
   @override
   void dispose() {
+    _controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

@@ -5,19 +5,29 @@ import android.database.Cursor
 import android.provider.CalendarContract
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 
 class CalendarChannelHandler(private val context: Context) : MethodChannel.MethodCallHandler {
+    private val handlerScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         if (call.method == "getEvents") {
-            try {
-                val events = getLocalEvents()
-                result.success(events)
-            } catch (e: SecurityException) {
-                result.error("PERMISSION_DENIED", "Calendar permission denied", null)
-            } catch (e: Exception) {
-                result.error("ERROR", e.message, null)
+            handlerScope.launch {
+                try {
+                    val events = withContext(Dispatchers.IO) { getLocalEvents() }
+                    result.success(events)
+                } catch (e: SecurityException) {
+                    result.error("PERMISSION_DENIED", "Calendar permission denied", null)
+                } catch (e: Exception) {
+                    result.error("ERROR", e.message, null)
+                }
             }
         } else {
             result.notImplemented()
@@ -55,6 +65,8 @@ class CalendarChannelHandler(private val context: Context) : MethodChannel.Metho
             val startIdx = it.getColumnIndex(CalendarContract.Events.DTSTART)
             val endIdx = it.getColumnIndex(CalendarContract.Events.DTEND)
             val allDayIdx = it.getColumnIndex(CalendarContract.Events.ALL_DAY)
+
+            if (idIdx < 0 || titleIdx < 0 || startIdx < 0 || endIdx < 0 || allDayIdx < 0) return@use
 
             while (it.moveToNext()) {
                 val obj = JSONObject()

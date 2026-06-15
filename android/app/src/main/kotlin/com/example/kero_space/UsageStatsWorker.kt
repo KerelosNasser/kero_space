@@ -26,7 +26,11 @@ class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
         Log.d(TAG, "doWork: Querying UsageStatsManager")
 
         val usageStatsManager = applicationContext
-            .getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            .getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: run {
+                Log.e(TAG, "USAGE_STATS_SERVICE not available")
+                return Result.failure()
+            }
 
         val calendar = Calendar.getInstance()
         val endTime = calendar.timeInMillis
@@ -63,6 +67,7 @@ class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
 
         val intent = Intent("com.example.kero_space.USAGE_STATS_READY").apply {
             putExtra("payload", jsonArray.toString())
+            setPackage(applicationContext.packageName)
         }
         applicationContext.sendBroadcast(intent)
 

@@ -88,6 +88,7 @@ class HealthState extends Equatable {
     double? dailyFat,
     double? bmrTarget,
     bool? isFastingMode,
+    bool clearError = false,
     String? errorMessage,
   }) {
     return HealthState(
@@ -101,7 +102,7 @@ class HealthState extends Equatable {
       dailyFat: dailyFat ?? this.dailyFat,
       bmrTarget: bmrTarget ?? this.bmrTarget,
       isFastingMode: isFastingMode ?? this.isFastingMode,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 
@@ -139,7 +140,9 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
       // Load latest biometrics for today
       final now = DateTime.now();
       // Sync biometrics non-blocking
-      _healthRepo.syncBiometrics(now.subtract(const Duration(days: 1)), now);
+      try {
+        _healthRepo.syncBiometrics(now.subtract(const Duration(days: 1)), now);
+      } catch (_) {}
       
       final startOfDay = DateTime(now.year, now.month, now.day);
       
@@ -176,6 +179,7 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
         dailyFat: fat,
         bmrTarget: bmr,
         isFastingMode: isFasting,
+        clearError: true,
       ));
     } catch (e) {
       emit(state.copyWith(status: HealthStatus.failure, errorMessage: e.toString()));
@@ -183,25 +187,41 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
   }
 
   Future<void> _onLogMeal(LogMeal event, Emitter<HealthState> emit) async {
-    await _nutritionRepo.logMeal(event.entry);
-    add(LoadDashboard());
+    try {
+      await _nutritionRepo.logMeal(event.entry);
+      add(LoadDashboard());
+    } catch (e) {
+      emit(state.copyWith(status: HealthStatus.failure, errorMessage: 'Failed to log meal.'));
+    }
   }
 
   Future<void> _onToggleFastingMode(ToggleFastingMode event, Emitter<HealthState> emit) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('fasting_mode', event.isFasting);
-    emit(state.copyWith(isFastingMode: event.isFasting));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('fasting_mode', event.isFasting);
+      emit(state.copyWith(isFastingMode: event.isFasting));
+    } catch (e) {
+      emit(state.copyWith(status: HealthStatus.failure, errorMessage: 'Failed to update fasting mode.'));
+    }
   }
 
   Future<void> _onUpdateProfile(UpdateProfile event, Emitter<HealthState> emit) async {
-    final isar = IsarService.instance;
-    await isar.writeTxn(() async {
-      await isar.userProfiles.put(event.profile);
-    });
-    add(LoadDashboard());
+    try {
+      final isar = IsarService.instance;
+      await isar.writeTxn(() async {
+        await isar.userProfiles.put(event.profile);
+      });
+      add(LoadDashboard());
+    } catch (e) {
+      emit(state.copyWith(status: HealthStatus.failure, errorMessage: 'Failed to update profile.'));
+    }
   }
 
   Future<void> _onCreateCustomIngredient(CreateCustomIngredient event, Emitter<HealthState> emit) async {
-    await _nutritionRepo.addCustomIngredient(event.ingredient);
+    try {
+      await _nutritionRepo.addCustomIngredient(event.ingredient);
+    } catch (e) {
+      emit(state.copyWith(status: HealthStatus.failure, errorMessage: 'Failed to add ingredient.'));
+    }
   }
 }

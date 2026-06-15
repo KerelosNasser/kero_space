@@ -1,8 +1,10 @@
 package com.example.kero_space
 
+import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -19,6 +21,12 @@ import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import android.content.pm.PackageManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class KeroSpaceForegroundService : Service() {
 
@@ -46,6 +54,8 @@ class KeroSpaceForegroundService : Service() {
          * WakeWordService pushes to the MAIN engine only — VoiceBloc in the UI
          * reacts to wake word events. The background isolate has no use for them.
          */
+        @Volatile var isRunning = false
+
         @Volatile var bgScreenEventSink: EventChannel.EventSink? = null
         @Volatile var bgAccessibilityEventSink: EventChannel.EventSink? = null
         @Volatile var bgUsageStatsEventSink: EventChannel.EventSink? = null
@@ -62,6 +72,7 @@ class KeroSpaceForegroundService : Service() {
 
     private var flutterEngine: FlutterEngine? = null
     private var screenReceiver: KeroSpaceScreenReceiver? = null
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val usageStatsReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -77,18 +88,25 @@ class KeroSpaceForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        isRunning = true
         Log.d(TAG, "onCreate")
         createNotificationChannel()
         startForegroundWithNotification()
         registerReceivers()
         startFlutterEngine()
-        startService(Intent(this, WakeWordService::class.java))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(Intent(this, WakeWordService::class.java))
+        } else {
+            startService(Intent(this, WakeWordService::class.java))
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     override fun onDestroy() {
+        isRunning = false
         Log.d(TAG, "onDestroy")
+        serviceScope.cancel()
         unregisterReceiverSafe(screenReceiver)
         unregisterReceiverSafe(usageStatsReceiver)
         flutterEngine?.destroy()
@@ -98,7 +116,13 @@ class KeroSpaceForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onTimeout(startId: Int) {
-        Log.w(TAG, "FGS onTimeout (Android 15+ dataSync limit). Stopping self.")
+        Log.w(TAG, "FGS onTimeout (Android 15+ dataSync limit). Scheduling restart.")
+        val restartIntent = Intent(this, KeroSpaceForegroundService::class.java)
+        val pendingIntent = PendingIntent.getService(
+            this, 0, restartIntent, PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
         stopSelf(startId)
     }
 
@@ -113,13 +137,8 @@ class KeroSpaceForegroundService : Service() {
         }
         val usageFilter = IntentFilter("com.example.kero_space.USAGE_STATS_READY")
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(screenReceiver, screenFilter, Context.RECEIVER_NOT_EXPORTED)
-            registerReceiver(usageStatsReceiver, usageFilter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(screenReceiver, screenFilter)
-            registerReceiver(usageStatsReceiver, usageFilter)
-        }
+        ContextCompat.registerReceiver(this, screenReceiver, screenFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(this, usageStatsReceiver, usageFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     private fun createNotificationChannel() {
@@ -163,22 +182,26 @@ class KeroSpaceForegroundService : Service() {
     // ─── Headless Flutter Engine ─────────────────────────────────────────────
 
     private fun startFlutterEngine() {
-        try {
-            val flutterLoader: FlutterLoader = FlutterInjector.instance().flutterLoader()
-            flutterLoader.startInitialization(applicationContext)
-            flutterLoader.ensureInitializationComplete(applicationContext, null)
+        serviceScope.launch {
+            try {
+                val flutterLoader: FlutterLoader = FlutterInjector.instance().flutterLoader()
+                flutterLoader.startInitialization(applicationContext)
+                flutterLoader.ensureInitializationComplete(applicationContext, null)
 
-            flutterEngine = FlutterEngine(applicationContext)
-            setupBackgroundChannels()
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    flutterEngine = FlutterEngine(applicationContext)
+                    setupBackgroundChannels()
 
-            val entrypoint = DartExecutor.DartEntrypoint(
-                flutterLoader.findAppBundlePath(),
-                "backgroundMain",
-            )
-            flutterEngine?.dartExecutor?.executeDartEntrypoint(entrypoint)
-            Log.d(TAG, "Headless FlutterEngine started — backgroundMain executing")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialise Headless FlutterEngine", e)
+                    val entrypoint = DartExecutor.DartEntrypoint(
+                        flutterLoader.findAppBundlePath(),
+                        "backgroundMain",
+                    )
+                    flutterEngine?.dartExecutor?.executeDartEntrypoint(entrypoint)
+                    Log.d(TAG, "Headless FlutterEngine started — backgroundMain executing")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialise Headless FlutterEngine", e)
+            }
         }
     }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kero_space/core/app_theme.dart';
 
 class VoiceWaveform extends StatelessWidget {
   final bool isListening;
@@ -16,13 +17,13 @@ class VoiceWaveform extends StatelessWidget {
       width: isListening ? 80 : 60,
       height: isListening ? 80 : 60,
       decoration: BoxDecoration(
-        color: isListening ? Colors.blue.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
+        color: isListening ? AppTheme.accentCyan.withValues(alpha: 0.2) : AppTheme.textDisabled.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Center(
         child: Icon(
           Icons.mic,
-          color: isListening ? Colors.blue : Colors.grey,
+          color: isListening ? AppTheme.accentCyan : AppTheme.textSecondary,
           size: isListening ? 40 : 30,
         ),
       ),

@@ -76,7 +76,6 @@ void setupLocator() {
     () => FinanceBloc(
       financeRepository: getIt<FinanceRepository>(),
       egxScraperService: getIt<EGXScraperService>(),
-      nutritionRepository: getIt<NutritionRepository>(),
     ),
   );
   getIt.registerLazySingleton<NotificationParserService>(
@@ -110,10 +109,6 @@ void setupLocator() {
   getIt.registerLazySingleton<VoiceBloc>(
     () => VoiceBloc(
       getIt<CommandParser>(),
-      getIt<ProductivityBloc>(),
-      getIt<HealthBloc>(),
-      getIt<FinanceBloc>(),
-      getIt<ChurchBloc>(),
     ),
   );
 

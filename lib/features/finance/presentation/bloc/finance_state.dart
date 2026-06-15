@@ -4,7 +4,7 @@ abstract class FinanceState extends Equatable {
   const FinanceState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class FinanceInitial extends FinanceState {}
@@ -14,7 +14,7 @@ class FinanceLoading extends FinanceState {}
 class CorrelationDataPoint extends Equatable {
   final DateTime date;
   final double cumulativeWealth;
-  final double dailyCaloricSurplus; // Calories consumed minus BMR
+  final double dailyCaloricSurplus;
 
   const CorrelationDataPoint({
     required this.date,
@@ -23,7 +23,7 @@ class CorrelationDataPoint extends Equatable {
   });
 
   @override
-  List<Object> get props => [date, cumulativeWealth, dailyCaloricSurplus];
+  List<Object?> get props => [date, cumulativeWealth, dailyCaloricSurplus];
 }
 
 class FinanceLoaded extends FinanceState {
@@ -48,7 +48,7 @@ class FinanceLoaded extends FinanceState {
   });
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         transactions,
         budgets,
         watchlist,
@@ -66,5 +66,5 @@ class FinanceError extends FinanceState {
   const FinanceError(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }

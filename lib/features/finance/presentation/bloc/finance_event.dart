@@ -4,7 +4,7 @@ abstract class FinanceEvent extends Equatable {
   const FinanceEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class LoadFinanceData extends FinanceEvent {}
@@ -25,7 +25,7 @@ class AddTransactionEvent extends FinanceEvent {
   });
 
   @override
-  List<Object> get props => [amount, type, category, vendor ?? ''];
+  List<Object?> get props => [amount, type, category, vendor];
 }
 
 class SetBudgetEvent extends FinanceEvent {
@@ -35,7 +35,7 @@ class SetBudgetEvent extends FinanceEvent {
   const SetBudgetEvent(this.category, this.limit);
 
   @override
-  List<Object> get props => [category, limit];
+  List<Object?> get props => [category, limit];
 }
 
 class AddToWatchlistEvent extends FinanceEvent {
@@ -45,7 +45,7 @@ class AddToWatchlistEvent extends FinanceEvent {
   const AddToWatchlistEvent(this.ticker, this.name);
 
   @override
-  List<Object> get props => [ticker, name];
+  List<Object?> get props => [ticker, name];
 }
 
 class RemoveFromWatchlistEvent extends FinanceEvent {
@@ -54,7 +54,7 @@ class RemoveFromWatchlistEvent extends FinanceEvent {
   const RemoveFromWatchlistEvent(this.ticker);
 
   @override
-  List<Object> get props => [ticker];
+  List<Object?> get props => [ticker];
 }
 
 class AddCareerTaskEvent extends FinanceEvent {
@@ -63,7 +63,7 @@ class AddCareerTaskEvent extends FinanceEvent {
   const AddCareerTaskEvent(this.task);
 
   @override
-  List<Object> get props => [task];
+  List<Object?> get props => [task];
 }
 
 class UpdateCareerTaskStatusEvent extends FinanceEvent {
@@ -73,7 +73,7 @@ class UpdateCareerTaskStatusEvent extends FinanceEvent {
   const UpdateCareerTaskStatusEvent(this.taskId, this.newStatus);
 
   @override
-  List<Object> get props => [taskId, newStatus];
+  List<Object?> get props => [taskId, newStatus];
 }
 
 class DeleteCareerTaskEvent extends FinanceEvent {
@@ -82,5 +82,5 @@ class DeleteCareerTaskEvent extends FinanceEvent {
   const DeleteCareerTaskEvent(this.taskId);
 
   @override
-  List<Object> get props => [taskId];
+  List<Object?> get props => [taskId];
 }

@@ -48,13 +48,14 @@ class ChurchState extends Equatable {
     ChurchStatus? status,
     List<MassAttendance>? attendances,
     List<MinistryTask>? tasks,
+    bool clearError = false,
     String? errorMessage,
   }) {
     return ChurchState(
       status: status ?? this.status,
       attendances: attendances ?? this.attendances,
       tasks: tasks ?? this.tasks,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 
@@ -76,7 +77,7 @@ class ChurchBloc extends Bloc<ChurchEvent, ChurchState> {
           status: ChurchStatus.success,
           attendances: attendances,
           tasks: tasks,
-          errorMessage: null, // Clear error on success
+          clearError: true,
         ));
       } catch (e) {
         emit(state.copyWith(
@@ -93,7 +94,7 @@ class ChurchBloc extends Bloc<ChurchEvent, ChurchState> {
         ..attendanceType = event.type;
         
       final updatedAttendances = List<MassAttendance>.from(state.attendances)..add(newAttendance);
-      emit(state.copyWith(attendances: updatedAttendances, status: ChurchStatus.success));
+      emit(state.copyWith(attendances: updatedAttendances, status: ChurchStatus.success, clearError: true));
       
       try {
         await _repository.markAttendance(event.date, event.type);
@@ -109,7 +110,7 @@ class ChurchBloc extends Bloc<ChurchEvent, ChurchState> {
     on<UpdateServiceTaskEvent>((event, emit) async {
       // Optimistic update
       final updatedTasks = state.tasks.map((t) => t.id == event.task.id ? event.task : t).toList();
-      emit(state.copyWith(tasks: updatedTasks, status: ChurchStatus.success));
+      emit(state.copyWith(tasks: updatedTasks, status: ChurchStatus.success, clearError: true));
 
       try {
         await _repository.saveTask(event.task);

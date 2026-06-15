@@ -10,6 +10,7 @@ import '../widgets/daily_checklist.dart';
 import '../widgets/task_tree_view.dart';
 import '../../data/models/productivity_collections.dart';
 
+import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/core/di/injection.dart';
 
 class ProductivityScreen extends StatelessWidget {
@@ -61,18 +62,18 @@ class ProductivityScreen extends StatelessWidget {
                                       margin: const EdgeInsets.all(8.0),
                                       padding: const EdgeInsets.all(12.0),
                                       decoration: BoxDecoration(
-                                        color: Colors.purple.withValues(alpha: 0.2),
+                                        color: AppTheme.accentViolet.withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(8.0),
-                                        border: Border.all(color: Colors.purple),
+                                        border: Border.all(color: AppTheme.accentViolet),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.restaurant_menu, color: Colors.purple),
+                                           const Icon(Icons.restaurant_menu, color: AppTheme.accentViolet),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               "Today is a Fasting Day: ${fastEvent.title}. Strictly Vegan (No meat/dairy).",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+                                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentViolet),
                                             ),
                                           ),
                                         ],
@@ -134,7 +135,7 @@ class ProductivityScreen extends StatelessWidget {
                                           child: Container(
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
-                                              color: hasCoptic ? Colors.purple : Colors.blue,
+                                               color: hasCoptic ? AppTheme.accentViolet : AppTheme.accentCyan,
                                             ),
                                             width: 7.0,
                                             height: 7.0,

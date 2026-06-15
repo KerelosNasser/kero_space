@@ -1,10 +1,15 @@
 package com.example.kero_space
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -14,9 +19,11 @@ import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import androidx.core.content.ContextCompat
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
+import org.json.JSONObject
 import java.nio.FloatBuffer
 import java.util.Arrays
 
@@ -24,6 +31,10 @@ class WakeWordService : Service() {
 
     companion object {
         private const val TAG = "KeroSpaceWakeWord"
+        private const val CHANNEL_ID = "kero_space_wake_word_channel"
+        private const val NOTIFICATION_ID = 2
+
+        @Volatile var isRunning = false
     }
 
     @Volatile private var audioRecord: AudioRecord? = null
@@ -31,6 +42,8 @@ class WakeWordService : Service() {
 
     private lateinit var handlerThread: HandlerThread
     private lateinit var handler: Handler
+
+    private var mockReceiverRegistered = false
 
     /**
      * ADB mock trigger for dev/test only.
@@ -46,22 +59,63 @@ class WakeWordService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        isRunning = true
         Log.d(TAG, "WakeWordService Created")
 
         handlerThread = HandlerThread("WakeWordAudioThread")
         handlerThread.start()
         handler = Handler(handlerThread.looper)
 
-        // RECEIVER_NOT_EXPORTED: ADB broadcasts can still trigger this via --user 0.
-        // Using EXPORTED here is a security risk — any installed app could trigger fake wakes.
-        val filter = IntentFilter("com.example.kero_space.WAKE_WORD_TRIGGER")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(mockTriggerReceiver, filter, RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(mockTriggerReceiver, filter)
+        if (BuildConfig.DEBUG) {
+            val filter = IntentFilter("com.example.kero_space.WAKE_WORD_TRIGGER")
+            ContextCompat.registerReceiver(this, mockTriggerReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+            mockReceiverRegistered = true
         }
 
+        createNotificationChannel()
+        startForegroundWithNotification()
+
         startListening()
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Kero Space Wake Word",
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply { description = "Listening for wake word" }
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                .createNotificationChannel(channel)
+        }
+    }
+
+    private fun startForegroundWithNotification() {
+        val notification: Notification = androidx.core.app.NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Kero Space Listening")
+            .setContentText("Wake word detection active")
+            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .setOngoing(true)
+            .build()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val hasMic = ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.RECORD_AUDIO,
+            ) == PackageManager.PERMISSION_GRANTED
+            val serviceTypes = if (hasMic) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            } else {
+                Log.w(TAG, "RECORD_AUDIO not granted — falling back to no FGS type")
+                0
+            }
+            if (serviceTypes != 0) {
+                startForeground(NOTIFICATION_ID, notification, serviceTypes)
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun startListening() {
@@ -156,7 +210,12 @@ class WakeWordService : Service() {
     }
 
     private fun emitWakeWordEvent(text: String, confidence: Float) {
-        val json = "{\"type\":\"WAKE_WORD_DETECTED\",\"text\":\"$text\",\"confidence\":$confidence,\"timestamp\":${System.currentTimeMillis()}}"
+        val json = JSONObject().apply {
+            put("type", "WAKE_WORD_DETECTED")
+            put("text", text)
+            put("confidence", confidence.toDouble())
+            put("timestamp", System.currentTimeMillis())
+        }.toString()
 
         val launchIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -172,6 +231,7 @@ class WakeWordService : Service() {
     }
 
     override fun onDestroy() {
+        isRunning = false
         Log.d(TAG, "WakeWordService Destroyed")
         isListening = false
         try {
@@ -182,10 +242,13 @@ class WakeWordService : Service() {
         }
         audioRecord = null
         handlerThread.quitSafely()
-        try {
-            unregisterReceiver(mockTriggerReceiver)
-        } catch (e: Exception) {
-            Log.w(TAG, "Error unregistering mock trigger receiver", e)
+        if (mockReceiverRegistered) {
+            try {
+                unregisterReceiver(mockTriggerReceiver)
+            } catch (e: Exception) {
+                Log.w(TAG, "Error unregistering mock trigger receiver", e)
+            }
+            mockReceiverRegistered = false
         }
         super.onDestroy()
     }

@@ -1,6 +1,7 @@
 package com.example.kero_space
 
 import android.accessibilityservice.AccessibilityService
+import android.graphics.Rect
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import org.json.JSONArray
@@ -39,24 +40,55 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                 val className = event.className?.toString() ?: ""
                 val viewId = event.source?.viewIdResourceName ?: ""
 
-                // Privacy: skip password / PIN fields.
                 if (viewId.contains("password", ignoreCase = true) ||
-                    viewId.contains("pin", ignoreCase = true)
+                    viewId.contains("pin", ignoreCase = true) ||
+                    viewId.contains("secret", ignoreCase = true)
                 ) return
+
+                val rawText = event.text?.joinToString(" ").ifEmpty { null }
+                val sanitizedText = sanitizeText(rawText, viewId)
+
+                val rect = Rect()
+                event.source?.getBoundsInScreen(rect)
+                val clickX = rect.centerX()
+                val clickY = rect.centerY()
 
                 val json = JSONObject().apply {
                     put("type", "CLICK")
                     put("packageName", packageName)
                     put("className", className)
                     put("viewId", viewId)
+                    put("text", sanitizedText ?: JSONObject.NULL)
+                    put("clickX", clickX)
+                    put("clickY", clickY)
                     put("timestamp", System.currentTimeMillis())
                 }.toString()
 
-                // Push to both engines: main engine (UI/TelemetryBloc) and background engine (Isar).
                 KeroSpaceForegroundService.accessibilityEventSink?.success(json)
                 KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
             }
         }
+    }
+
+    private fun sanitizeText(text: String?, viewId: String): String? {
+        if (text == null) return null
+
+        if (viewId.contains("password", ignoreCase = true) ||
+            viewId.contains("pin", ignoreCase = true) ||
+            viewId.contains("secret", ignoreCase = true)) {
+            return "[REDACTED]"
+        }
+
+        var sanitized = text.replace(Regex("\\b\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b"), "[CARD_REDACTED]")
+
+        if (viewId.contains("email", ignoreCase = true) ||
+            viewId.contains("login", ignoreCase = true) ||
+            viewId.contains("username", ignoreCase = true) ||
+            viewId.contains("signin", ignoreCase = true)) {
+            sanitized = sanitized.replace(Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"), "[EMAIL_REDACTED]")
+        }
+
+        return sanitized
     }
 
     /**

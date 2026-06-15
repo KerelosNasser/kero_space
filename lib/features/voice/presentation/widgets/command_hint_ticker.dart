@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:kero_space/core/app_theme.dart';
 
 class CommandHintTicker extends StatefulWidget {
   const CommandHintTicker({super.key});
@@ -46,7 +47,7 @@ class _CommandHintTickerState extends State<CommandHintTicker> {
         hints[_currentIndex],
         key: ValueKey<int>(_currentIndex),
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Colors.grey,
+          color: AppTheme.textSecondary,
           fontStyle: FontStyle.italic,
         ),
       ),

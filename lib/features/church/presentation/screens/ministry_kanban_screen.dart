@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kero_space/core/app_theme.dart';
 import '../bloc/church_bloc.dart';
 import '../../data/models/ministry_task.dart';
 
@@ -20,23 +21,23 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // --bg-primary
+      backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        title: const Text('Ministry Service', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Ministry Service', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.bgPrimary,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
       ),
       body: BlocConsumer<ChurchBloc, ChurchState>(
         listener: (context, state) {
           if (state.status == ChurchStatus.failure && state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),
+              SnackBar(content: Text(state.errorMessage!), backgroundColor: AppTheme.accentRose),
             );
           }
         },
         builder: (context, state) {
           if (state.status == ChurchStatus.loading && state.tasks.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFFBF5AF2)));
+            return const Center(child: CircularProgressIndicator(color: AppTheme.accentViolet));
           }
 
           final todoTasks = state.tasks.where((t) => t.status == MinistryTaskStatus.todo).toList();
@@ -53,9 +54,9 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFBF5AF2), // --accent-violet
+        backgroundColor: AppTheme.accentViolet,
         onPressed: () => _showAddTaskDialog(context),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: AppTheme.accentPrimary),
       ),
     );
   }
@@ -68,7 +69,7 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Expanded(

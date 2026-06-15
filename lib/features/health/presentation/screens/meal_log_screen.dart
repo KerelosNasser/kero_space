@@ -14,6 +14,19 @@ class MealLogScreen extends StatefulWidget {
 
 class _MealLogScreenState extends State<MealLogScreen> {
   double grams = 100.0;
+  late final TextEditingController _gramsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _gramsController = TextEditingController(text: '100');
+  }
+
+  @override
+  void dispose() {
+    _gramsController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +48,7 @@ class _MealLogScreenState extends State<MealLogScreen> {
             TextField(
               decoration: const InputDecoration(labelText: 'Amount (grams)', suffixText: 'g'),
               keyboardType: TextInputType.number,
-              controller: TextEditingController(text: '100'),
+              controller: _gramsController,
               onChanged: (val) {
                 setState(() {
                   grams = double.tryParse(val) ?? 0.0;

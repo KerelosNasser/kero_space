@@ -17,7 +17,7 @@ class UnlockConfessionSession extends ConfessionEvent {
   final String passphrase;
   const UnlockConfessionSession(this.passphrase);
   @override
-  List<Object?> get props => [passphrase];
+  List<Object?> get props => [];
 }
 
 class UnlockWithBiometrics extends ConfessionEvent {}
@@ -26,7 +26,7 @@ class EnableBiometrics extends ConfessionEvent {
   final String passphrase;
   const EnableBiometrics(this.passphrase);
   @override
-  List<Object?> get props => [passphrase];
+  List<Object?> get props => [];
 }
 
 class DisableBiometrics extends ConfessionEvent {}
@@ -61,7 +61,7 @@ class ConfessionUnlocked extends ConfessionState {
   final SecretKey sessionKey;
   const ConfessionUnlocked(this.sessionKey);
   @override
-  List<Object?> get props => [sessionKey];
+  List<Object?> get props => [];
 }
 
 class ConfessionUnlockFailed extends ConfessionState {}

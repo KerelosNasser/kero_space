@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Manages the decision-break overlay window.
@@ -28,19 +29,18 @@ object OverlayManager {
     private var windowManager: WindowManager? = null
     private var overlayView: LinearLayout? = null
 
-    /** Set synchronously to true when a show is scheduled, false when dismissed. */
-    @Volatile private var overlayShowing = false
+    private val overlayShowing = AtomicBoolean(false)
 
     fun showOverlay(context: Context, packageName: String, durationSeconds: Int) {
-        if (overlayShowing) {
+        if (!overlayShowing.compareAndSet(false, true)) {
             Log.d(TAG, "showOverlay called but overlay already showing — ignoring")
             return
         }
         if (durationSeconds <= 0) {
             Log.w(TAG, "showOverlay called with durationSeconds=$durationSeconds — ignoring")
+            overlayShowing.set(false)
             return
         }
-        overlayShowing = true
 
         mainHandler.post {
             if (overlayView != null) return@post // Already added to WindowManager
@@ -82,7 +82,7 @@ object OverlayManager {
                 Log.d(TAG, "Overlay shown for $packageName (${durationSeconds}s)")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to add overlay view", e)
-                overlayShowing = false
+                overlayShowing.set(false)
                 return@post
             }
 
@@ -94,7 +94,7 @@ object OverlayManager {
     fun dismissOverlay() {
         mainHandler.post {
             val view = overlayView ?: run {
-                overlayShowing = false
+                overlayShowing.set(false)
                 return@post
             }
             try {
@@ -104,7 +104,7 @@ object OverlayManager {
                 Log.e(TAG, "Failed to remove overlay view", e)
             } finally {
                 overlayView = null
-                overlayShowing = false
+                overlayShowing.set(false)
             }
         }
     }

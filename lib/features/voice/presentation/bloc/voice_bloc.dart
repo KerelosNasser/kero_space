@@ -8,7 +8,8 @@ import '../../domain/parsed_intent.dart';
 import 'voice_event.dart';
 import 'voice_state.dart';
 
-// Domain BLoCs and Models
+import 'package:kero_space/core/di/injection.dart';
+import 'package:kero_space/core/data/kero_space_platform_service.dart';
 import 'package:kero_space/features/productivity/presentation/bloc/productivity_bloc.dart';
 import 'package:kero_space/features/productivity/data/models/productivity_collections.dart';
 import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
@@ -16,13 +17,10 @@ import 'package:kero_space/features/health/data/models/health_collections.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 import 'package:kero_space/features/church/presentation/bloc/church_bloc.dart';
 import 'package:kero_space/features/church/data/models/mass_attendance.dart';
+import 'package:kero_space/features/telemetry/data/models/blacklist_rule.dart';
 
 class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
   final CommandParser _parser;
-  final ProductivityBloc _productivityBloc;
-  final HealthBloc _healthBloc;
-  final FinanceBloc _financeBloc;
-  final ChurchBloc _churchBloc;
 
   static const EventChannel _wakeWordChannel = EventChannel(
     'kero_space/wake_word',
@@ -30,13 +28,7 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
   StreamSubscription? _wakeWordSubscription;
   Timer? _listenTimeout;
 
-  VoiceBloc(
-    this._parser,
-    this._productivityBloc,
-    this._healthBloc,
-    this._financeBloc,
-    this._churchBloc,
-  ) : super(VoiceIdle()) {
+  VoiceBloc(this._parser) : super(VoiceIdle()) {
     on<WakeWordTriggered>(_onWakeWordTriggered);
     on<StartListeningEvent>(_onStartListening);
     on<StopListeningEvent>(_onStopListening);
@@ -63,7 +55,7 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
             add(SpeechPartialResultEvent(data['text']));
           }
         } catch (_) {
-          add(WakeWordTriggered());
+          // Malformed data from native channel — don't trigger wake word
         }
       }
     });
@@ -145,7 +137,7 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
           ..platform = 'voice'
           ..createdAt = DateTime.now()
           ..updatedAt = DateTime.now();
-        _productivityBloc.add(ProductivityEvent.createTask(task));
+        getIt<ProductivityBloc>().add(ProductivityEvent.createTask(task));
       } else if (intent is AddNoteIntent) {
         msg = "Note saved";
         final note = Note()
@@ -155,15 +147,36 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
           ..platform = 'voice'
           ..createdAt = DateTime.now()
           ..updatedAt = DateTime.now();
-        _productivityBloc.add(ProductivityEvent.createNote(note));
+        getIt<ProductivityBloc>().add(ProductivityEvent.createNote(note));
+      } else if (intent is AddEventIntent) {
+        msg = "Event added";
+        final task = Task()
+          ..title = intent.title
+          ..type = TaskType.task
+          ..deviceId = 'voice'
+          ..platform = 'voice'
+          ..dueDate = intent.dateTime
+          ..createdAt = DateTime.now()
+          ..updatedAt = DateTime.now();
+        getIt<ProductivityBloc>().add(ProductivityEvent.createTask(task));
       } else if (intent is AddExpenseIntent) {
         msg = "Expense recorded";
-        _financeBloc.add(
+        getIt<FinanceBloc>().add(
           AddTransactionEvent(
             amount: intent.amount,
             type: 'EXPENSE',
             category: 'Other',
             vendor: intent.vendor ?? 'Voice',
+          ),
+        );
+      } else if (intent is AddIncomeIntent) {
+        msg = "Income recorded";
+        getIt<FinanceBloc>().add(
+          AddTransactionEvent(
+            amount: intent.amount,
+            type: 'INCOME',
+            category: 'Income',
+            vendor: intent.source ?? 'Voice',
           ),
         );
       } else if (intent is LogMealIntent) {
@@ -178,12 +191,20 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
           ..deviceId = 'voice'
           ..platform = 'voice'
           ..timestamp = DateTime.now();
-        _healthBloc.add(LogMeal(meal));
+        getIt<HealthBloc>().add(LogMeal(meal));
       } else if (intent is MarkAttendanceIntent) {
         msg = "Attendance marked";
-        _churchBloc.add(
+        getIt<ChurchBloc>().add(
           MarkAttendanceEvent(intent.date, AttendanceType.liturgy),
         );
+      } else if (intent is NavigateIntent) {
+        // Navigation is handled by the UI layer listening to state changes
+        msg = 'Opening ${intent.destination}';
+      } else if (intent is BlockAppIntent) {
+        msg = 'App blocked';
+        final rule = BlacklistRule(packageName: intent.appName);
+        final rulesJson = BlacklistRule.listToJson([rule]);
+        await getIt<KeroSpacePlatformService>().setBlacklistRules(rulesJson);
       }
 
       emit(VoiceSuccess(msg));

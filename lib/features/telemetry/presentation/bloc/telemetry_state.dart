@@ -36,6 +36,7 @@ class TelemetryState extends Equatable {
 
   TelemetryState copyWith({
     TelemetryStatus? status,
+    bool clearError = false,
     String? errorMessage,
     int? todayScreenTimeMs,
     List<isar_models.AppUsageRecord>? todayTopApps,
@@ -49,7 +50,7 @@ class TelemetryState extends Equatable {
     Map<String, bool>? agentStatuses,
   }) => TelemetryState(
     status: status ?? this.status,
-    errorMessage: errorMessage,
+    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     todayScreenTimeMs: todayScreenTimeMs ?? this.todayScreenTimeMs,
     todayTopApps: todayTopApps ?? this.todayTopApps,
     weeklyScreenTime: weeklyScreenTime ?? this.weeklyScreenTime,

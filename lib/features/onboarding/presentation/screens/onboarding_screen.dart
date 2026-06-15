@@ -176,7 +176,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.accentGold,
-                    foregroundColor: Colors.black,
+                    foregroundColor: AppTheme.bgPrimary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   onPressed: _finishOnboarding,
@@ -200,7 +200,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
         color: AppTheme.bgSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isGranted ? Colors.green.withValues(alpha: 0.3) : AppTheme.bgElevated,
+          color: isGranted ? AppTheme.accentMint.withValues(alpha: 0.3) : AppTheme.bgElevated,
           width: 1.5,
         ),
       ),
@@ -209,12 +209,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isGranted ? Colors.green.withValues(alpha: 0.1) : AppTheme.bgElevated,
+              color: isGranted ? AppTheme.accentMint.withValues(alpha: 0.1) : AppTheme.bgElevated,
               shape: BoxShape.circle,
             ),
             child: Icon(
               item.icon,
-              color: isGranted ? Colors.green : AppTheme.accentGold,
+              color: isGranted ? AppTheme.accentMint : AppTheme.accentGold,
             ),
           ),
           const SizedBox(width: 16),
@@ -243,7 +243,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
           ),
           const SizedBox(width: 16),
           if (isGranted)
-            const Icon(Icons.check_circle, color: Colors.green, size: 28)
+            const Icon(Icons.check_circle, color: AppTheme.accentMint, size: 28)
           else
             ElevatedButton(
               style: ElevatedButton.styleFrom(

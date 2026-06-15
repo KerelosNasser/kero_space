@@ -10,7 +10,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   permission_handler_windows
   rive_native
   screen_retriever_windows
-  speech_to_text_windows
   system_tray
   url_launcher_windows
   window_manager

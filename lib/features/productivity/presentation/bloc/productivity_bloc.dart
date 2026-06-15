@@ -26,10 +26,8 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
   Future<void> _onLoadData(_LoadData event, Emitter<ProductivityState> emit) async {
     emit(const ProductivityState.loading());
     try {
-      // 1. Run carry-forward logic
       await _repository.performCarryForwardLogic();
 
-      // 2. Load all data
       final allTasks = await _repository.getAllTasks();
       final dailyChecklist = await _repository.getDailyChecklist();
       final allNotes = await _repository.getAllNotes();
@@ -40,16 +38,16 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
         allNotes: allNotes,
       ));
     } catch (e) {
-      emit(ProductivityState.error("Failed to load productivity data: $e"));
+      emit(ProductivityState.error('Failed to load. Please try again.'));
     }
   }
 
   Future<void> _onCreateTask(_CreateTask event, Emitter<ProductivityState> emit) async {
     try {
       await _repository.saveTask(event.task);
-      add(const ProductivityEvent.loadData()); // Refresh state
+      add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error('Failed to create task: $e'));
+      emit(ProductivityState.error('Failed to save. Please try again.'));
     }
   }
 
@@ -58,7 +56,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.saveTask(event.task);
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error("Failed to update task: $e"));
+      emit(ProductivityState.error('Failed to save. Please try again.'));
     }
   }
 
@@ -67,7 +65,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.completeTaskRecursively(event.taskId);
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error("Failed to complete task: $e"));
+      emit(ProductivityState.error('Failed to save. Please try again.'));
     }
   }
 
@@ -76,25 +74,29 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.deleteTaskRecursively(event.taskId);
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error('Failed to delete task: $e'));
+      emit(ProductivityState.error('Failed to save. Please try again.'));
     }
   }
 
   Future<void> _onCreateNote(_CreateNote event, Emitter<ProductivityState> emit) async {
     try {
       await _repository.saveNote(event.note);
-      
-      // If linked to a task, update the task
+
       if (event.linkedTaskId != null) {
         final allTasks = await _repository.getAllTasks();
-        final task = allTasks.firstWhere((t) => t.id == event.linkedTaskId);
-        task.linkedNoteId = event.note.id;
-        await _repository.saveTask(task);
+        final task = allTasks.firstWhere(
+          (t) => t.id == event.linkedTaskId,
+          orElse: () => Task(),
+        );
+        if (task.id != 0) {
+          task.linkedNoteId = event.note.id;
+          await _repository.saveTask(task);
+        }
       }
-      
+
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error('Failed to create note: $e'));
+      emit(ProductivityState.error('Failed to save. Please try again.'));
     }
   }
 
@@ -103,7 +105,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       await _repository.saveNote(event.note);
       add(const ProductivityEvent.loadData());
     } catch (e) {
-      emit(ProductivityState.error("Failed to update note: $e"));
+      emit(ProductivityState.error('Failed to save. Please try again.'));
     }
   }
 }
