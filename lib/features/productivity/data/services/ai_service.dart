@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AIService {
   final Dio _dio;
   
-  // Replace with environment variables or secure storage in a real app
-  static const String _openRouterApiKey = 'YOUR_OPENROUTER_API_KEY'; 
-  static const String _nimApiKey = 'YOUR_NIM_API_KEY';
+  String get _openRouterApiKey => dotenv.env['OPENROUTER_API_KEY'] ?? ''; 
+  String get _nimApiKey => dotenv.env['NIM_API_KEY'] ?? '';
 
   AIService() : _dio = Dio();
 
@@ -20,7 +20,8 @@ class AIService {
           'Content-Type': 'application/json',
         }),
         data: {
-          'model': 'google/gemini-2.5-flash', // Using a fast, cheap model
+          'model': 'nvidia/nemotron-3-ultra-550b-a55b:free', // Using OpenRouter
+
           'messages': [
             {'role': 'system', 'content': 'You are a productivity assistant. Classify the energy level required to complete the user\'s task as either 1 (Low energy/easy), 2 (Medium energy), or 3 (High energy/hard focus). Respond ONLY with the number 1, 2, or 3.'},
             {'role': 'user', 'content': taskTitle}
@@ -40,13 +41,13 @@ class AIService {
   Future<List<Map<String, dynamic>>> breakdownProject(String projectDescription) async {
     try {
       final response = await _dio.post(
-        'https://openrouter.ai/api/v1/chat/completions',
+        'https://integrate.api.nvidia.com/v1/chat/completions',
         options: Options(headers: {
-          'Authorization': 'Bearer $_openRouterApiKey',
+          'Authorization': 'Bearer $_nimApiKey',
           'Content-Type': 'application/json',
         }),
         data: {
-          'model': 'anthropic/claude-3-haiku', 
+          'model': 'nvidia/nemotron-3-ultra-550b-a55b', 
           'messages': [
             {
               'role': 'system', 

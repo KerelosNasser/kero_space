@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'core/data/isar_service.dart';
 import 'core/di/injection.dart';
 import 'package:kero_space/features/finance/data/repositories/notification_parser_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'dart:io' show Platform;
 import 'core/platform/windows/window_manager_service.dart';
@@ -35,6 +36,7 @@ class StartVoiceIntent extends Intent {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   final dir = await getApplicationDocumentsDirectory();
   await IsarService.init(dir.path);
