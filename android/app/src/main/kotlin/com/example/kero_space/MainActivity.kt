@@ -162,6 +162,21 @@ class MainActivity : FlutterFragmentActivity() {
                     "getAgentStatuses" -> {
                         result.success(AgentManager.buildAgentStatusMap(this))
                     }
+                    "setTaskGatedMode" -> {
+                        val enabled = call.argument<Boolean>("enabled") ?: false
+                        AgentManager.setTaskGatedMode(applicationContext, enabled)
+                        result.success(null)
+                    }
+                    "setPendingHighPriorityTask" -> {
+                        val hasTask = call.argument<Boolean>("hasTask") ?: false
+                        AgentManager.setPendingHighPriorityTask(applicationContext, hasTask)
+                        result.success(null)
+                    }
+                    "startDeepWork" -> {
+                        val durationMinutes = call.argument<Int>("durationMinutes") ?: 25
+                        AgentManager.startDeepWork(applicationContext, durationMinutes)
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }

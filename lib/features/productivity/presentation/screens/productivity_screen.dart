@@ -7,16 +7,43 @@ import 'package:table_calendar/table_calendar.dart';
 import '../bloc/productivity_bloc.dart';
 import '../bloc/calendar_bloc.dart';
 import '../widgets/daily_checklist.dart';
-import '../widgets/task_tree_view.dart';
+import '../widgets/project_cards_view.dart';
 import '../../data/models/productivity_collections.dart';
+
+import 'package:flutter/services.dart';
 
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/core/di/injection.dart';
 import 'package:kero_space/shared/widgets/shimmer/productivity_skeleton.dart';
 import 'package:kero_space/shared/widgets/inline_error_widget.dart';
+import '../widgets/deep_work_timer_widget.dart';
 
-class ProductivityScreen extends StatelessWidget {
+class ProductivityScreen extends StatefulWidget {
   const ProductivityScreen({super.key});
+
+  @override
+  State<ProductivityScreen> createState() => _ProductivityScreenState();
+}
+
+class _ProductivityScreenState extends State<ProductivityScreen> {
+  static const _methodsChannel = MethodChannel('kero_space/methods');
+  int _selectedEnergyLevel = 2; // Default to Medium
+
+  void _startDeepWork() async {
+    try {
+      await _methodsChannel.invokeMethod('startDeepWork', {'durationMinutes': 25});
+    } catch (e) {
+      debugPrint("Failed to start deep work: $e");
+    }
+  }
+
+  void _updateTaskGatedMode(bool hasPendingHighPriorityTask) async {
+    try {
+      await _methodsChannel.invokeMethod('setPendingHighPriorityTask', {'hasTask': hasPendingHighPriorityTask});
+    } catch (e) {
+      debugPrint("Failed to set task gated mode: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,146 +75,125 @@ class ProductivityScreen extends StatelessWidget {
                   onRetry: () => context.read<ProductivityBloc>().add(const ProductivityEvent.loadData()),
                 ),
                 loaded: (allTasks, dailyChecklist, allNotes) {
-                  return TabBarView(
-                    children: [
-                      // Tab 1: Today's Checklist & Fasting Badge
-                      Column(
-                        children: [
-                          BlocBuilder<CalendarBloc, CalendarState>(
-                            builder: (context, calState) {
-                              return calState.maybeWhen(
-                                loaded: (events) {
-                                  final today = DateTime.now();
-                                  final fastEvent = events.firstWhere(
-                                    (e) => e.source == 'COPTIC' && e.startTime.year == today.year && e.startTime.month == today.month && e.startTime.day == today.day,
-                                    orElse: () => CalendarEvent()..source = 'NONE',
-                                  );
-                                  if (fastEvent.source == 'COPTIC') {
-                                    return Container(
-                                      margin: const EdgeInsets.all(8.0),
-                                      padding: const EdgeInsets.all(12.0),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.accentViolet.withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        border: Border.all(color: AppTheme.accentViolet),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                           const Icon(Icons.restaurant_menu, color: AppTheme.accentViolet),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              "Today is a Fasting Day: ${fastEvent.title}. Strictly Vegan (No meat/dairy).",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentViolet),
-                                            ),
+                  // Filter checklist by energy level
+                  final filteredChecklist = dailyChecklist.where((t) => (t.energyLevel ?? 2) == _selectedEnergyLevel).toList();
+                  
+                  // Check if there are any high priority tasks pending for enforcement
+                  final hasHighPriorityPending = dailyChecklist.any((t) => !t.isCompleted && (t.energyLevel == 3));
+                  _updateTaskGatedMode(hasHighPriorityPending);
+
+                  return CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: DeepWorkTimerWidget(onStartDeepWork: _startDeepWork),
+                      ),
+                      
+                      // Fasting Badge
+                      SliverToBoxAdapter(
+                        child: BlocBuilder<CalendarBloc, CalendarState>(
+                          builder: (context, calState) {
+                            return calState.maybeWhen(
+                              loaded: (events) {
+                                final today = DateTime.now();
+                                final fastEvent = events.firstWhere(
+                                  (e) => e.source == 'COPTIC' && e.startTime.year == today.year && e.startTime.month == today.month && e.startTime.day == today.day,
+                                  orElse: () => CalendarEvent()..source = 'NONE',
+                                );
+                                if (fastEvent.source == 'COPTIC') {
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                    padding: const EdgeInsets.all(12.0),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.accentViolet.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      border: Border.all(color: AppTheme.accentViolet.withValues(alpha: 0.5)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.restaurant_menu, color: AppTheme.accentViolet),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            "Today is a Fasting Day: ${fastEvent.title}. Strictly Vegan.",
+                                            style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentViolet),
                                           ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                },
-                                orElse: () => const SizedBox.shrink(),
-                              );
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                              orElse: () => const SizedBox.shrink(),
+                            );
+                          },
+                        ),
+                      ),
+
+                      // Energy Filters
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: SegmentedButton<int>(
+                            segments: const [
+                              ButtonSegment(value: 1, label: Text('Low Energy'), icon: Icon(Icons.battery_2_bar)),
+                              ButtonSegment(value: 2, label: Text('Medium Energy'), icon: Icon(Icons.battery_5_bar)),
+                              ButtonSegment(value: 3, label: Text('High Focus'), icon: Icon(Icons.battery_full)),
+                            ],
+                            selected: {_selectedEnergyLevel},
+                            onSelectionChanged: (Set<int> newSelection) {
+                              setState(() {
+                                _selectedEnergyLevel = newSelection.first;
+                              });
                             },
                           ),
-                          Expanded(child: DailyChecklist(tasks: dailyChecklist)),
-                        ],
+                        ),
                       ),
                       
-                      // Tab 2: Projects Tree View
-                      TaskTreeView(allTasks: allTasks),
+                      // Filtered Checklist
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        sliver: filteredChecklist.isEmpty 
+                          ? const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(32.0), child: Text("No tasks for this energy level today."))))
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: TaskRow(task: filteredChecklist[index]),
+                                  );
+                                },
+                                childCount: filteredChecklist.length,
+                              ),
+                            ),
+                      ),
                       
-                      // Tab 3: Notes
-                      ListView.builder(
-                        itemCount: allNotes.length,
-                        itemBuilder: (context, index) {
-                          final note = allNotes[index];
-                          return ListTile(
-                            title: Text(note.title),
-                            onTap: () => context.push('/note_editor', extra: {'note': note, 'bloc': context.read<ProductivityBloc>()}),
-                          );
-                        },
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Text("Projects Hub", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        ),
                       ),
-                      // Tab 4: Calendar
-                      BlocBuilder<CalendarBloc, CalendarState>(
-                        builder: (context, calState) {
-                          return calState.when(
-                            loading: () => const Center(child: CircularProgressIndicator()),
-                            error: (msg) => Center(child: Text("Error: $msg")),
-                            loaded: (events) {
-                              return Column(
-                                children: [
-                                  TableCalendar(
-                                    firstDay: DateTime.utc(2020, 10, 16),
-                                    lastDay: DateTime.utc(2030, 3, 14),
-                                    focusedDay: DateTime.now(),
-                                    eventLoader: (day) {
-                                      return events.where((e) => 
-                                        e.startTime.year == day.year && 
-                                        e.startTime.month == day.month && 
-                                        e.startTime.day == day.day
-                                      ).toList();
-                                    },
-                                    calendarFormat: CalendarFormat.month,
-                                    calendarBuilders: CalendarBuilders(
-                                      markerBuilder: (context, date, eventList) {
-                                        if (eventList.isEmpty) return const SizedBox();
-                                        
-                                        final hasCoptic = eventList.any((e) => (e as CalendarEvent).source == 'COPTIC');
-                                        return Positioned(
-                                          bottom: 1,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                               color: hasCoptic ? AppTheme.accentViolet : AppTheme.accentCyan,
-                                            ),
-                                            width: 7.0,
-                                            height: 7.0,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount: events.length,
-                                      itemBuilder: (context, index) {
-                                        final event = events[index];
-                                        return ListTile(
-                                          title: Text(event.title),
-                                          subtitle: Text("${event.startTime.toLocal()} - ${event.source}"),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
+                      
+                      SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: 350,
+                          child: ProjectCardsView(allTasks: allTasks),
+                        ),
                       ),
+                      
+                      const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom padding for FAB
                     ],
                   );
                 },
               );
             },
           ),
-          floatingActionButton: Builder(
-            builder: (fabContext) => FloatingActionButton(
-              onPressed: () {
-                final tabController = DefaultTabController.of(fabContext);
-                final bloc = fabContext.read<ProductivityBloc>();
-                if (tabController.index == 2) {
-                  // Notes tab
-                  fabContext.push('/note_editor', extra: {'bloc': bloc});
-                } else {
-                  // Projects / Today tab
-                  _showCreateTaskDialog(fabContext, bloc);
-                }
-              },
-              child: const Icon(Icons.add),
-            ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => _showCreateTaskDialog(context, context.read<ProductivityBloc>()),
+            icon: const Icon(Icons.add),
+            label: const Text('Add Task'),
           ),
         ),
       ),

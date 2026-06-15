@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../data/models/productivity_collections.dart';
 import '../../data/repositories/productivity_repository.dart';
+import '../../data/services/ai_service.dart';
 
 part 'productivity_event.dart';
 part 'productivity_state.dart';
@@ -21,6 +22,8 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     on<_DeleteTask>(_onDeleteTask);
     on<_CreateNote>(_onCreateNote);
     on<_UpdateNote>(_onUpdateNote);
+    on<_CreateProjectWithSubtasks>(_onCreateProjectWithSubtasks);
+    on<_AutoScheduleTasks>(_onAutoScheduleTasks);
   }
 
   Future<void> _onLoadData(_LoadData event, Emitter<ProductivityState> emit) async {
@@ -106,6 +109,61 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       add(const ProductivityEvent.loadData());
     } catch (e) {
       emit(ProductivityState.error('Failed to save. Please try again.'));
+    }
+  }
+
+  Future<void> _onCreateProjectWithSubtasks(_CreateProjectWithSubtasks event, Emitter<ProductivityState> emit) async {
+    try {
+      final project = Task()
+        ..title = event.title
+        ..type = TaskType.project
+        ..deviceId = 'local'
+        ..platform = 'local'
+        ..createdAt = DateTime.now()
+        ..updatedAt = DateTime.now();
+      
+      await _repository.saveTask(project);
+
+      for (var sub in event.subtasks) {
+        final subtask = Task()
+          ..title = sub['title']
+          ..energyLevel = sub['energyLevel']
+          ..type = TaskType.task
+          ..parentId = project.id
+          ..deviceId = 'local'
+          ..platform = 'local'
+          ..createdAt = DateTime.now()
+          ..updatedAt = DateTime.now();
+        await _repository.saveTask(subtask);
+      }
+
+      add(const ProductivityEvent.loadData());
+    } catch (e) {
+      emit(ProductivityState.error('Failed to save AI project.'));
+    }
+  }
+
+  Future<void> _onAutoScheduleTasks(_AutoScheduleTasks event, Emitter<ProductivityState> emit) async {
+    try {
+      final allTasks = await _repository.getAllTasks();
+      final unscheduled = allTasks.where((t) => !t.isCompleted && t.dueDate == null).toList();
+      
+      if (unscheduled.isEmpty) return;
+
+      final aiService = AIService();
+      final mappedTasks = unscheduled.map((t) => {'id': t.id, 'title': t.title, 'energyLevel': t.energyLevel}).toList();
+      final schedule = await aiService.autoScheduleTasks(mappedTasks);
+
+      for (var task in unscheduled) {
+        if (schedule.containsKey(task.id)) {
+          task.dueDate = schedule[task.id];
+          await _repository.saveTask(task);
+        }
+      }
+
+      add(const ProductivityEvent.loadData());
+    } catch (e) {
+      emit(ProductivityState.error('Failed to auto-schedule tasks.'));
     }
   }
 }

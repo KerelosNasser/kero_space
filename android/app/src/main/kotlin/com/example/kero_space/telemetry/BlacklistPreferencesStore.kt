@@ -27,6 +27,9 @@ object BlacklistPreferencesStore {
 
     // In-memory cache of blocked package names — rebuilt only on writes.
     @Volatile private var _cachedPackages: Set<String>? = null
+    
+    // In-memory cache of the raw JSON string to prevent continuous AES-GCM decryption on main thread
+    @Volatile private var _cachedRulesJson: String? = null
 
     private fun getPrefs(context: Context): EncryptedSharedPreferences {
         _prefs?.let { return it }
@@ -50,11 +53,19 @@ object BlacklistPreferencesStore {
         getPrefs(context).edit().putString(KEY_RULES, json).apply()
         synchronized(this) {
             _cachedPackages = null // Invalidate cache on write
+            _cachedRulesJson = json
         }
     }
 
-    fun getRulesJson(context: Context): String =
-        getPrefs(context).getString(KEY_RULES, "[]") ?: "[]"
+    fun getRulesJson(context: Context): String {
+        _cachedRulesJson?.let { return it }
+        return synchronized(this) {
+            _cachedRulesJson?.let { return it }
+            val json = getPrefs(context).getString(KEY_RULES, "[]") ?: "[]"
+            _cachedRulesJson = json
+            json
+        }
+    }
 
     /**
      * Returns the set of blocked package names.

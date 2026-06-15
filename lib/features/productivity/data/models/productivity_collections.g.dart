@@ -37,39 +37,44 @@ const TaskSchema = CollectionSchema(
       name: r'dueDate',
       type: IsarType.dateTime,
     ),
-    r'isCompleted': PropertySchema(
+    r'energyLevel': PropertySchema(
       id: 4,
+      name: r'energyLevel',
+      type: IsarType.long,
+    ),
+    r'isCompleted': PropertySchema(
+      id: 5,
       name: r'isCompleted',
       type: IsarType.bool,
     ),
     r'linkedNoteId': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'linkedNoteId',
       type: IsarType.long,
     ),
     r'parentId': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'parentId',
       type: IsarType.long,
     ),
     r'platform': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'platform',
       type: IsarType.string,
     ),
     r'title': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'title',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'type',
       type: IsarType.string,
       enumMap: _TasktypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -117,13 +122,14 @@ void _taskSerialize(
   writer.writeString(offsets[1], object.description);
   writer.writeString(offsets[2], object.deviceId);
   writer.writeDateTime(offsets[3], object.dueDate);
-  writer.writeBool(offsets[4], object.isCompleted);
-  writer.writeLong(offsets[5], object.linkedNoteId);
-  writer.writeLong(offsets[6], object.parentId);
-  writer.writeString(offsets[7], object.platform);
-  writer.writeString(offsets[8], object.title);
-  writer.writeString(offsets[9], object.type.name);
-  writer.writeDateTime(offsets[10], object.updatedAt);
+  writer.writeLong(offsets[4], object.energyLevel);
+  writer.writeBool(offsets[5], object.isCompleted);
+  writer.writeLong(offsets[6], object.linkedNoteId);
+  writer.writeLong(offsets[7], object.parentId);
+  writer.writeString(offsets[8], object.platform);
+  writer.writeString(offsets[9], object.title);
+  writer.writeString(offsets[10], object.type.name);
+  writer.writeDateTime(offsets[11], object.updatedAt);
 }
 
 Task _taskDeserialize(
@@ -137,15 +143,16 @@ Task _taskDeserialize(
   object.description = reader.readStringOrNull(offsets[1]);
   object.deviceId = reader.readString(offsets[2]);
   object.dueDate = reader.readDateTimeOrNull(offsets[3]);
+  object.energyLevel = reader.readLongOrNull(offsets[4]);
   object.id = id;
-  object.isCompleted = reader.readBool(offsets[4]);
-  object.linkedNoteId = reader.readLongOrNull(offsets[5]);
-  object.parentId = reader.readLongOrNull(offsets[6]);
-  object.platform = reader.readString(offsets[7]);
-  object.title = reader.readString(offsets[8]);
-  object.type = _TasktypeValueEnumMap[reader.readStringOrNull(offsets[9])] ??
+  object.isCompleted = reader.readBool(offsets[5]);
+  object.linkedNoteId = reader.readLongOrNull(offsets[6]);
+  object.parentId = reader.readLongOrNull(offsets[7]);
+  object.platform = reader.readString(offsets[8]);
+  object.title = reader.readString(offsets[9]);
+  object.type = _TasktypeValueEnumMap[reader.readStringOrNull(offsets[10])] ??
       TaskType.project;
-  object.updatedAt = reader.readDateTime(offsets[10]);
+  object.updatedAt = reader.readDateTime(offsets[11]);
   return object;
 }
 
@@ -165,19 +172,21 @@ P _taskDeserializeProp<P>(
     case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
-      return (reader.readBool(offset)) as P;
-    case 5:
       return (reader.readLongOrNull(offset)) as P;
+    case 5:
+      return (reader.readBool(offset)) as P;
     case 6:
       return (reader.readLongOrNull(offset)) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 8:
       return (reader.readString(offset)) as P;
     case 9:
+      return (reader.readString(offset)) as P;
+    case 10:
       return (_TasktypeValueEnumMap[reader.readStringOrNull(offset)] ??
           TaskType.project) as P;
-    case 10:
+    case 11:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -672,6 +681,75 @@ extension TaskQueryFilter on QueryBuilder<Task, Task, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'dueDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> energyLevelIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'energyLevel',
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> energyLevelIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'energyLevel',
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> energyLevelEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'energyLevel',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> energyLevelGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'energyLevel',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> energyLevelLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'energyLevel',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> energyLevelBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'energyLevel',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1371,6 +1449,18 @@ extension TaskQuerySortBy on QueryBuilder<Task, Task, QSortBy> {
     });
   }
 
+  QueryBuilder<Task, Task, QAfterSortBy> sortByEnergyLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'energyLevel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterSortBy> sortByEnergyLevelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'energyLevel', Sort.desc);
+    });
+  }
+
   QueryBuilder<Task, Task, QAfterSortBy> sortByIsCompleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isCompleted', Sort.asc);
@@ -1505,6 +1595,18 @@ extension TaskQuerySortThenBy on QueryBuilder<Task, Task, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Task, Task, QAfterSortBy> thenByEnergyLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'energyLevel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterSortBy> thenByEnergyLevelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'energyLevel', Sort.desc);
+    });
+  }
+
   QueryBuilder<Task, Task, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1629,6 +1731,12 @@ extension TaskQueryWhereDistinct on QueryBuilder<Task, Task, QDistinct> {
     });
   }
 
+  QueryBuilder<Task, Task, QDistinct> distinctByEnergyLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'energyLevel');
+    });
+  }
+
   QueryBuilder<Task, Task, QDistinct> distinctByIsCompleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isCompleted');
@@ -1706,6 +1814,12 @@ extension TaskQueryProperty on QueryBuilder<Task, Task, QQueryProperty> {
     });
   }
 
+  QueryBuilder<Task, int?, QQueryOperations> energyLevelProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'energyLevel');
+    });
+  }
+
   QueryBuilder<Task, bool, QQueryOperations> isCompletedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isCompleted');
@@ -1745,6 +1859,326 @@ extension TaskQueryProperty on QueryBuilder<Task, Task, QQueryProperty> {
   QueryBuilder<Task, DateTime, QQueryOperations> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'updatedAt');
+    });
+  }
+}
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+extension GetProductivitySettingsCollection on Isar {
+  IsarCollection<ProductivitySettings> get productivitySettings =>
+      this.collection();
+}
+
+const ProductivitySettingsSchema = CollectionSchema(
+  name: r'ProductivitySettings',
+  id: -97266170663541410,
+  properties: {
+    r'isTaskGated': PropertySchema(
+      id: 0,
+      name: r'isTaskGated',
+      type: IsarType.bool,
+    )
+  },
+  estimateSize: _productivitySettingsEstimateSize,
+  serialize: _productivitySettingsSerialize,
+  deserialize: _productivitySettingsDeserialize,
+  deserializeProp: _productivitySettingsDeserializeProp,
+  idName: r'id',
+  indexes: {},
+  links: {},
+  embeddedSchemas: {},
+  getId: _productivitySettingsGetId,
+  getLinks: _productivitySettingsGetLinks,
+  attach: _productivitySettingsAttach,
+  version: '3.1.0+1',
+);
+
+int _productivitySettingsEstimateSize(
+  ProductivitySettings object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  return bytesCount;
+}
+
+void _productivitySettingsSerialize(
+  ProductivitySettings object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeBool(offsets[0], object.isTaskGated);
+}
+
+ProductivitySettings _productivitySettingsDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = ProductivitySettings();
+  object.id = id;
+  object.isTaskGated = reader.readBool(offsets[0]);
+  return object;
+}
+
+P _productivitySettingsDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readBool(offset)) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+Id _productivitySettingsGetId(ProductivitySettings object) {
+  return object.id;
+}
+
+List<IsarLinkBase<dynamic>> _productivitySettingsGetLinks(
+    ProductivitySettings object) {
+  return [];
+}
+
+void _productivitySettingsAttach(
+    IsarCollection<dynamic> col, Id id, ProductivitySettings object) {
+  object.id = id;
+}
+
+extension ProductivitySettingsQueryWhereSort
+    on QueryBuilder<ProductivitySettings, ProductivitySettings, QWhere> {
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterWhere>
+      anyId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+}
+
+extension ProductivitySettingsQueryWhere
+    on QueryBuilder<ProductivitySettings, ProductivitySettings, QWhereClause> {
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterWhereClause>
+      idEqualTo(Id id) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterWhereClause>
+      idNotEqualTo(Id id) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            )
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            )
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterWhereClause>
+      idGreaterThan(Id id, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
+      );
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterWhereClause>
+      idLessThan(Id id, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
+      );
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterWhereClause>
+      idBetween(
+    Id lowerId,
+    Id upperId, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+}
+
+extension ProductivitySettingsQueryFilter on QueryBuilder<ProductivitySettings,
+    ProductivitySettings, QFilterCondition> {
+  QueryBuilder<ProductivitySettings, ProductivitySettings,
+      QAfterFilterCondition> idEqualTo(Id value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings,
+      QAfterFilterCondition> idGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings,
+      QAfterFilterCondition> idLessThan(
+    Id value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings,
+      QAfterFilterCondition> idBetween(
+    Id lower,
+    Id upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings,
+      QAfterFilterCondition> isTaskGatedEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isTaskGated',
+        value: value,
+      ));
+    });
+  }
+}
+
+extension ProductivitySettingsQueryObject on QueryBuilder<ProductivitySettings,
+    ProductivitySettings, QFilterCondition> {}
+
+extension ProductivitySettingsQueryLinks on QueryBuilder<ProductivitySettings,
+    ProductivitySettings, QFilterCondition> {}
+
+extension ProductivitySettingsQuerySortBy
+    on QueryBuilder<ProductivitySettings, ProductivitySettings, QSortBy> {
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterSortBy>
+      sortByIsTaskGated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isTaskGated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterSortBy>
+      sortByIsTaskGatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isTaskGated', Sort.desc);
+    });
+  }
+}
+
+extension ProductivitySettingsQuerySortThenBy
+    on QueryBuilder<ProductivitySettings, ProductivitySettings, QSortThenBy> {
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterSortBy>
+      thenById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterSortBy>
+      thenByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterSortBy>
+      thenByIsTaskGated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isTaskGated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QAfterSortBy>
+      thenByIsTaskGatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isTaskGated', Sort.desc);
+    });
+  }
+}
+
+extension ProductivitySettingsQueryWhereDistinct
+    on QueryBuilder<ProductivitySettings, ProductivitySettings, QDistinct> {
+  QueryBuilder<ProductivitySettings, ProductivitySettings, QDistinct>
+      distinctByIsTaskGated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isTaskGated');
+    });
+  }
+}
+
+extension ProductivitySettingsQueryProperty on QueryBuilder<
+    ProductivitySettings, ProductivitySettings, QQueryProperty> {
+  QueryBuilder<ProductivitySettings, int, QQueryOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<ProductivitySettings, bool, QQueryOperations>
+      isTaskGatedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isTaskGated');
     });
   }
 }

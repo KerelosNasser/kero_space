@@ -113,4 +113,28 @@ object AgentManager {
             false
         }
     }
+
+    // --- Productivity Tab Enhancements ---
+    var isTaskGatedModeEnabled = false
+    var hasPendingHighPriorityTask = false
+    var deepWorkEndTimeMs: Long = 0
+
+    fun setTaskGatedMode(context: Context, enabled: Boolean) {
+        isTaskGatedModeEnabled = enabled
+        Log.d(TAG, "Task Gated Mode: $enabled")
+    }
+
+    fun setPendingHighPriorityTask(context: Context, hasTask: Boolean) {
+        hasPendingHighPriorityTask = hasTask
+        Log.d(TAG, "Pending High Priority Task: $hasTask")
+    }
+
+    fun startDeepWork(context: Context, durationMinutes: Int) {
+        deepWorkEndTimeMs = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
+        Log.d(TAG, "Deep Work started for $durationMinutes mins")
+    }
+
+    fun isDeepWorkActive(): Boolean {
+        return System.currentTimeMillis() < deepWorkEndTimeMs
+    }
 }

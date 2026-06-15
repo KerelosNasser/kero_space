@@ -72,6 +72,7 @@ dependencies:
   shimmer: ^3.0.0
   msix: ^3.17.0
   intl: ^0.20.2
+  flutter_dotenv: ^6.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

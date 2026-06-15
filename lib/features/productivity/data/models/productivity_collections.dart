@@ -20,6 +20,14 @@ class Task {
   late TaskType type;
   int? parentId;
   int? linkedNoteId;
+  
+  int? energyLevel; // 1=Low, 2=Med, 3=High
+}
+
+@collection
+class ProductivitySettings {
+  Id id = Isar.autoIncrement;
+  bool isTaskGated = false;
 }
 
 @collection

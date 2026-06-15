@@ -87,12 +87,21 @@ class __$$LoadCalendarEventsImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$LoadCalendarEventsImpl implements LoadCalendarEvents {
+class _$LoadCalendarEventsImpl
+    with DiagnosticableTreeMixin
+    implements LoadCalendarEvents {
   const _$LoadCalendarEventsImpl();
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'CalendarEventBlocEvent.loadEvents()';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+        .add(DiagnosticsProperty('type', 'CalendarEventBlocEvent.loadEvents'));
   }
 
   @override
@@ -249,12 +258,18 @@ class __$$LoadingImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$LoadingImpl implements _Loading {
+class _$LoadingImpl with DiagnosticableTreeMixin implements _Loading {
   const _$LoadingImpl();
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'CalendarState.loading()';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty('type', 'CalendarState.loading'));
   }
 
   @override
@@ -372,7 +387,7 @@ class __$$LoadedImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$LoadedImpl implements _Loaded {
+class _$LoadedImpl with DiagnosticableTreeMixin implements _Loaded {
   const _$LoadedImpl(final List<CalendarEvent> events) : _events = events;
 
   final List<CalendarEvent> _events;
@@ -384,8 +399,16 @@ class _$LoadedImpl implements _Loaded {
   }
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'CalendarState.loaded(events: $events)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'CalendarState.loaded'))
+      ..add(DiagnosticsProperty('events', events));
   }
 
   @override
@@ -517,15 +540,23 @@ class __$$ErrorImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ErrorImpl implements _Error {
+class _$ErrorImpl with DiagnosticableTreeMixin implements _Error {
   const _$ErrorImpl(this.message);
 
   @override
   final String message;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'CalendarState.error(message: $message)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'CalendarState.error'))
+      ..add(DiagnosticsProperty('message', message));
   }
 
   @override

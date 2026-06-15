@@ -25,6 +25,9 @@ mixin _$ProductivityEvent {
     required TResult Function(int taskId) deleteTask,
     required TResult Function(Note note, int? linkedTaskId) createNote,
     required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -36,6 +39,9 @@ mixin _$ProductivityEvent {
     TResult? Function(int taskId)? deleteTask,
     TResult? Function(Note note, int? linkedTaskId)? createNote,
     TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -47,6 +53,9 @@ mixin _$ProductivityEvent {
     TResult Function(int taskId)? deleteTask,
     TResult Function(Note note, int? linkedTaskId)? createNote,
     TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -59,6 +68,9 @@ mixin _$ProductivityEvent {
     required TResult Function(_DeleteTask value) deleteTask,
     required TResult Function(_CreateNote value) createNote,
     required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -70,6 +82,9 @@ mixin _$ProductivityEvent {
     TResult? Function(_DeleteTask value)? deleteTask,
     TResult? Function(_CreateNote value)? createNote,
     TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -81,6 +96,9 @@ mixin _$ProductivityEvent {
     TResult Function(_DeleteTask value)? deleteTask,
     TResult Function(_CreateNote value)? createNote,
     TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -149,6 +167,9 @@ class _$LoadDataImpl implements _LoadData {
     required TResult Function(int taskId) deleteTask,
     required TResult Function(Note note, int? linkedTaskId) createNote,
     required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
   }) {
     return loadData();
   }
@@ -163,6 +184,9 @@ class _$LoadDataImpl implements _LoadData {
     TResult? Function(int taskId)? deleteTask,
     TResult? Function(Note note, int? linkedTaskId)? createNote,
     TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
   }) {
     return loadData?.call();
   }
@@ -177,6 +201,9 @@ class _$LoadDataImpl implements _LoadData {
     TResult Function(int taskId)? deleteTask,
     TResult Function(Note note, int? linkedTaskId)? createNote,
     TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (loadData != null) {
@@ -195,6 +222,9 @@ class _$LoadDataImpl implements _LoadData {
     required TResult Function(_DeleteTask value) deleteTask,
     required TResult Function(_CreateNote value) createNote,
     required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
   }) {
     return loadData(this);
   }
@@ -209,6 +239,9 @@ class _$LoadDataImpl implements _LoadData {
     TResult? Function(_DeleteTask value)? deleteTask,
     TResult? Function(_CreateNote value)? createNote,
     TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
   }) {
     return loadData?.call(this);
   }
@@ -223,6 +256,9 @@ class _$LoadDataImpl implements _LoadData {
     TResult Function(_DeleteTask value)? deleteTask,
     TResult Function(_CreateNote value)? createNote,
     TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (loadData != null) {
@@ -307,6 +343,9 @@ class _$CreateTaskImpl implements _CreateTask {
     required TResult Function(int taskId) deleteTask,
     required TResult Function(Note note, int? linkedTaskId) createNote,
     required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
   }) {
     return createTask(task);
   }
@@ -321,6 +360,9 @@ class _$CreateTaskImpl implements _CreateTask {
     TResult? Function(int taskId)? deleteTask,
     TResult? Function(Note note, int? linkedTaskId)? createNote,
     TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
   }) {
     return createTask?.call(task);
   }
@@ -335,6 +377,9 @@ class _$CreateTaskImpl implements _CreateTask {
     TResult Function(int taskId)? deleteTask,
     TResult Function(Note note, int? linkedTaskId)? createNote,
     TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (createTask != null) {
@@ -353,6 +398,9 @@ class _$CreateTaskImpl implements _CreateTask {
     required TResult Function(_DeleteTask value) deleteTask,
     required TResult Function(_CreateNote value) createNote,
     required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
   }) {
     return createTask(this);
   }
@@ -367,6 +415,9 @@ class _$CreateTaskImpl implements _CreateTask {
     TResult? Function(_DeleteTask value)? deleteTask,
     TResult? Function(_CreateNote value)? createNote,
     TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
   }) {
     return createTask?.call(this);
   }
@@ -381,6 +432,9 @@ class _$CreateTaskImpl implements _CreateTask {
     TResult Function(_DeleteTask value)? deleteTask,
     TResult Function(_CreateNote value)? createNote,
     TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (createTask != null) {
@@ -470,6 +524,9 @@ class _$UpdateTaskImpl implements _UpdateTask {
     required TResult Function(int taskId) deleteTask,
     required TResult Function(Note note, int? linkedTaskId) createNote,
     required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
   }) {
     return updateTask(task);
   }
@@ -484,6 +541,9 @@ class _$UpdateTaskImpl implements _UpdateTask {
     TResult? Function(int taskId)? deleteTask,
     TResult? Function(Note note, int? linkedTaskId)? createNote,
     TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
   }) {
     return updateTask?.call(task);
   }
@@ -498,6 +558,9 @@ class _$UpdateTaskImpl implements _UpdateTask {
     TResult Function(int taskId)? deleteTask,
     TResult Function(Note note, int? linkedTaskId)? createNote,
     TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (updateTask != null) {
@@ -516,6 +579,9 @@ class _$UpdateTaskImpl implements _UpdateTask {
     required TResult Function(_DeleteTask value) deleteTask,
     required TResult Function(_CreateNote value) createNote,
     required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
   }) {
     return updateTask(this);
   }
@@ -530,6 +596,9 @@ class _$UpdateTaskImpl implements _UpdateTask {
     TResult? Function(_DeleteTask value)? deleteTask,
     TResult? Function(_CreateNote value)? createNote,
     TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
   }) {
     return updateTask?.call(this);
   }
@@ -544,6 +613,9 @@ class _$UpdateTaskImpl implements _UpdateTask {
     TResult Function(_DeleteTask value)? deleteTask,
     TResult Function(_CreateNote value)? createNote,
     TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (updateTask != null) {
@@ -633,6 +705,9 @@ class _$CompleteTaskImpl implements _CompleteTask {
     required TResult Function(int taskId) deleteTask,
     required TResult Function(Note note, int? linkedTaskId) createNote,
     required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
   }) {
     return completeTask(taskId);
   }
@@ -647,6 +722,9 @@ class _$CompleteTaskImpl implements _CompleteTask {
     TResult? Function(int taskId)? deleteTask,
     TResult? Function(Note note, int? linkedTaskId)? createNote,
     TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
   }) {
     return completeTask?.call(taskId);
   }
@@ -661,6 +739,9 @@ class _$CompleteTaskImpl implements _CompleteTask {
     TResult Function(int taskId)? deleteTask,
     TResult Function(Note note, int? linkedTaskId)? createNote,
     TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (completeTask != null) {
@@ -679,6 +760,9 @@ class _$CompleteTaskImpl implements _CompleteTask {
     required TResult Function(_DeleteTask value) deleteTask,
     required TResult Function(_CreateNote value) createNote,
     required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
   }) {
     return completeTask(this);
   }
@@ -693,6 +777,9 @@ class _$CompleteTaskImpl implements _CompleteTask {
     TResult? Function(_DeleteTask value)? deleteTask,
     TResult? Function(_CreateNote value)? createNote,
     TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
   }) {
     return completeTask?.call(this);
   }
@@ -707,6 +794,9 @@ class _$CompleteTaskImpl implements _CompleteTask {
     TResult Function(_DeleteTask value)? deleteTask,
     TResult Function(_CreateNote value)? createNote,
     TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (completeTask != null) {
@@ -796,6 +886,9 @@ class _$DeleteTaskImpl implements _DeleteTask {
     required TResult Function(int taskId) deleteTask,
     required TResult Function(Note note, int? linkedTaskId) createNote,
     required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
   }) {
     return deleteTask(taskId);
   }
@@ -810,6 +903,9 @@ class _$DeleteTaskImpl implements _DeleteTask {
     TResult? Function(int taskId)? deleteTask,
     TResult? Function(Note note, int? linkedTaskId)? createNote,
     TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
   }) {
     return deleteTask?.call(taskId);
   }
@@ -824,6 +920,9 @@ class _$DeleteTaskImpl implements _DeleteTask {
     TResult Function(int taskId)? deleteTask,
     TResult Function(Note note, int? linkedTaskId)? createNote,
     TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (deleteTask != null) {
@@ -842,6 +941,9 @@ class _$DeleteTaskImpl implements _DeleteTask {
     required TResult Function(_DeleteTask value) deleteTask,
     required TResult Function(_CreateNote value) createNote,
     required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
   }) {
     return deleteTask(this);
   }
@@ -856,6 +958,9 @@ class _$DeleteTaskImpl implements _DeleteTask {
     TResult? Function(_DeleteTask value)? deleteTask,
     TResult? Function(_CreateNote value)? createNote,
     TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
   }) {
     return deleteTask?.call(this);
   }
@@ -870,6 +975,9 @@ class _$DeleteTaskImpl implements _DeleteTask {
     TResult Function(_DeleteTask value)? deleteTask,
     TResult Function(_CreateNote value)? createNote,
     TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (deleteTask != null) {
@@ -968,6 +1076,9 @@ class _$CreateNoteImpl implements _CreateNote {
     required TResult Function(int taskId) deleteTask,
     required TResult Function(Note note, int? linkedTaskId) createNote,
     required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
   }) {
     return createNote(note, linkedTaskId);
   }
@@ -982,6 +1093,9 @@ class _$CreateNoteImpl implements _CreateNote {
     TResult? Function(int taskId)? deleteTask,
     TResult? Function(Note note, int? linkedTaskId)? createNote,
     TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
   }) {
     return createNote?.call(note, linkedTaskId);
   }
@@ -996,6 +1110,9 @@ class _$CreateNoteImpl implements _CreateNote {
     TResult Function(int taskId)? deleteTask,
     TResult Function(Note note, int? linkedTaskId)? createNote,
     TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (createNote != null) {
@@ -1014,6 +1131,9 @@ class _$CreateNoteImpl implements _CreateNote {
     required TResult Function(_DeleteTask value) deleteTask,
     required TResult Function(_CreateNote value) createNote,
     required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
   }) {
     return createNote(this);
   }
@@ -1028,6 +1148,9 @@ class _$CreateNoteImpl implements _CreateNote {
     TResult? Function(_DeleteTask value)? deleteTask,
     TResult? Function(_CreateNote value)? createNote,
     TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
   }) {
     return createNote?.call(this);
   }
@@ -1042,6 +1165,9 @@ class _$CreateNoteImpl implements _CreateNote {
     TResult Function(_DeleteTask value)? deleteTask,
     TResult Function(_CreateNote value)? createNote,
     TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (createNote != null) {
@@ -1133,6 +1259,9 @@ class _$UpdateNoteImpl implements _UpdateNote {
     required TResult Function(int taskId) deleteTask,
     required TResult Function(Note note, int? linkedTaskId) createNote,
     required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
   }) {
     return updateNote(note);
   }
@@ -1147,6 +1276,9 @@ class _$UpdateNoteImpl implements _UpdateNote {
     TResult? Function(int taskId)? deleteTask,
     TResult? Function(Note note, int? linkedTaskId)? createNote,
     TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
   }) {
     return updateNote?.call(note);
   }
@@ -1161,6 +1293,9 @@ class _$UpdateNoteImpl implements _UpdateNote {
     TResult Function(int taskId)? deleteTask,
     TResult Function(Note note, int? linkedTaskId)? createNote,
     TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (updateNote != null) {
@@ -1179,6 +1314,9 @@ class _$UpdateNoteImpl implements _UpdateNote {
     required TResult Function(_DeleteTask value) deleteTask,
     required TResult Function(_CreateNote value) createNote,
     required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
   }) {
     return updateNote(this);
   }
@@ -1193,6 +1331,9 @@ class _$UpdateNoteImpl implements _UpdateNote {
     TResult? Function(_DeleteTask value)? deleteTask,
     TResult? Function(_CreateNote value)? createNote,
     TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
   }) {
     return updateNote?.call(this);
   }
@@ -1207,6 +1348,9 @@ class _$UpdateNoteImpl implements _UpdateNote {
     TResult Function(_DeleteTask value)? deleteTask,
     TResult Function(_CreateNote value)? createNote,
     TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
     required TResult orElse(),
   }) {
     if (updateNote != null) {
@@ -1223,6 +1367,360 @@ abstract class _UpdateNote implements ProductivityEvent {
   @JsonKey(ignore: true)
   _$$UpdateNoteImplCopyWith<_$UpdateNoteImpl> get copyWith =>
       throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$CreateProjectWithSubtasksImplCopyWith<$Res> {
+  factory _$$CreateProjectWithSubtasksImplCopyWith(
+          _$CreateProjectWithSubtasksImpl value,
+          $Res Function(_$CreateProjectWithSubtasksImpl) then) =
+      __$$CreateProjectWithSubtasksImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String title, List<Map<String, dynamic>> subtasks});
+}
+
+/// @nodoc
+class __$$CreateProjectWithSubtasksImplCopyWithImpl<$Res>
+    extends _$ProductivityEventCopyWithImpl<$Res,
+        _$CreateProjectWithSubtasksImpl>
+    implements _$$CreateProjectWithSubtasksImplCopyWith<$Res> {
+  __$$CreateProjectWithSubtasksImplCopyWithImpl(
+      _$CreateProjectWithSubtasksImpl _value,
+      $Res Function(_$CreateProjectWithSubtasksImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? title = null,
+    Object? subtasks = null,
+  }) {
+    return _then(_$CreateProjectWithSubtasksImpl(
+      null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      null == subtasks
+          ? _value._subtasks
+          : subtasks // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$CreateProjectWithSubtasksImpl implements _CreateProjectWithSubtasks {
+  const _$CreateProjectWithSubtasksImpl(
+      this.title, final List<Map<String, dynamic>> subtasks)
+      : _subtasks = subtasks;
+
+  @override
+  final String title;
+  final List<Map<String, dynamic>> _subtasks;
+  @override
+  List<Map<String, dynamic>> get subtasks {
+    if (_subtasks is EqualUnmodifiableListView) return _subtasks;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_subtasks);
+  }
+
+  @override
+  String toString() {
+    return 'ProductivityEvent.createProjectWithSubtasks(title: $title, subtasks: $subtasks)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CreateProjectWithSubtasksImpl &&
+            (identical(other.title, title) || other.title == title) &&
+            const DeepCollectionEquality().equals(other._subtasks, _subtasks));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, title, const DeepCollectionEquality().hash(_subtasks));
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CreateProjectWithSubtasksImplCopyWith<_$CreateProjectWithSubtasksImpl>
+      get copyWith => __$$CreateProjectWithSubtasksImplCopyWithImpl<
+          _$CreateProjectWithSubtasksImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadData,
+    required TResult Function(Task task) createTask,
+    required TResult Function(Task task) updateTask,
+    required TResult Function(int taskId) completeTask,
+    required TResult Function(int taskId) deleteTask,
+    required TResult Function(Note note, int? linkedTaskId) createNote,
+    required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
+  }) {
+    return createProjectWithSubtasks(title, subtasks);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadData,
+    TResult? Function(Task task)? createTask,
+    TResult? Function(Task task)? updateTask,
+    TResult? Function(int taskId)? completeTask,
+    TResult? Function(int taskId)? deleteTask,
+    TResult? Function(Note note, int? linkedTaskId)? createNote,
+    TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
+  }) {
+    return createProjectWithSubtasks?.call(title, subtasks);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadData,
+    TResult Function(Task task)? createTask,
+    TResult Function(Task task)? updateTask,
+    TResult Function(int taskId)? completeTask,
+    TResult Function(int taskId)? deleteTask,
+    TResult Function(Note note, int? linkedTaskId)? createNote,
+    TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
+    required TResult orElse(),
+  }) {
+    if (createProjectWithSubtasks != null) {
+      return createProjectWithSubtasks(title, subtasks);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadData value) loadData,
+    required TResult Function(_CreateTask value) createTask,
+    required TResult Function(_UpdateTask value) updateTask,
+    required TResult Function(_CompleteTask value) completeTask,
+    required TResult Function(_DeleteTask value) deleteTask,
+    required TResult Function(_CreateNote value) createNote,
+    required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
+  }) {
+    return createProjectWithSubtasks(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadData value)? loadData,
+    TResult? Function(_CreateTask value)? createTask,
+    TResult? Function(_UpdateTask value)? updateTask,
+    TResult? Function(_CompleteTask value)? completeTask,
+    TResult? Function(_DeleteTask value)? deleteTask,
+    TResult? Function(_CreateNote value)? createNote,
+    TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
+  }) {
+    return createProjectWithSubtasks?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadData value)? loadData,
+    TResult Function(_CreateTask value)? createTask,
+    TResult Function(_UpdateTask value)? updateTask,
+    TResult Function(_CompleteTask value)? completeTask,
+    TResult Function(_DeleteTask value)? deleteTask,
+    TResult Function(_CreateNote value)? createNote,
+    TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
+    required TResult orElse(),
+  }) {
+    if (createProjectWithSubtasks != null) {
+      return createProjectWithSubtasks(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _CreateProjectWithSubtasks implements ProductivityEvent {
+  const factory _CreateProjectWithSubtasks(
+          final String title, final List<Map<String, dynamic>> subtasks) =
+      _$CreateProjectWithSubtasksImpl;
+
+  String get title;
+  List<Map<String, dynamic>> get subtasks;
+  @JsonKey(ignore: true)
+  _$$CreateProjectWithSubtasksImplCopyWith<_$CreateProjectWithSubtasksImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$AutoScheduleTasksImplCopyWith<$Res> {
+  factory _$$AutoScheduleTasksImplCopyWith(_$AutoScheduleTasksImpl value,
+          $Res Function(_$AutoScheduleTasksImpl) then) =
+      __$$AutoScheduleTasksImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$AutoScheduleTasksImplCopyWithImpl<$Res>
+    extends _$ProductivityEventCopyWithImpl<$Res, _$AutoScheduleTasksImpl>
+    implements _$$AutoScheduleTasksImplCopyWith<$Res> {
+  __$$AutoScheduleTasksImplCopyWithImpl(_$AutoScheduleTasksImpl _value,
+      $Res Function(_$AutoScheduleTasksImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$AutoScheduleTasksImpl implements _AutoScheduleTasks {
+  const _$AutoScheduleTasksImpl();
+
+  @override
+  String toString() {
+    return 'ProductivityEvent.autoScheduleTasks()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$AutoScheduleTasksImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadData,
+    required TResult Function(Task task) createTask,
+    required TResult Function(Task task) updateTask,
+    required TResult Function(int taskId) completeTask,
+    required TResult Function(int taskId) deleteTask,
+    required TResult Function(Note note, int? linkedTaskId) createNote,
+    required TResult Function(Note note) updateNote,
+    required TResult Function(String title, List<Map<String, dynamic>> subtasks)
+        createProjectWithSubtasks,
+    required TResult Function() autoScheduleTasks,
+  }) {
+    return autoScheduleTasks();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadData,
+    TResult? Function(Task task)? createTask,
+    TResult? Function(Task task)? updateTask,
+    TResult? Function(int taskId)? completeTask,
+    TResult? Function(int taskId)? deleteTask,
+    TResult? Function(Note note, int? linkedTaskId)? createNote,
+    TResult? Function(Note note)? updateNote,
+    TResult? Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult? Function()? autoScheduleTasks,
+  }) {
+    return autoScheduleTasks?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadData,
+    TResult Function(Task task)? createTask,
+    TResult Function(Task task)? updateTask,
+    TResult Function(int taskId)? completeTask,
+    TResult Function(int taskId)? deleteTask,
+    TResult Function(Note note, int? linkedTaskId)? createNote,
+    TResult Function(Note note)? updateNote,
+    TResult Function(String title, List<Map<String, dynamic>> subtasks)?
+        createProjectWithSubtasks,
+    TResult Function()? autoScheduleTasks,
+    required TResult orElse(),
+  }) {
+    if (autoScheduleTasks != null) {
+      return autoScheduleTasks();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadData value) loadData,
+    required TResult Function(_CreateTask value) createTask,
+    required TResult Function(_UpdateTask value) updateTask,
+    required TResult Function(_CompleteTask value) completeTask,
+    required TResult Function(_DeleteTask value) deleteTask,
+    required TResult Function(_CreateNote value) createNote,
+    required TResult Function(_UpdateNote value) updateNote,
+    required TResult Function(_CreateProjectWithSubtasks value)
+        createProjectWithSubtasks,
+    required TResult Function(_AutoScheduleTasks value) autoScheduleTasks,
+  }) {
+    return autoScheduleTasks(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadData value)? loadData,
+    TResult? Function(_CreateTask value)? createTask,
+    TResult? Function(_UpdateTask value)? updateTask,
+    TResult? Function(_CompleteTask value)? completeTask,
+    TResult? Function(_DeleteTask value)? deleteTask,
+    TResult? Function(_CreateNote value)? createNote,
+    TResult? Function(_UpdateNote value)? updateNote,
+    TResult? Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult? Function(_AutoScheduleTasks value)? autoScheduleTasks,
+  }) {
+    return autoScheduleTasks?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadData value)? loadData,
+    TResult Function(_CreateTask value)? createTask,
+    TResult Function(_UpdateTask value)? updateTask,
+    TResult Function(_CompleteTask value)? completeTask,
+    TResult Function(_DeleteTask value)? deleteTask,
+    TResult Function(_CreateNote value)? createNote,
+    TResult Function(_UpdateNote value)? updateNote,
+    TResult Function(_CreateProjectWithSubtasks value)?
+        createProjectWithSubtasks,
+    TResult Function(_AutoScheduleTasks value)? autoScheduleTasks,
+    required TResult orElse(),
+  }) {
+    if (autoScheduleTasks != null) {
+      return autoScheduleTasks(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _AutoScheduleTasks implements ProductivityEvent {
+  const factory _AutoScheduleTasks() = _$AutoScheduleTasksImpl;
 }
 
 /// @nodoc
