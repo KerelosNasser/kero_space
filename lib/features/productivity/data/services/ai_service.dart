@@ -48,12 +48,11 @@ class AIService {
             'Authorization': 'Bearer $_openRouterApiKey',
             'Content-Type': 'application/json',
           },
-          sendTimeout: const Duration(seconds: 15),
-          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 45),
+          receiveTimeout: const Duration(seconds: 45),
         ),
         data: {
           'model': 'openai/gpt-oss-120b:free', 
-          'response_format': {'type': 'json_object'},
           'messages': [
             {
               'role': 'system', 
