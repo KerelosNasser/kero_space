@@ -42,39 +42,44 @@ const TaskSchema = CollectionSchema(
       name: r'energyLevel',
       type: IsarType.long,
     ),
-    r'isCompleted': PropertySchema(
+    r'icon': PropertySchema(
       id: 5,
+      name: r'icon',
+      type: IsarType.string,
+    ),
+    r'isCompleted': PropertySchema(
+      id: 6,
       name: r'isCompleted',
       type: IsarType.bool,
     ),
     r'linkedNoteId': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'linkedNoteId',
       type: IsarType.long,
     ),
     r'parentId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'parentId',
       type: IsarType.long,
     ),
     r'platform': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'platform',
       type: IsarType.string,
     ),
     r'title': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'title',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'type',
       type: IsarType.string,
       enumMap: _TasktypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -106,6 +111,12 @@ int _taskEstimateSize(
     }
   }
   bytesCount += 3 + object.deviceId.length * 3;
+  {
+    final value = object.icon;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.platform.length * 3;
   bytesCount += 3 + object.title.length * 3;
   bytesCount += 3 + object.type.name.length * 3;
@@ -123,13 +134,14 @@ void _taskSerialize(
   writer.writeString(offsets[2], object.deviceId);
   writer.writeDateTime(offsets[3], object.dueDate);
   writer.writeLong(offsets[4], object.energyLevel);
-  writer.writeBool(offsets[5], object.isCompleted);
-  writer.writeLong(offsets[6], object.linkedNoteId);
-  writer.writeLong(offsets[7], object.parentId);
-  writer.writeString(offsets[8], object.platform);
-  writer.writeString(offsets[9], object.title);
-  writer.writeString(offsets[10], object.type.name);
-  writer.writeDateTime(offsets[11], object.updatedAt);
+  writer.writeString(offsets[5], object.icon);
+  writer.writeBool(offsets[6], object.isCompleted);
+  writer.writeLong(offsets[7], object.linkedNoteId);
+  writer.writeLong(offsets[8], object.parentId);
+  writer.writeString(offsets[9], object.platform);
+  writer.writeString(offsets[10], object.title);
+  writer.writeString(offsets[11], object.type.name);
+  writer.writeDateTime(offsets[12], object.updatedAt);
 }
 
 Task _taskDeserialize(
@@ -144,15 +156,16 @@ Task _taskDeserialize(
   object.deviceId = reader.readString(offsets[2]);
   object.dueDate = reader.readDateTimeOrNull(offsets[3]);
   object.energyLevel = reader.readLongOrNull(offsets[4]);
+  object.icon = reader.readStringOrNull(offsets[5]);
   object.id = id;
-  object.isCompleted = reader.readBool(offsets[5]);
-  object.linkedNoteId = reader.readLongOrNull(offsets[6]);
-  object.parentId = reader.readLongOrNull(offsets[7]);
-  object.platform = reader.readString(offsets[8]);
-  object.title = reader.readString(offsets[9]);
-  object.type = _TasktypeValueEnumMap[reader.readStringOrNull(offsets[10])] ??
+  object.isCompleted = reader.readBool(offsets[6]);
+  object.linkedNoteId = reader.readLongOrNull(offsets[7]);
+  object.parentId = reader.readLongOrNull(offsets[8]);
+  object.platform = reader.readString(offsets[9]);
+  object.title = reader.readString(offsets[10]);
+  object.type = _TasktypeValueEnumMap[reader.readStringOrNull(offsets[11])] ??
       TaskType.project;
-  object.updatedAt = reader.readDateTime(offsets[11]);
+  object.updatedAt = reader.readDateTime(offsets[12]);
   return object;
 }
 
@@ -174,19 +187,21 @@ P _taskDeserializeProp<P>(
     case 4:
       return (reader.readLongOrNull(offset)) as P;
     case 5:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 7:
       return (reader.readLongOrNull(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 9:
       return (reader.readString(offset)) as P;
     case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
       return (_TasktypeValueEnumMap[reader.readStringOrNull(offset)] ??
           TaskType.project) as P;
-    case 11:
+    case 12:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -754,6 +769,150 @@ extension TaskQueryFilter on QueryBuilder<Task, Task, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'icon',
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'icon',
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'icon',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'icon',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'icon',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'icon',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'icon',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'icon',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconContains(String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'icon',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconMatches(String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'icon',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'icon',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> iconIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'icon',
+        value: '',
       ));
     });
   }
@@ -1461,6 +1620,18 @@ extension TaskQuerySortBy on QueryBuilder<Task, Task, QSortBy> {
     });
   }
 
+  QueryBuilder<Task, Task, QAfterSortBy> sortByIcon() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'icon', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterSortBy> sortByIconDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'icon', Sort.desc);
+    });
+  }
+
   QueryBuilder<Task, Task, QAfterSortBy> sortByIsCompleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isCompleted', Sort.asc);
@@ -1607,6 +1778,18 @@ extension TaskQuerySortThenBy on QueryBuilder<Task, Task, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Task, Task, QAfterSortBy> thenByIcon() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'icon', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterSortBy> thenByIconDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'icon', Sort.desc);
+    });
+  }
+
   QueryBuilder<Task, Task, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1737,6 +1920,13 @@ extension TaskQueryWhereDistinct on QueryBuilder<Task, Task, QDistinct> {
     });
   }
 
+  QueryBuilder<Task, Task, QDistinct> distinctByIcon(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'icon', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Task, Task, QDistinct> distinctByIsCompleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isCompleted');
@@ -1817,6 +2007,12 @@ extension TaskQueryProperty on QueryBuilder<Task, Task, QQueryProperty> {
   QueryBuilder<Task, int?, QQueryOperations> energyLevelProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'energyLevel');
+    });
+  }
+
+  QueryBuilder<Task, String?, QQueryOperations> iconProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'icon');
     });
   }
 

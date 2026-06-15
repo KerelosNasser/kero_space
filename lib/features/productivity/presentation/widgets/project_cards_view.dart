@@ -19,23 +19,34 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
   final AIService _aiService = AIService();
   bool _isGenerating = false;
 
-  void _generateProject() async {
-    final title = _aiProjectController.text.trim();
-    if (title.isEmpty) return;
+  void _generateProject([String? followUpAnswer]) async {
+    final prompt = followUpAnswer ?? _aiProjectController.text.trim();
+    if (prompt.isEmpty) return;
 
     setState(() {
       _isGenerating = true;
     });
 
     try {
-      final subtasks = await _aiService.breakdownProject(title);
+      final response = await _aiService.breakdownProject(prompt);
       
-      // We dispatch an event to the BLoC to create the project AND its subtasks
-      // Note: This requires the ProductivityBloc to have a specific event for this.
-      // For this implementation, we will dispatch them sequentially or rely on a new event.
-      context.read<ProductivityBloc>().add(ProductivityEvent.createProjectWithSubtasks(title, subtasks));
-      
-      _aiProjectController.clear();
+      if (response is Map && response['type'] == 'clarification') {
+        _showClarificationDialog(response['question']);
+      } else if (response is Map && response['type'] == 'plan') {
+        final icon = response['icon'] as String?;
+        final projectTitle = response['title'] as String? ?? (followUpAnswer != null ? 'Project' : prompt);
+        final subtasks = response['subtasks'] as List<dynamic>? ?? [];
+        
+        if (!mounted) return;
+        context.read<ProductivityBloc>().add(
+          ProductivityEvent.createProjectWithSubtasks(projectTitle, icon, subtasks)
+        );
+        _aiProjectController.clear();
+      } else {
+        if (!mounted) return;
+        context.read<ProductivityBloc>().add(ProductivityEvent.createProjectWithSubtasks(prompt, null, response as List<dynamic>));
+        _aiProjectController.clear();
+      }
     } catch (e) {
       debugPrint("Generation error: $e");
     } finally {
@@ -43,6 +54,90 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
         _isGenerating = false;
       });
     }
+  }
+
+  void _showClarificationDialog(String question) {
+    final answerController = TextEditingController();
+    final originalPrompt = _aiProjectController.text.trim();
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor.withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.accentViolet.withValues(alpha: 0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.accentViolet.withValues(alpha: 0.2),
+                blurRadius: 20,
+                spreadRadius: -5,
+              )
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.auto_awesome, color: AppTheme.accentViolet, size: 40),
+              const SizedBox(height: 16),
+              Text(
+                question,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: answerController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Your answer...',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  filled: true,
+                  fillColor: Theme.of(context).scaffoldBackgroundColor,
+                ),
+                onSubmitted: (val) {
+                  Navigator.of(ctx).pop();
+                  final answer = answerController.text.trim();
+                  if (answer.isNotEmpty) {
+                    _generateProject('Goal: $originalPrompt. Detail: $answer');
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentViolet,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      final answer = answerController.text.trim();
+                      if (answer.isNotEmpty) {
+                        _generateProject('Goal: $originalPrompt. Detail: $answer');
+                      }
+                    },
+                    child: const Text('Continue'),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showProjectDetails(BuildContext context, Task project, List<Task> subtasks) {
@@ -57,34 +152,52 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
           builder: (context, state) {
             List<Task> currentSubtasks = subtasks;
             state.maybeWhen(
-              loaded: (allTasks, _, __) {
+              loaded: (allTasks, _, _) {
                 currentSubtasks = allTasks.where((t) => t.parentId == project.id).toList();
               },
               orElse: () {},
             );
 
             return Container(
-              height: MediaQuery.of(context).size.height * 0.8,
+              height: MediaQuery.of(context).size.height * 0.85,
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  )
+                ]
               ),
               child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  // Drag Handle
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 12, bottom: 8),
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     child: Row(
                       children: [
-                        const Icon(Icons.folder, size: 32, color: AppTheme.accentGold),
+                        Text(
+                          project.icon ?? '🚀',
+                          style: const TextStyle(fontSize: 32),
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Text(
                             project.title,
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.5),
                           ),
                         ),
                         IconButton(
@@ -94,6 +207,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                       ],
                     ),
                   ),
+                  const Divider(height: 1, thickness: 1, color: Colors.black12),
                   Expanded(
                     child: currentSubtasks.isEmpty
                       ? const Center(child: Text("No tasks in this project yet.", style: TextStyle(color: AppTheme.textSecondary)))
@@ -102,36 +216,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                           itemCount: currentSubtasks.length,
                           itemBuilder: (context, index) {
                             final task = currentSubtasks[index];
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppTheme.accentViolet.withValues(alpha: 0.2)),
-                              ),
-                              child: ListTile(
-                                leading: Checkbox(
-                                  value: task.isCompleted,
-                                  activeColor: AppTheme.accentMint,
-                                  onChanged: (val) {
-                                    if (val == true && !task.isCompleted) {
-                                      context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(task.id));
-                                    }
-                                  },
-                                ),
-                                title: Text(
-                                  task.title, 
-                                  style: TextStyle(
-                                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                                    color: task.isCompleted ? AppTheme.textSecondary : AppTheme.textPrimary,
-                                  )
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete_outline, color: AppTheme.textSecondary),
-                                  onPressed: () => context.read<ProductivityBloc>().add(ProductivityEvent.deleteTask(task.id)),
-                                ),
-                              ),
-                            );
+                            return _TaskListItem(task: task);
                           },
                         ),
                   ),
@@ -178,7 +263,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
-              onSubmitted: (_) => _generateProject(),
+              onSubmitted: (val) => _generateProject(),
             ),
           ),
         ),
@@ -224,8 +309,19 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.folder, color: AppTheme.accentGold),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentViolet.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                project.icon ?? '🚀',
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                            ),
                             IconButton(
                               icon: const Icon(Icons.delete_outline, size: 20, color: AppTheme.textSecondary),
                               onPressed: () {
@@ -237,7 +333,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                         const Spacer(),
                         Text(
                           project.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, letterSpacing: -0.5),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -261,6 +357,119 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _TaskListItem extends StatefulWidget {
+  final Task task;
+
+  const _TaskListItem({required this.task});
+
+  @override
+  State<_TaskListItem> createState() => _TaskListItemState();
+}
+
+class _TaskListItemState extends State<_TaskListItem> {
+  bool _isEditing = false;
+  late TextEditingController _controller;
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.task.title);
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        _saveTitle();
+      }
+    });
+  }
+
+  void _saveTitle() {
+    if (_isEditing) {
+      final newTitle = _controller.text.trim();
+      if (newTitle.isNotEmpty && newTitle != widget.task.title) {
+        widget.task.title = newTitle;
+        widget.task.updatedAt = DateTime.now();
+        context.read<ProductivityBloc>().add(ProductivityEvent.updateTask(widget.task));
+      } else {
+        _controller.text = widget.task.title;
+      }
+      setState(() {
+        _isEditing = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.accentViolet.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ]
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Checkbox(
+          value: widget.task.isCompleted,
+          activeColor: AppTheme.accentMint,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          onChanged: (val) {
+            if (val == true && !widget.task.isCompleted) {
+              context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(widget.task.id));
+            }
+          },
+        ),
+        title: _isEditing
+            ? TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onSubmitted: (_) => _saveTitle(),
+              )
+            : GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isEditing = true;
+                  });
+                },
+                child: Text(
+                  widget.task.title, 
+                  style: TextStyle(
+                    fontSize: 16,
+                    decoration: widget.task.isCompleted ? TextDecoration.lineThrough : null,
+                    color: widget.task.isCompleted ? AppTheme.textSecondary : AppTheme.textPrimary,
+                  )
+                ),
+              ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete_outline, color: AppTheme.textSecondary, size: 20),
+          onPressed: () => context.read<ProductivityBloc>().add(ProductivityEvent.deleteTask(widget.task.id)),
+        ),
+      ),
     );
   }
 }

@@ -22,6 +22,8 @@ class Task {
   int? linkedNoteId;
   
   int? energyLevel; // 1=Low, 2=Med, 3=High
+  
+  String? icon; // AI generated emoji or icon
 }
 
 @collection

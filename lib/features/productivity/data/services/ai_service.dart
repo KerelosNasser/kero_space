@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
 class AIService {
   final Dio _dio;
@@ -32,13 +33,14 @@ class AIService {
       final reply = response.data['choices'][0]['message']['content'].toString().trim();
       return int.tryParse(reply) ?? 2; // Default to medium if parsing fails
     } catch (e) {
-      print('AI Service Error (inferEnergyLevel): $e');
+      debugPrint('AI Service Error (inferEnergyLevel): $e');
       return 2;
     }
   }
 
-  /// Breaks down a project goal into a list of actionable sub-tasks with inferred energy levels.
-  Future<List<Map<String, dynamic>>> breakdownProject(String projectDescription) async {
+  /// Breaks down a project goal into a list of actionable sub-tasks with inferred energy levels,
+  /// or asks a clarifying question if the prompt is too vague.
+  Future<dynamic> breakdownProject(String projectDescription) async {
     try {
       final response = await _dio.post(
         'https://integrate.api.nvidia.com/v1/chat/completions',
@@ -51,7 +53,17 @@ class AIService {
           'messages': [
             {
               'role': 'system', 
-              'content': 'You are a strict productivity assistant. Break down the user\'s project into 3-5 immediate, actionable sub-tasks. Output ONLY valid JSON in this exact format, with no markdown formatting: [{"title": "Step 1", "energyLevel": 1}, ...]. energyLevel must be 1, 2, or 3.'
+              'content': '''You are a strict productivity assistant. Your job is to break down the user's project into 3-5 immediate, actionable sub-tasks. 
+If the user's prompt is completely ambiguous (e.g. "Build an app"), you MUST ask a clarifying question to structure the idea.
+Otherwise, default to generating the plan.
+
+Output ONLY valid JSON in one of these two formats, with NO markdown formatting:
+Format 1 (Clarification):
+{"type": "clarification", "question": "What kind of app?"}
+
+Format 2 (Plan):
+{"type": "plan", "icon": "🚀", "title": "Project Title", "subtasks": [{"title": "Step 1", "energyLevel": 1}, ...]}
+energyLevel must be 1 (Low), 2 (Medium), or 3 (High).'''
             },
             {'role': 'user', 'content': projectDescription}
           ],
@@ -61,15 +73,20 @@ class AIService {
       final reply = response.data['choices'][0]['message']['content'].toString().trim();
       final cleanReply = reply.replaceAll('```json', '').replaceAll('```', '');
       
-      final List<dynamic> parsed = jsonDecode(cleanReply);
-      return parsed.cast<Map<String, dynamic>>();
+      final dynamic parsed = jsonDecode(cleanReply);
+      return parsed;
     } catch (e) {
-      print('AI Service Error (breakdownProject): $e');
+      debugPrint('AI Service Error (breakdownProject): $e');
       // Fallback response
-      return [
-        {'title': 'Draft initial plan for: $projectDescription', 'energyLevel': 2},
-        {'title': 'Execute step 1', 'energyLevel': 3},
-      ];
+      return {
+        "type": "plan",
+        "icon": "📝",
+        "title": projectDescription.length > 20 ? projectDescription.substring(0, 20) : projectDescription,
+        "subtasks": [
+          {'title': 'Draft initial plan', 'energyLevel': 2},
+          {'title': 'Execute step 1', 'energyLevel': 3},
+        ]
+      };
     }
   }
 

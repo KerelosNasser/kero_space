@@ -11,6 +11,6 @@ class ProductivityEvent with _$ProductivityEvent {
   const factory ProductivityEvent.createNote(Note note, {int? linkedTaskId}) = _CreateNote;
   const factory ProductivityEvent.updateNote(Note note) = _UpdateNote;
 
-  const factory ProductivityEvent.createProjectWithSubtasks(String title, List<Map<String, dynamic>> subtasks) = _CreateProjectWithSubtasks;
+  const factory ProductivityEvent.createProjectWithSubtasks(String title, String? icon, List<dynamic> subtasks) = _CreateProjectWithSubtasks;
   const factory ProductivityEvent.autoScheduleTasks() = _AutoScheduleTasks;
 }

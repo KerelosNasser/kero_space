@@ -116,6 +116,7 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     try {
       final project = Task()
         ..title = event.title
+        ..icon = event.icon
         ..type = TaskType.project
         ..deviceId = 'local'
         ..platform = 'local'
