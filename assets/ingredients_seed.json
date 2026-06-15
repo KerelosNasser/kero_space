@@ -1,617 +1,5 @@
 [
   {
-    "id": "8480000093561",
-    "name": "Muesli Crunchy Fruta",
-    "calories": 427,
-    "protein": 6.3,
-    "carbs": 66,
-    "fat": 14,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3560070449675",
-    "name": "Spécial mie Complet",
-    "calories": 220,
-    "protein": 8.4,
-    "carbs": 36,
-    "fat": 3.1,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "4056489371724",
-    "name": "Biscotte au froment",
-    "calories": 399,
-    "protein": 11,
-    "carbs": 75,
-    "fat": 5,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "5060198820052",
-    "name": "Peter's Yard Original Sourdough Crackers",
-    "calories": 367,
-    "protein": 13,
-    "carbs": 69,
-    "fat": 2.8,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3560071018405",
-    "name": "Crackers Aux graines de courge, lin et sésame",
-    "calories": 486,
-    "protein": 21,
-    "carbs": 34,
-    "fat": 27,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3250390503170",
-    "name": "Gressins au sésame",
-    "calories": 463,
-    "protein": 14,
-    "carbs": 58,
-    "fat": 18,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3560071472726",
-    "name": "Maxi tranches nature",
-    "calories": 269,
-    "protein": 8.1,
-    "carbs": 50,
-    "fat": 3.4,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "8480000861450",
-    "name": "Batatas Fritas Sabor Serrano",
-    "calories": 533,
-    "protein": 6.6,
-    "carbs": 50,
-    "fat": 33,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "8008698002070",
-    "name": "Salinis",
-    "calories": 482,
-    "protein": 0.9,
-    "carbs": 72,
-    "fat": 21,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "8411327002745",
-    "name": "Cerveza 0,0 tostada",
-    "calories": 26,
-    "protein": 0.3,
-    "carbs": 6.2,
-    "fat": 0,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "8901088068734",
-    "name": "Saffola Masala Oats - Classic Masala",
-    "calories": 365.8,
-    "protein": 8.7,
-    "carbs": 70.5,
-    "fat": 7.6,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "8007900000255",
-    "name": "Grissini Nature Vita Vigor",
-    "calories": 396,
-    "protein": 12,
-    "carbs": 74,
-    "fat": 5,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "5010029013047",
-    "name": "Ready brek original smooth porridge oats",
-    "calories": 373.3,
-    "protein": 28.7,
-    "carbs": 83.3,
-    "fat": 16.7,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "8017596129758",
-    "name": "Muesli croccante al cioccolato fondente e nocciole",
-    "calories": 457,
-    "protein": 9.7,
-    "carbs": 62,
-    "fat": 17,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3421557922237",
-    "name": "Muesli croustillant cacahuète chocolat",
-    "calories": 451,
-    "protein": 9.3,
-    "carbs": 65,
-    "fat": 16,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "5000108022190",
-    "name": "Rolled Oats",
-    "calories": 375,
-    "protein": 11,
-    "carbs": 60,
-    "fat": 8,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "7790040566903",
-    "name": "Hogareñas cereal mix",
-    "calories": 442,
-    "protein": 11,
-    "carbs": 61,
-    "fat": 18,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "5060198820694",
-    "name": "Sea Salt Sourdough Flatbreads",
-    "calories": 412,
-    "protein": 11,
-    "carbs": 65,
-    "fat": 10,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "5900928087952",
-    "name": "Tortilla Wraps Vollkorn",
-    "calories": 309,
-    "protein": 10,
-    "carbs": 47,
-    "fat": 7.6,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "4000446001735",
-    "name": "Pain complet aux trois céréales: seigle, avoine et orge",
-    "calories": 199,
-    "protein": 5,
-    "carbs": 32.6,
-    "fat": 2.1,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111242100992",
-    "name": "Perly",
-    "calories": 97,
-    "protein": 8,
-    "carbs": 9.4,
-    "fat": 3,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111259092495",
-    "name": "Goldium crémeux",
-    "calories": 225,
-    "protein": 5,
-    "carbs": 3,
-    "fat": 24,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111266963207",
-    "name": "كيفير",
-    "calories": 53.6,
-    "protein": 3,
-    "carbs": 4.8,
-    "fat": 2.5,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3229820787015",
-    "name": "BjORG AMANDE ALMOND SANS SUCRE- NO SUGAR",
-    "calories": 25,
-    "protein": 0.7,
-    "carbs": 1.6,
-    "fat": 1.7,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3229820792132",
-    "name": "Avoine - Boisson biologique",
-    "calories": 45,
-    "protein": 0.5,
-    "carbs": 7,
-    "fat": 1.5,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111246722039",
-    "name": "fromage herbes milky food",
-    "calories": 228,
-    "protein": 4.8,
-    "carbs": 4,
-    "fat": 21,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3451790988677",
-    "name": "Le Beurre Tendre",
-    "calories": 375,
-    "protein": 0.7,
-    "carbs": 0.8,
-    "fat": 82,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "4056489346357",
-    "name": "Boisson à l'amande, sans sucres",
-    "calories": 14,
-    "protein": 0.5,
-    "carbs": 0,
-    "fat": 1.2,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "5411188116592",
-    "name": "Alpro tempting and tropical coco low fat",
-    "calories": 20,
-    "protein": 0.1,
-    "carbs": 2.7,
-    "fat": 0.8,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111099005396",
-    "name": "مارغرين المائدة",
-    "calories": 675,
-    "protein": 0.1,
-    "carbs": 0.2,
-    "fat": 75,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "8436547770137",
-    "name": "Kéfir natural sabor suave",
-    "calories": 74,
-    "protein": 3.9,
-    "carbs": 5.1,
-    "fat": 4.2,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "20047559",
-    "name": "Yogurt Greek Style",
-    "calories": 96.2,
-    "protein": 4.6,
-    "carbs": 3.2,
-    "fat": 10,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3229820783338",
-    "name": "Épeautre noisette",
-    "calories": 76,
-    "protein": 1,
-    "carbs": 11,
-    "fat": 3,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "5411188110842",
-    "name": "Rich and indulgent Hazelnut",
-    "calories": 29,
-    "protein": 0.4,
-    "carbs": 3.2,
-    "fat": 1.6,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111032004455",
-    "name": "Dan up",
-    "calories": 46.5,
-    "protein": 1.4,
-    "carbs": 8.6,
-    "fat": 0.7,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3023291122005",
-    "name": "Yaos Yaourt à la Grecque Nature",
-    "calories": 50.4,
-    "protein": 3.1,
-    "carbs": 3.5,
-    "fat": 7.9,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111032010333",
-    "name": "Danone-Peche",
-    "calories": 95,
-    "protein": 3.4,
-    "carbs": 14.3,
-    "fat": 2.7,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111242102552",
-    "name": "Dessert gourmand choco",
-    "calories": 233.3,
-    "protein": 3.3,
-    "carbs": 31.7,
-    "fat": 10,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3760020507350",
-    "name": "Pur beurre de cacahuète",
-    "calories": 628,
-    "protein": 27,
-    "carbs": 12,
-    "fat": 51,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3168930163480",
-    "name": "Alvalle Gazpacho l'original",
-    "calories": 40,
-    "protein": 0.9,
-    "carbs": 3.5,
-    "fat": 2.2,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111032006619",
-    "name": "Jamila رايبي",
-    "calories": 72,
-    "protein": 1.9,
-    "carbs": 12.4,
-    "fat": 1.7,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3175681851856",
-    "name": "Biscuit raisins",
-    "calories": 441,
-    "protein": 8.3,
-    "carbs": 68,
-    "fat": 14,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3229820129488",
-    "name": "Muesli Raisin, Figue, Abricot",
-    "calories": 352,
-    "protein": 11,
-    "carbs": 59,
-    "fat": 5.8,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "5010477348678",
-    "name": "Special Muesli 30% fruits & noix",
-    "calories": 360,
-    "protein": 10,
-    "carbs": 60,
-    "fat": 7.2,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3229820782560",
-    "name": "Muesli Superfruits Raisins, cassis, cranberry, myrtille",
-    "calories": 358.6,
-    "protein": 12,
-    "carbs": 60,
-    "fat": 6,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111162000839",
-    "name": "Confiture de fraise",
-    "calories": 250,
-    "protein": 0.5,
-    "carbs": 61.3,
-    "fat": 0.3,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111184001074",
-    "name": "Confiture De Fraises 430 G",
-    "calories": 256,
-    "protein": 0.5,
-    "carbs": 63,
-    "fat": 0.5,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "4056489620938",
-    "name": "Beurre de cacahuètes",
-    "calories": 680.4,
-    "protein": 30.4,
-    "carbs": 12,
-    "fat": 55.1,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "5010477348357",
-    "name": "Country Crisp 4 noix",
-    "calories": 465,
-    "protein": 11,
-    "carbs": 58,
-    "fat": 20,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111242103702",
-    "name": "Yaourt Grec Muesli",
-    "calories": 140,
-    "protein": 3.3,
-    "carbs": 16.1,
-    "fat": 7,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3083681095296",
-    "name": "Ratatouille Cuisinée à la Provençal",
-    "calories": 72,
-    "protein": 1.3,
-    "carbs": 5.7,
-    "fat": 4.1,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "7622201133337",
-    "name": "Figolu",
-    "calories": 400,
-    "protein": 4.7,
-    "carbs": 71.9,
-    "fat": 8.1,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3327272107259",
-    "name": "Menguy's Beurre de cacahuètes creamy",
-    "calories": 629,
-    "protein": 25,
-    "carbs": 12,
-    "fat": 52,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "6111032008453",
-    "name": "danino",
-    "calories": 132.2,
-    "protein": 6.5,
-    "carbs": 12.3,
-    "fat": 6.3,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3175681209282",
-    "name": "Goûter 4S Saveur pommes",
-    "calories": 456,
-    "protein": 7.6,
-    "carbs": 65,
-    "fat": 17,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111248360130",
-    "name": "Aïn Soltane",
-    "calories": 0.0,
-    "protein": 0,
-    "carbs": 0,
-    "fat": 0,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111032002925",
-    "name": "Danone nature",
-    "calories": 66.2,
-    "protein": 3,
-    "carbs": 6.7,
-    "fat": 3,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111242102767",
-    "name": "Yaourt tendre",
-    "calories": 121,
-    "protein": 4.2,
-    "carbs": 14.9,
-    "fat": 5,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111099000247",
-    "name": "Hule D'olive",
-    "calories": 822,
-    "protein": 0,
-    "carbs": 0,
-    "fat": 90,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "8719200012608",
-    "name": "Tartine sans huile de palme",
-    "calories": 314,
-    "protein": 0.5,
-    "carbs": 0.5,
-    "fat": 35,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "5000157024671",
-    "name": "Beanz in a rich tomato sauce",
-    "calories": 79,
-    "protein": 4.7,
-    "carbs": 12.9,
-    "fat": 0.2,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3760324300015",
-    "name": "2 Steaks végétaux et gourmands",
-    "calories": 219,
-    "protein": 13,
-    "carbs": 3.5,
-    "fat": 16,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "8710522922019",
-    "name": "Ketchup 5 Ingrédients",
-    "calories": 74,
-    "protein": 1.5,
-    "carbs": 15,
-    "fat": 0.5,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "20815394",
-    "name": "Mixed fruit and nut",
-    "calories": 504,
-    "protein": 10.8,
-    "carbs": 40.5,
-    "fat": 31.7,
-    "isFastingCompliant": true
-  },
-  {
-    "id": "3155251205302",
-    "name": "Tartine doux",
-    "calories": 495,
-    "protein": 0,
-    "carbs": 0,
-    "fat": 55,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3083681148640",
-    "name": "Celeri fromage blanc dnp 320g",
-    "calories": 138,
-    "protein": 2,
-    "carbs": 4,
-    "fat": 12,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "6111024002186",
-    "name": "Houilor",
-    "calories": 900,
-    "protein": 0,
-    "carbs": 0,
-    "fat": 100,
-    "isFastingCompliant": false
-  },
-  {
-    "id": "3770008009653",
-    "name": "La pâte à tartiner cacao noisette",
-    "calories": 263,
-    "protein": 4.8,
-    "carbs": 35,
-    "fat": 14,
-    "isFastingCompliant": true
-  },
-  {
     "id": "eg_1",
     "name": "Ful Medames (Plain Fava Beans)",
     "calories": 110.0,
@@ -694,7 +82,7 @@
   },
   {
     "id": "eg_10",
-    "name": "Macarona Béchamel",
+    "name": "Macarona B\u00e9chamel",
     "calories": 280.0,
     "protein": 12.0,
     "carbs": 30.0,
@@ -703,7 +91,7 @@
   },
   {
     "id": "eg_11",
-    "name": "Macarona Béchamel (Fasting/Vegan)",
+    "name": "Macarona B\u00e9chamel (Fasting/Vegan)",
     "calories": 240.0,
     "protein": 6.0,
     "carbs": 35.0,
@@ -744,6 +132,618 @@
     "protein": 3.0,
     "carbs": 5.0,
     "fat": 1.0,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "8480000093561",
+    "name": "Muesli Crunchy Fruta",
+    "calories": 427,
+    "protein": 6.3,
+    "carbs": 66,
+    "fat": 14,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3560070449675",
+    "name": "Sp\u00e9cial mie Complet",
+    "calories": 220,
+    "protein": 8.4,
+    "carbs": 36,
+    "fat": 3.1,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "4056489371724",
+    "name": "Biscotte au froment",
+    "calories": 399,
+    "protein": 11,
+    "carbs": 75,
+    "fat": 5,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "5060198820052",
+    "name": "Peter's Yard Original Sourdough Crackers",
+    "calories": 367,
+    "protein": 13,
+    "carbs": 69,
+    "fat": 2.8,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3560071018405",
+    "name": "Crackers Aux graines de courge, lin et s\u00e9same",
+    "calories": 486,
+    "protein": 21,
+    "carbs": 34,
+    "fat": 27,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3250390503170",
+    "name": "Gressins au s\u00e9same",
+    "calories": 463,
+    "protein": 14,
+    "carbs": 58,
+    "fat": 18,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3560071472726",
+    "name": "Maxi tranches nature",
+    "calories": 269,
+    "protein": 8.1,
+    "carbs": 50,
+    "fat": 3.4,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "8480000861450",
+    "name": "Batatas Fritas Sabor Serrano",
+    "calories": 533,
+    "protein": 6.6,
+    "carbs": 50,
+    "fat": 33,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "8008698002070",
+    "name": "Salinis",
+    "calories": 482,
+    "protein": 0.9,
+    "carbs": 72,
+    "fat": 21,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "8411327002745",
+    "name": "Cerveza 0,0 tostada",
+    "calories": 26,
+    "protein": 0.3,
+    "carbs": 6.2,
+    "fat": 0,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "8901088068734",
+    "name": "Saffola Masala Oats - Classic Masala",
+    "calories": 365.8,
+    "protein": 8.7,
+    "carbs": 70.5,
+    "fat": 7.6,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "8007900000255",
+    "name": "Grissini Nature Vita Vigor",
+    "calories": 396,
+    "protein": 12,
+    "carbs": 74,
+    "fat": 5,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "5010029013047",
+    "name": "Ready brek original smooth porridge oats",
+    "calories": 373.3,
+    "protein": 28.7,
+    "carbs": 83.3,
+    "fat": 16.7,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "8017596129758",
+    "name": "Muesli croccante al cioccolato fondente e nocciole",
+    "calories": 457,
+    "protein": 9.7,
+    "carbs": 62,
+    "fat": 17,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3421557922237",
+    "name": "Muesli croustillant cacahu\u00e8te chocolat",
+    "calories": 451,
+    "protein": 9.3,
+    "carbs": 65,
+    "fat": 16,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "5000108022190",
+    "name": "Rolled Oats",
+    "calories": 375,
+    "protein": 11,
+    "carbs": 60,
+    "fat": 8,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "7790040566903",
+    "name": "Hogare\u00f1as cereal mix",
+    "calories": 442,
+    "protein": 11,
+    "carbs": 61,
+    "fat": 18,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "5060198820694",
+    "name": "Sea Salt Sourdough Flatbreads",
+    "calories": 412,
+    "protein": 11,
+    "carbs": 65,
+    "fat": 10,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "5900928087952",
+    "name": "Tortilla Wraps Vollkorn",
+    "calories": 309,
+    "protein": 10,
+    "carbs": 47,
+    "fat": 7.6,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "4000446001735",
+    "name": "Pain complet aux trois c\u00e9r\u00e9ales: seigle, avoine et orge",
+    "calories": 199,
+    "protein": 5,
+    "carbs": 32.6,
+    "fat": 2.1,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111242100992",
+    "name": "Perly",
+    "calories": 97,
+    "protein": 8,
+    "carbs": 9.4,
+    "fat": 3,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111259092495",
+    "name": "Goldium cr\u00e9meux",
+    "calories": 225,
+    "protein": 5,
+    "carbs": 3,
+    "fat": 24,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111266963207",
+    "name": "\u0643\u064a\u0641\u064a\u0631",
+    "calories": 53.6,
+    "protein": 3,
+    "carbs": 4.8,
+    "fat": 2.5,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3229820787015",
+    "name": "BjORG AMANDE ALMOND SANS SUCRE- NO SUGAR",
+    "calories": 25,
+    "protein": 0.7,
+    "carbs": 1.6,
+    "fat": 1.7,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3229820792132",
+    "name": "Avoine - Boisson biologique",
+    "calories": 45,
+    "protein": 0.5,
+    "carbs": 7,
+    "fat": 1.5,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111246722039",
+    "name": "fromage herbes milky food",
+    "calories": 228,
+    "protein": 4.8,
+    "carbs": 4,
+    "fat": 21,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3451790988677",
+    "name": "Le Beurre Tendre",
+    "calories": 375,
+    "protein": 0.7,
+    "carbs": 0.8,
+    "fat": 82,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "4056489346357",
+    "name": "Boisson \u00e0 l'amande, sans sucres",
+    "calories": 14,
+    "protein": 0.5,
+    "carbs": 0,
+    "fat": 1.2,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "5411188116592",
+    "name": "Alpro tempting and tropical coco low fat",
+    "calories": 20,
+    "protein": 0.1,
+    "carbs": 2.7,
+    "fat": 0.8,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111099005396",
+    "name": "\u0645\u0627\u0631\u063a\u0631\u064a\u0646 \u0627\u0644\u0645\u0627\u0626\u062f\u0629",
+    "calories": 675,
+    "protein": 0.1,
+    "carbs": 0.2,
+    "fat": 75,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "8436547770137",
+    "name": "K\u00e9fir natural sabor suave",
+    "calories": 74,
+    "protein": 3.9,
+    "carbs": 5.1,
+    "fat": 4.2,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "20047559",
+    "name": "Yogurt Greek Style",
+    "calories": 96.2,
+    "protein": 4.6,
+    "carbs": 3.2,
+    "fat": 10,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3229820783338",
+    "name": "\u00c9peautre noisette",
+    "calories": 76,
+    "protein": 1,
+    "carbs": 11,
+    "fat": 3,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "5411188110842",
+    "name": "Rich and indulgent Hazelnut",
+    "calories": 29,
+    "protein": 0.4,
+    "carbs": 3.2,
+    "fat": 1.6,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111032004455",
+    "name": "Dan up",
+    "calories": 46.5,
+    "protein": 1.4,
+    "carbs": 8.6,
+    "fat": 0.7,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3023291122005",
+    "name": "Yaos Yaourt \u00e0 la Grecque Nature",
+    "calories": 50.4,
+    "protein": 3.1,
+    "carbs": 3.5,
+    "fat": 7.9,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111032010333",
+    "name": "Danone-Peche",
+    "calories": 95,
+    "protein": 3.4,
+    "carbs": 14.3,
+    "fat": 2.7,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111242102552",
+    "name": "Dessert gourmand choco",
+    "calories": 233.3,
+    "protein": 3.3,
+    "carbs": 31.7,
+    "fat": 10,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3760020507350",
+    "name": "Pur beurre de cacahu\u00e8te",
+    "calories": 628,
+    "protein": 27,
+    "carbs": 12,
+    "fat": 51,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3168930163480",
+    "name": "Alvalle Gazpacho l'original",
+    "calories": 40,
+    "protein": 0.9,
+    "carbs": 3.5,
+    "fat": 2.2,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111032006619",
+    "name": "Jamila \u0631\u0627\u064a\u0628\u064a",
+    "calories": 72,
+    "protein": 1.9,
+    "carbs": 12.4,
+    "fat": 1.7,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3175681851856",
+    "name": "Biscuit raisins",
+    "calories": 441,
+    "protein": 8.3,
+    "carbs": 68,
+    "fat": 14,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3229820129488",
+    "name": "Muesli Raisin, Figue, Abricot",
+    "calories": 352,
+    "protein": 11,
+    "carbs": 59,
+    "fat": 5.8,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "5010477348678",
+    "name": "Special Muesli 30% fruits & noix",
+    "calories": 360,
+    "protein": 10,
+    "carbs": 60,
+    "fat": 7.2,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3229820782560",
+    "name": "Muesli Superfruits Raisins, cassis, cranberry, myrtille",
+    "calories": 358.6,
+    "protein": 12,
+    "carbs": 60,
+    "fat": 6,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111162000839",
+    "name": "Confiture de fraise",
+    "calories": 250,
+    "protein": 0.5,
+    "carbs": 61.3,
+    "fat": 0.3,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111184001074",
+    "name": "Confiture De Fraises 430 G",
+    "calories": 256,
+    "protein": 0.5,
+    "carbs": 63,
+    "fat": 0.5,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "4056489620938",
+    "name": "Beurre de cacahu\u00e8tes",
+    "calories": 680.4,
+    "protein": 30.4,
+    "carbs": 12,
+    "fat": 55.1,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "5010477348357",
+    "name": "Country Crisp 4 noix",
+    "calories": 465,
+    "protein": 11,
+    "carbs": 58,
+    "fat": 20,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111242103702",
+    "name": "Yaourt Grec Muesli",
+    "calories": 140,
+    "protein": 3.3,
+    "carbs": 16.1,
+    "fat": 7,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3083681095296",
+    "name": "Ratatouille Cuisin\u00e9e \u00e0 la Proven\u00e7al",
+    "calories": 72,
+    "protein": 1.3,
+    "carbs": 5.7,
+    "fat": 4.1,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "7622201133337",
+    "name": "Figolu",
+    "calories": 400,
+    "protein": 4.7,
+    "carbs": 71.9,
+    "fat": 8.1,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3327272107259",
+    "name": "Menguy's Beurre de cacahu\u00e8tes creamy",
+    "calories": 629,
+    "protein": 25,
+    "carbs": 12,
+    "fat": 52,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "6111032008453",
+    "name": "danino",
+    "calories": 132.2,
+    "protein": 6.5,
+    "carbs": 12.3,
+    "fat": 6.3,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3175681209282",
+    "name": "Go\u00fbter 4S Saveur pommes",
+    "calories": 456,
+    "protein": 7.6,
+    "carbs": 65,
+    "fat": 17,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111248360130",
+    "name": "A\u00efn Soltane",
+    "calories": 0.0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111032002925",
+    "name": "Danone nature",
+    "calories": 66.2,
+    "protein": 3,
+    "carbs": 6.7,
+    "fat": 3,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111242102767",
+    "name": "Yaourt tendre",
+    "calories": 121,
+    "protein": 4.2,
+    "carbs": 14.9,
+    "fat": 5,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111099000247",
+    "name": "Hule D'olive",
+    "calories": 822,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 90,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "8719200012608",
+    "name": "Tartine sans huile de palme",
+    "calories": 314,
+    "protein": 0.5,
+    "carbs": 0.5,
+    "fat": 35,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "5000157024671",
+    "name": "Beanz in a rich tomato sauce",
+    "calories": 79,
+    "protein": 4.7,
+    "carbs": 12.9,
+    "fat": 0.2,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3760324300015",
+    "name": "2 Steaks v\u00e9g\u00e9taux et gourmands",
+    "calories": 219,
+    "protein": 13,
+    "carbs": 3.5,
+    "fat": 16,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "8710522922019",
+    "name": "Ketchup 5 Ingr\u00e9dients",
+    "calories": 74,
+    "protein": 1.5,
+    "carbs": 15,
+    "fat": 0.5,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "20815394",
+    "name": "Mixed fruit and nut",
+    "calories": 504,
+    "protein": 10.8,
+    "carbs": 40.5,
+    "fat": 31.7,
+    "isFastingCompliant": true
+  },
+  {
+    "id": "3155251205302",
+    "name": "Tartine doux",
+    "calories": 495,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 55,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3083681148640",
+    "name": "Celeri fromage blanc dnp 320g",
+    "calories": 138,
+    "protein": 2,
+    "carbs": 4,
+    "fat": 12,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "6111024002186",
+    "name": "Houilor",
+    "calories": 900,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 100,
+    "isFastingCompliant": false
+  },
+  {
+    "id": "3770008009653",
+    "name": "La p\u00e2te \u00e0 tartiner cacao noisette",
+    "calories": 263,
+    "protein": 4.8,
+    "carbs": 35,
+    "fat": 14,
     "isFastingCompliant": true
   },
   {

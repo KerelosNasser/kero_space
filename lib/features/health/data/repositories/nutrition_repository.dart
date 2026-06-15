@@ -11,13 +11,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 class NutritionRepository {
   Future<void> seedIngredientsIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
-    final isSeeded = prefs.getBool('ingredients_seeded') ?? false;
+    final isSeeded = prefs.getBool('ingredients_seeded_v2') ?? false;
 
     if (isSeeded) return;
 
     final isar = IsarService.instance;
 
     try {
+      await isar.writeTxn(() async {
+        await isar.ingredients.clear();
+      });
       final jsonString = await rootBundle.loadString('assets/ingredients_seed.json');
       final List<dynamic> jsonList = jsonDecode(jsonString);
 
@@ -37,7 +40,7 @@ class NutritionRepository {
         await isar.ingredients.putAll(ingredients);
       });
 
-      await prefs.setBool('ingredients_seeded', true);
+      await prefs.setBool('ingredients_seeded_v2', true);
     } catch (e) {
       debugPrint('Error seeding ingredients: $e');
     }
