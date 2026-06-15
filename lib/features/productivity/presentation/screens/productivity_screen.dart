@@ -8,6 +8,7 @@ import '../bloc/productivity_bloc.dart';
 import '../bloc/calendar_bloc.dart';
 import '../widgets/daily_checklist.dart';
 import '../widgets/project_cards_view.dart';
+import '../widgets/notes_masonry_grid.dart';
 import '../../data/models/productivity_collections.dart';
 
 import 'package:flutter/services.dart';
@@ -178,16 +179,7 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
                       ProjectCardsView(allTasks: allTasks),
 
                       // Tab 3: Notes
-                      ListView.builder(
-                        itemCount: allNotes.length,
-                        itemBuilder: (context, index) {
-                          final note = allNotes[index];
-                          return ListTile(
-                            title: Text(note.title),
-                            onTap: () => context.push('/note_editor', extra: {'note': note, 'bloc': context.read<ProductivityBloc>()}),
-                          );
-                        },
-                      ),
+                      NotesMasonryGrid(notes: allNotes),
 
                       // Tab 4: Calendar
                       BlocBuilder<CalendarBloc, CalendarState>(

@@ -108,4 +108,30 @@ energyLevel must be 1 (Low), 2 (Medium), or 3 (High).'''
     
     return schedule;
   }
+  /// Generates a short title (2-4 words) for a note based on its content.
+  Future<String> generateNoteTitle(String content) async {
+    if (content.trim().isEmpty) return "New Note";
+    try {
+      final response = await _dio.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        options: Options(headers: {
+          'Authorization': 'Bearer $_openRouterApiKey',
+          'Content-Type': 'application/json',
+        }),
+        data: {
+          'model': 'openai/gpt-oss-120b:free',
+          'messages': [
+            {'role': 'system', 'content': 'You are a helpful assistant. Generate a concise, catchy title (maximum 4 words) for the following note content. Output ONLY the title, no quotes or extra text.'},
+            {'role': 'user', 'content': content.length > 500 ? content.substring(0, 500) : content}
+          ],
+        },
+      );
+      
+      final reply = response.data['choices'][0]['message']['content'].toString().trim();
+      return reply.replaceAll('"', '');
+    } catch (e) {
+      debugPrint('AI Service Error (generateNoteTitle): $e');
+      return "Untitled Note";
+    }
+  }
 }

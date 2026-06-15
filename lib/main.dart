@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/voice/presentation/bloc/voice_bloc.dart';
 import 'features/voice/presentation/bloc/voice_state.dart';
 import 'features/voice/presentation/widgets/voice_bottom_sheet.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -79,6 +81,15 @@ class KeroSpaceApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         routerConfig: router,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          quill.FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', 'US'),
+        ],
         shortcuts: {
           ...WidgetsApp.defaultShortcuts,
           const SingleActivator(LogicalKeyboardKey.keyN, control: true):
