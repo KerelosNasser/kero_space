@@ -8,21 +8,8 @@ import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/core/di/injection.dart';
 import 'package:kero_space/core/permissions/permission_repository.dart';
 
-class PermissionItem {
-  final String title;
-  final String description;
-  final IconData icon;
-  final Future<bool> Function() check;
-  final Future<void> Function() request;
-
-  PermissionItem({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.check,
-    required this.request,
-  });
-}
+import 'package:kero_space/core/permissions/permission_item.dart';
+import 'package:kero_space/core/permissions/permission_tile.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -164,7 +151,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  ..._permissions.map((p) => _buildPermissionTile(p)),
+                  ..._permissions.map((p) => PermissionTile(
+                        item: p,
+                        isGranted: _status[p.title] ?? false,
+                        onRequest: () => _requestPermission(p),
+                      )),
+                  const SizedBox(height: 100), // padding for the bottom button
                 ],
               ),
             ),
@@ -190,75 +182,5 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
     );
   }
 
-  Widget _buildPermissionTile(PermissionItem item) {
-    final isGranted = _status[item.title] ?? false;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isGranted ? AppTheme.accentMint.withValues(alpha: 0.3) : AppTheme.bgElevated,
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isGranted ? AppTheme.accentMint.withValues(alpha: 0.1) : AppTheme.bgElevated,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              item.icon,
-              color: isGranted ? AppTheme.accentMint : AppTheme.accentGold,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.description,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          if (isGranted)
-            const Icon(Icons.check_circle, color: AppTheme.accentMint, size: 28)
-          else
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.bgElevated,
-                foregroundColor: AppTheme.accentGold,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              ),
-              onPressed: () => _requestPermission(item),
-              child: const Text('Grant'),
-            ),
-        ],
-      ),
-    );
-  }
 }
