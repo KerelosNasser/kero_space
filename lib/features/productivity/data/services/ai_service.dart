@@ -7,7 +7,6 @@ class AIService {
   final Dio _dio;
   
   String get _openRouterApiKey => dotenv.env['OPENROUTER_API_KEY'] ?? ''; 
-  String get _nimApiKey => dotenv.env['NIM_API_KEY'] ?? '';
 
   AIService() : _dio = Dio();
 
@@ -21,7 +20,7 @@ class AIService {
           'Content-Type': 'application/json',
         }),
         data: {
-          'model': 'nvidia/nemotron-3-ultra-550b-a55b:free', // Using OpenRouter
+          'model': 'openai/gpt-oss-120b:free', // Using OpenRouter
 
           'messages': [
             {'role': 'system', 'content': 'You are a productivity assistant. Classify the energy level required to complete the user\'s task as either 1 (Low energy/easy), 2 (Medium energy), or 3 (High energy/hard focus). Respond ONLY with the number 1, 2, or 3.'},
@@ -43,23 +42,27 @@ class AIService {
   Future<dynamic> breakdownProject(String projectDescription) async {
     try {
       final response = await _dio.post(
-        'https://integrate.api.nvidia.com/v1/chat/completions',
-        options: Options(headers: {
-          'Authorization': 'Bearer $_nimApiKey',
-          'Content-Type': 'application/json',
-        }),
+        'https://openrouter.ai/api/v1/chat/completions',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_openRouterApiKey',
+            'Content-Type': 'application/json',
+          },
+          sendTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
+        ),
         data: {
-          'model': 'nvidia/nemotron-3-ultra-550b-a55b', 
+          'model': 'openai/gpt-oss-120b:free', 
+          'response_format': {'type': 'json_object'},
           'messages': [
             {
               'role': 'system', 
               'content': '''You are a strict productivity assistant. Your job is to break down the user's project into 3-5 immediate, actionable sub-tasks. 
-If the user's prompt is completely ambiguous (e.g. "Build an app"), you MUST ask a clarifying question to structure the idea.
-Otherwise, default to generating the plan.
+If the user's prompt is vague, lacks detail, or is just a broad concept (e.g. "Build an app", "clash of clans clone", "make a website"), you MUST ask a clarifying question to structure the idea instead of guessing.
 
 Output ONLY valid JSON in one of these two formats, with NO markdown formatting:
 Format 1 (Clarification):
-{"type": "clarification", "question": "What kind of app?"}
+{"type": "clarification", "question": "What core mechanics do you want to start with for your clone?"}
 
 Format 2 (Plan):
 {"type": "plan", "icon": "🚀", "title": "Project Title", "subtasks": [{"title": "Step 1", "energyLevel": 1}, ...]}

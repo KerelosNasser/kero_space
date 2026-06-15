@@ -160,6 +160,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.85,
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -216,7 +217,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                           itemCount: currentSubtasks.length,
                           itemBuilder: (context, index) {
                             final task = currentSubtasks[index];
-                            return _TaskListItem(task: task);
+                            return _TaskListItem(key: ValueKey(task.id), task: task);
                           },
                         ),
                   ),
@@ -364,7 +365,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
 class _TaskListItem extends StatefulWidget {
   final Task task;
 
-  const _TaskListItem({required this.task});
+  const _TaskListItem({super.key, required this.task});
 
   @override
   State<_TaskListItem> createState() => _TaskListItemState();
