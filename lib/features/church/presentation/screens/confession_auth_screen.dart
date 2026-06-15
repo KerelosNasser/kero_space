@@ -138,7 +138,7 @@ class _ConfessionAuthScreenState extends State<ConfessionAuthScreen> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.accentViolet,
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppTheme.textPrimary,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           onPressed: () {

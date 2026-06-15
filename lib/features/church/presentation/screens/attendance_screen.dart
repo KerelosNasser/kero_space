@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/church_bloc.dart';
 import '../../data/models/mass_attendance.dart';
 import '../widgets/attendance_contribution_grid.dart';
+import 'package:kero_space/core/app_theme.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -21,23 +22,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // --bg-primary
+      backgroundColor: AppTheme.bgPrimary, // --bg-primary
       appBar: AppBar(
-        title: const Text('Mass Attendance', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Mass Attendance', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.bgPrimary,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
       ),
       body: BlocConsumer<ChurchBloc, ChurchState>(
         listener: (context, state) {
           if (state.status == ChurchStatus.failure && state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),
+              SnackBar(content: Text(state.errorMessage!), backgroundColor: AppTheme.accentRose),
             );
           }
         },
         builder: (context, state) {
           if (state.status == ChurchStatus.loading && state.attendances.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFFBF5AF2)));
+            return const Center(child: CircularProgressIndicator(color: AppTheme.accentViolet));
           }
 
           int currentStreak = _calculateStreak(state.attendances);
@@ -53,30 +54,30 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('CURRENT STREAK', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                        const Text('CURRENT STREAK', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
                         const SizedBox(height: 4),
-                        Text('$currentStreak days', style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold)),
+                        Text('$currentStreak days', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 34, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFBF5AF2),
+                        backgroundColor: AppTheme.accentViolet,
                       ),
                       onPressed: () {
                         context.read<ChurchBloc>().add(MarkAttendanceEvent(DateTime.now(), AttendanceType.liturgy));
                       },
-                      child: const Text('Mark Today', style: TextStyle(color: Colors.white)),
+                      child: const Text('Mark Today', style: TextStyle(color: AppTheme.textPrimary)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 32),
-                const Text('ATTENDANCE GRID', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                const Text('ATTENDANCE GRID', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
                 const SizedBox(height: 8),
                 AttendanceContributionGrid(attendances: state.attendances),
                 const SizedBox(height: 32),
                 ListTile(
-                  title: const Text('Retroactive Log', style: TextStyle(color: Colors.white)),
-                  trailing: const Icon(Icons.calendar_today, color: Colors.white),
+                  title: const Text('Retroactive Log', style: TextStyle(color: AppTheme.textPrimary)),
+                  trailing: const Icon(Icons.calendar_today, color: AppTheme.accentPrimary),
                   onTap: () async {
                     final bloc = context.read<ChurchBloc>();
                     final date = await showDatePicker(

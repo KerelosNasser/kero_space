@@ -31,6 +31,12 @@ class _CalorieConfigScreenState extends State<CalorieConfigScreen> {
               initialValue: height.toString(),
               decoration: const InputDecoration(labelText: 'Height (cm)'),
               keyboardType: TextInputType.number,
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'Please enter height';
+                final n = double.tryParse(val);
+                if (n == null || n <= 0) return 'Enter a valid height';
+                return null;
+              },
               onSaved: (val) => height = double.parse(val ?? '0'),
             ),
             const SizedBox(height: 16),
@@ -38,6 +44,12 @@ class _CalorieConfigScreenState extends State<CalorieConfigScreen> {
               initialValue: weight.toString(),
               decoration: const InputDecoration(labelText: 'Weight (kg)'),
               keyboardType: TextInputType.number,
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'Please enter weight';
+                final n = double.tryParse(val);
+                if (n == null || n <= 0) return 'Enter a valid weight';
+                return null;
+              },
               onSaved: (val) => weight = double.parse(val ?? '0'),
             ),
             const SizedBox(height: 16),
@@ -45,6 +57,12 @@ class _CalorieConfigScreenState extends State<CalorieConfigScreen> {
               initialValue: age.toString(),
               decoration: const InputDecoration(labelText: 'Age'),
               keyboardType: TextInputType.number,
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'Please enter age';
+                final n = int.tryParse(val);
+                if (n == null || n <= 0 || n > 120) return 'Enter a valid age (1-120)';
+                return null;
+              },
               onSaved: (val) => age = int.parse(val ?? '0'),
             ),
             const SizedBox(height: 16),

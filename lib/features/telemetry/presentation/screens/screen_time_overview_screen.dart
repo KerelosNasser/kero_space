@@ -85,7 +85,7 @@ class _AppPieChart extends StatelessWidget {
   const _AppPieChart({required this.apps});
   static const _colors = [
     AppTheme.accentCyan, AppTheme.accentMint, AppTheme.accentGold, AppTheme.accentViolet,
-    AppTheme.accentRose, Color(0xFF30D158), Color(0xFF64D2FF), Color(0xFFFFD60A),
+    AppTheme.accentRose,
   ];
 
   @override

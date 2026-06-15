@@ -3,7 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/features/telemetry/presentation/bloc/telemetry_bloc.dart';
+import 'package:kero_space/features/telemetry/presentation/bloc/telemetry_event.dart';
 import 'package:kero_space/features/telemetry/presentation/bloc/telemetry_state.dart';
+import 'package:kero_space/shared/widgets/shimmer/telemetry_skeleton.dart';
+import 'package:kero_space/shared/widgets/inline_error_widget.dart';
 
 class TelemetryScreen extends StatelessWidget {
   const TelemetryScreen({super.key});
@@ -17,10 +20,13 @@ class TelemetryScreen extends StatelessWidget {
       body: BlocBuilder<TelemetryBloc, TelemetryState>(
         builder: (context, state) {
           if (state.status == TelemetryStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
+            return const TelemetrySkeleton();
           }
           if (state.status == TelemetryStatus.failure) {
-            return Center(child: Text('Error: ${state.errorMessage}'));
+            return InlineErrorWidget(
+              message: state.errorMessage ?? 'An error occurred',
+              onRetry: () => context.read<TelemetryBloc>().add(LoadTelemetryDashboard()),
+            );
           }
 
           final hours = state.todayScreenTimeMs / (1000 * 60 * 60);

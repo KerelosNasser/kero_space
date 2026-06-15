@@ -183,7 +183,7 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
         msg = "Meal logged";
         final meal = MealEntry()
           ..name = intent.food
-          ..grams = (intent.grams ?? 100).toDouble()
+          ..grams = intent.grams ?? 100.0
           ..calories = 0
           ..protein = 0
           ..carbs = 0

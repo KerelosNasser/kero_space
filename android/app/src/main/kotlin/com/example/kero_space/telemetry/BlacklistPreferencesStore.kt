@@ -48,7 +48,9 @@ object BlacklistPreferencesStore {
 
     fun saveRulesJson(context: Context, json: String) {
         getPrefs(context).edit().putString(KEY_RULES, json).apply()
-        _cachedPackages = null // Invalidate cache on write
+        synchronized(this) {
+            _cachedPackages = null // Invalidate cache on write
+        }
     }
 
     fun getRulesJson(context: Context): String =
@@ -61,16 +63,19 @@ object BlacklistPreferencesStore {
      */
     fun getBlockedPackages(context: Context): Set<String> {
         _cachedPackages?.let { return it }
-        return try {
-            val arr = JSONArray(getRulesJson(context))
-            val packages = (0 until arr.length())
-                .map { arr.getJSONObject(it).getString("packageName") }
-                .toSet()
-            _cachedPackages = packages
-            packages
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to parse blacklist rules JSON — returning empty set", e)
-            emptySet()
+        return synchronized(this) {
+            _cachedPackages?.let { return it }
+            try {
+                val arr = JSONArray(getRulesJson(context))
+                val packages = (0 until arr.length())
+                    .map { arr.getJSONObject(it).getString("packageName") }
+                    .toSet()
+                _cachedPackages = packages
+                packages
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to parse blacklist rules JSON — returning empty set", e)
+                emptySet()
+            }
         }
     }
 }

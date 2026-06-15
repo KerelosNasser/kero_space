@@ -12,6 +12,7 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Manages the decision-break overlay window.
@@ -30,6 +31,16 @@ object OverlayManager {
     private var overlayView: LinearLayout? = null
 
     private val overlayShowing = AtomicBoolean(false)
+    private val lastBreakTakenMap = ConcurrentHashMap<String, Long>()
+
+    fun hasBreakBeenTakenRecently(packageName: String): Boolean {
+        val lastTime = lastBreakTakenMap[packageName] ?: 0L
+        return System.currentTimeMillis() - lastTime < 15 * 60 * 1000L
+    }
+
+    fun recordBreakTaken(packageName: String) {
+        lastBreakTakenMap[packageName] = System.currentTimeMillis()
+    }
 
     fun showOverlay(context: Context, packageName: String, durationSeconds: Int) {
         if (!overlayShowing.compareAndSet(false, true)) {
@@ -87,11 +98,11 @@ object OverlayManager {
             }
 
             // Auto-dismiss after duration
-            mainHandler.postDelayed({ dismissOverlay() }, durationSeconds * 1000L)
+            mainHandler.postDelayed({ dismissOverlay(packageName) }, durationSeconds * 1000L)
         }
     }
 
-    fun dismissOverlay() {
+    fun dismissOverlay(packageName: String? = null) {
         mainHandler.post {
             val view = overlayView ?: run {
                 overlayShowing.set(false)
@@ -100,6 +111,9 @@ object OverlayManager {
             try {
                 windowManager?.removeView(view)
                 Log.d(TAG, "Overlay dismissed")
+                if (packageName != null) {
+                    recordBreakTaken(packageName)
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to remove overlay view", e)
             } finally {

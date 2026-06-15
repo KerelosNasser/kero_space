@@ -118,10 +118,17 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
             }
 
             if (!isAllowedWindow) {
-                Log.d(TAG, "Blacklisted package opened: $packageName — showing overlay for ${breakSeconds}s")
-                OverlayManager.showOverlay(applicationContext, packageName, breakSeconds)
+                if (OverlayManager.hasBreakBeenTakenRecently(packageName)) {
+                    Log.d(TAG, "Blacklisted package $packageName opened but break already taken recently — allowing")
+                    recordBlockerDecision(packageName, "granted")
+                } else {
+                    Log.d(TAG, "Blacklisted package opened: $packageName — showing overlay for ${breakSeconds}s")
+                    OverlayManager.showOverlay(applicationContext, packageName, breakSeconds)
+                    recordBlockerDecision(packageName, "blocked")
+                }
             } else {
                 Log.d(TAG, "Blacklisted package $packageName is in allowed window — access granted")
+                recordBlockerDecision(packageName, "granted")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error in blocker logic for $packageName", e)
@@ -149,5 +156,16 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {
         Log.w(TAG, "Accessibility Service Interrupted")
+    }
+
+    private fun recordBlockerDecision(packageName: String, outcome: String) {
+        val json = JSONObject().apply {
+            put("type", "BLOCKER_DECISION")
+            put("packageName", packageName)
+            put("outcome", outcome)
+            put("timestamp", System.currentTimeMillis())
+        }.toString()
+        KeroSpaceForegroundService.accessibilityEventSink?.success(json)
+        KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
     }
 }

@@ -95,7 +95,18 @@ void backgroundMain() async {
         final data = jsonDecode(raw) as Map<String, dynamic>;
         final type = data['type'] as String;
         final timestampMs = data['timestamp'] as int;
-        if (type == 'CLICK') {
+        if (type == 'BLOCKER_DECISION') {
+          final decisionEvent = TelemetryEvent()
+            ..deviceId = 'android'
+            ..platform = 'android'
+            ..name = 'blocker_decision'
+            ..dataJson = raw
+            ..timestamp = DateTime.fromMillisecondsSinceEpoch(timestampMs);
+          await IsarService.instance.writeTxn(
+            () => IsarService.instance.telemetryEvents.put(decisionEvent),
+          );
+          debugPrint('KeroSpace BG: Blocker decision TelemetryEvent written');
+        } else if (type == 'CLICK') {
           final clickEvent = TelemetryEvent()
             ..deviceId = 'android'
             ..platform = 'android'

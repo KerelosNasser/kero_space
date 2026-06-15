@@ -78,9 +78,9 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.inbox_outlined, color: Colors.grey.withAlpha(128), size: 48),
+                      const Icon(Icons.inbox_outlined, color: AppTheme.textDisabled, size: 48),
                       const SizedBox(height: 8),
-                      Text('No tasks', style: TextStyle(color: Colors.grey.withAlpha(128))),
+                      const Text('No tasks', style: TextStyle(color: AppTheme.textDisabled)),
                     ],
                   ),
                 )
@@ -89,18 +89,18 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
               itemBuilder: (context, index) {
                 final task = tasks[index];
                 return Card(
-                  color: const Color(0xFF1C1C1E),
+                  color: AppTheme.bgSurface,
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
-                    title: Text(task.title, style: const TextStyle(color: Colors.white)),
-                    subtitle: task.description != null ? Text(task.description!, style: const TextStyle(color: Colors.grey)) : null,
+                    title: Text(task.title, style: const TextStyle(color: AppTheme.textPrimary)),
+                    subtitle: task.description != null ? Text(task.description!, style: const TextStyle(color: AppTheme.textSecondary)) : null,
                     trailing: DropdownButton<MinistryTaskStatus>(
-                      dropdownColor: const Color(0xFF2C2C2E),
+                      dropdownColor: AppTheme.bgElevated,
                       value: task.status,
                       items: MinistryTaskStatus.values.map((status) {
                         return DropdownMenuItem(
                           value: status,
-                          child: Text(status.name, style: const TextStyle(color: Colors.white)),
+                          child: Text(status.name, style: const TextStyle(color: AppTheme.textPrimary)),
                         );
                       }).toList(),
                       onChanged: (newStatus) {
@@ -128,30 +128,30 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1C1C1E),
-          title: const Text('New Task', style: TextStyle(color: Colors.white)),
+          backgroundColor: AppTheme.bgSurface,
+          title: const Text('New Task', style: TextStyle(color: AppTheme.textPrimary)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(hintText: 'Title', hintStyle: TextStyle(color: Colors.grey)),
+                style: const TextStyle(color: AppTheme.textPrimary),
+                decoration: const InputDecoration(hintText: 'Title', hintStyle: TextStyle(color: AppTheme.textSecondary)),
               ),
               TextField(
                 controller: descController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(hintText: 'Description', hintStyle: TextStyle(color: Colors.grey)),
+                style: const TextStyle(color: AppTheme.textPrimary),
+                decoration: const InputDecoration(hintText: 'Description', hintStyle: TextStyle(color: AppTheme.textSecondary)),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFBF5AF2)),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentViolet),
               onPressed: () {
                 if (titleController.text.isNotEmpty) {
                   final task = MinistryTask()
@@ -162,7 +162,7 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Save', style: TextStyle(color: Colors.white)),
+              child: const Text('Save', style: TextStyle(color: AppTheme.textPrimary)),
             ),
           ],
         );

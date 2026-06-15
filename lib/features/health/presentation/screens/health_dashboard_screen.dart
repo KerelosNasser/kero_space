@@ -4,6 +4,8 @@ import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
 import 'package:kero_space/core/app_theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:kero_space/shared/widgets/shimmer/health_skeleton.dart';
+import 'package:kero_space/shared/widgets/inline_error_widget.dart';
 
 class HealthDashboardScreen extends StatelessWidget {
   const HealthDashboardScreen({super.key});
@@ -23,10 +25,13 @@ class HealthDashboardScreen extends StatelessWidget {
       body: BlocBuilder<HealthBloc, HealthState>(
         builder: (context, state) {
           if (state.status == HealthStatus.initial || state.status == HealthStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
+            return const HealthSkeleton();
           }
           if (state.status == HealthStatus.failure) {
-            return Center(child: Text("Error: ${state.errorMessage}", style: const TextStyle(color: AppTheme.accentRose)));
+            return InlineErrorWidget(
+              message: state.errorMessage ?? 'An error occurred',
+              onRetry: () => context.read<HealthBloc>().add(LoadDashboard()),
+            );
           }
 
           return ListView(

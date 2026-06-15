@@ -7,6 +7,8 @@ import 'package:kero_space/features/finance/presentation/widgets/budgets_tab.dar
 import 'package:kero_space/features/finance/presentation/widgets/portfolio_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/correlation_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/career_tab.dart';
+import 'package:kero_space/shared/widgets/shimmer/finance_skeleton.dart';
+import 'package:kero_space/shared/widgets/inline_error_widget.dart';
 
 class FinanceHomeScreen extends StatefulWidget {
   const FinanceHomeScreen({super.key});
@@ -66,7 +68,7 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
         body: BlocBuilder<FinanceBloc, FinanceState>(
           builder: (context, state) {
             if (state is FinanceLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const FinanceSkeleton();
             } else if (state is FinanceLoaded) {
               return TabBarView(
                 children: [
@@ -78,7 +80,10 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
                 ],
               );
             } else if (state is FinanceError) {
-              return Center(child: Text('Error: ${state.message}'));
+              return InlineErrorWidget(
+                message: state.message,
+                onRetry: () => context.read<FinanceBloc>().add(LoadFinanceData()),
+              );
             }
             return const Center(child: Text('Initialize Finance'));
           },

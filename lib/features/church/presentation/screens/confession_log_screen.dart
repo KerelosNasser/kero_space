@@ -144,7 +144,7 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentViolet),
                                   onPressed: _saveConfession,
-                                  child: const Text('Save Encrypted', style: TextStyle(color: Colors.white)),
+                                  child: const Text('Save Encrypted', style: TextStyle(color: AppTheme.textPrimary)),
                                 ),
                               ),
                             )

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kero_space/features/health/data/models/health_collections.dart';
 import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kero_space/core/app_theme.dart';
 
 class MealLogScreen extends StatefulWidget {
   final Ingredient ingredient;
@@ -87,7 +88,7 @@ class _MealLogScreenState extends State<MealLogScreen> {
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true), 
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              style: TextButton.styleFrom(foregroundColor: AppTheme.accentRose),
               child: const Text('Log Anyway')
             ),
           ],

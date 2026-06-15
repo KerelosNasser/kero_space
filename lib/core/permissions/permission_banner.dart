@@ -41,8 +41,6 @@ class PermissionBanner extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.close, color: AppTheme.textPrimary, size: 20),
               onPressed: onDismiss,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
             ),
           ],
         ),

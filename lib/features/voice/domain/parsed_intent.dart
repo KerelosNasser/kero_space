@@ -59,7 +59,7 @@ class AddIncomeIntent extends ParsedIntent {
 
 class LogMealIntent extends ParsedIntent {
   final String food;
-  final int? grams;
+  final double? grams;
 
   const LogMealIntent({required this.food, this.grams});
 

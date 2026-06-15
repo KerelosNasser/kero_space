@@ -6,6 +6,7 @@ import 'package:confetti/confetti.dart';
 
 import '../../data/models/productivity_collections.dart';
 import '../bloc/productivity_bloc.dart';
+import 'package:kero_space/core/app_theme.dart';
 
 class DailyChecklist extends StatelessWidget {
   final List<Task> tasks;
@@ -90,7 +91,7 @@ class _TaskRowState extends State<TaskRow> with SingleTickerProviderStateMixin {
                 color: isFocusTask ? null : Theme.of(context).cardColor.withValues(alpha: 0.4),
                 boxShadow: isFocusTask ? [
                   BoxShadow(
-                    color: Colors.white.withValues(alpha: _breathingAnimation.value * 0.1),
+                    color: AppTheme.textPrimary.withValues(alpha: _breathingAnimation.value * 0.1),
                     blurRadius: 10,
                     spreadRadius: 2,
                   )
@@ -117,11 +118,11 @@ class _TaskRowState extends State<TaskRow> with SingleTickerProviderStateMixin {
               widget.task.title,
               style: TextStyle(
                 decoration: widget.task.isCompleted ? TextDecoration.lineThrough : null,
-                color: widget.task.isCompleted ? Colors.grey : null,
+                color: widget.task.isCompleted ? AppTheme.textSecondary : null,
               ),
             ),
             subtitle: widget.task.description != null ? Text(widget.task.description!) : null,
-            trailing: isFocusTask ? const Icon(Icons.star_border, size: 16, color: Colors.grey) : const Icon(Icons.check, color: Colors.green),
+            trailing: isFocusTask ? const Icon(Icons.star_border, size: 16, color: AppTheme.textSecondary) : const Icon(Icons.check, color: AppTheme.accentMint),
           ),
         ),
         Positioned(
@@ -130,7 +131,7 @@ class _TaskRowState extends State<TaskRow> with SingleTickerProviderStateMixin {
             confettiController: _confettiController,
             blastDirectionality: BlastDirectionality.explosive,
             shouldLoop: false,
-            colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+            colors: const [AppTheme.accentMint, AppTheme.accentCyan, AppTheme.accentRose, AppTheme.accentGold, AppTheme.accentViolet],
             createParticlePath: drawStar,
             numberOfParticles: 15,
             emissionFrequency: 0.05,

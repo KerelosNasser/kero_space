@@ -19,15 +19,15 @@ class ErrorSnackbarListener extends StatelessWidget {
           
           scaffoldMessenger.showSnackBar(
             SnackBar(
-              backgroundColor: Colors.amber.shade900,
+              backgroundColor: AppTheme.accentRose,
               content: Text(
                 state.message,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppTheme.textPrimary),
               ),
               action: state.onRetry != null
                   ? SnackBarAction(
                       label: 'RETRY',
-                      textColor: Colors.white,
+                      textColor: AppTheme.textPrimary,
                       onPressed: state.onRetry!,
                     )
                   : null,

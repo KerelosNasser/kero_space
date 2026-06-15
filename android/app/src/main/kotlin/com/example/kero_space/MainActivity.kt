@@ -144,9 +144,14 @@ class MainActivity : FlutterFragmentActivity() {
                     }
                     "setBlacklistRules" -> {
                         val rulesJson = call.argument<String>("rulesJson") ?: "[]"
-                        com.example.kero_space.telemetry.BlacklistPreferencesStore
-                            .saveRulesJson(applicationContext, rulesJson)
-                        result.success(null)
+                        try {
+                            org.json.JSONArray(rulesJson)
+                            com.example.kero_space.telemetry.BlacklistPreferencesStore
+                                .saveRulesJson(applicationContext, rulesJson)
+                            result.success(null)
+                        } catch (e: Exception) {
+                            result.error("INVALID_JSON", "Rules must be a valid JSON array", null)
+                        }
                     }
                     "toggleAgent" -> {
                         val agentId = call.argument<String>("agentId") ?: ""

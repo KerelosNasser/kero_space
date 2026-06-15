@@ -20,8 +20,14 @@ class IsarService {
 
   static bool get isInitialized => _initialized;
 
-  static Future<void> init(String directory) async {
-    if (_initialized) return; // Idempotent — safe to call from multiple isolates.
+  static Future<void>? _initFuture;
+
+  static Future<void> init(String directory) {
+    if (_initialized) return Future.value();
+    return _initFuture ??= _initInternal(directory);
+  }
+
+  static Future<void> _initInternal(String directory) async {
     _instance = await Isar.open(
       [
         SyncOutboxRecordSchema,

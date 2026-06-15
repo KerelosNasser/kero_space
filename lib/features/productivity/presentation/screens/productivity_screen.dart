@@ -12,6 +12,8 @@ import '../../data/models/productivity_collections.dart';
 
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/core/di/injection.dart';
+import 'package:kero_space/shared/widgets/shimmer/productivity_skeleton.dart';
+import 'package:kero_space/shared/widgets/inline_error_widget.dart';
 
 class ProductivityScreen extends StatelessWidget {
   const ProductivityScreen({super.key});
@@ -40,8 +42,11 @@ class ProductivityScreen extends StatelessWidget {
           body: BlocBuilder<ProductivityBloc, ProductivityState>(
             builder: (context, state) {
               return state.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (msg) => Center(child: Text("Error: \$msg")),
+                loading: () => const ProductivitySkeleton(),
+                error: (msg) => InlineErrorWidget(
+                  message: msg,
+                  onRetry: () => context.read<ProductivityBloc>().add(const ProductivityEvent.loadData()),
+                ),
                 loaded: (allTasks, dailyChecklist, allNotes) {
                   return TabBarView(
                     children: [

@@ -17,6 +17,16 @@ class CommandParser {
 
   final List<String> _fillers = [' um ', ' uh ', ' like ', ' you know '];
 
+  static final _whitespaceRegex = RegExp(r'\s+');
+  static final _todoPrefixRegex = RegExp(r'^(todo|task)\s+');
+  static final _notePrefixRegex = RegExp(r'^(take a note|write down|jot down)\s+');
+  static final _expensePrefixRegex = RegExp(r'^(expense|spent)\s+');
+  static final _mealPrefixRegex = RegExp(r'^(meal|log|ate)\s+');
+  static final _navPrefixRegex = RegExp(r'^(open|show|go to)\s+');
+  static final _expenseRegex = RegExp(r'^([\d\.]+)\s+(?:on\s+)?(.+)$');
+  static final _expenseAmountOnlyRegex = RegExp(r'^([\d\.]+)$');
+  static final _mealRegex = RegExp(r'^([\d\.]+)\s*(?:g|grams(?:\s+of)?)\s+(.+)$');
+
   String normalize(String raw) {
     String normalized = raw.toLowerCase();
     
@@ -37,7 +47,7 @@ class CommandParser {
       normalized = normalized.replaceAll(RegExp(r'\b' + word + r'\b'), digit);
     });
 
-    return normalized.trim().replaceAll(RegExp(r'\s+'), ' ');
+    return normalized.trim().replaceAll(_whitespaceRegex, ' ');
   }
 
   ParsedIntent parse(String rawText) {
@@ -45,7 +55,7 @@ class CommandParser {
 
     // 1. Productivity — Todo
     if (text.startsWith('todo ') || text.startsWith('task ')) {
-      final content = text.replaceFirst(RegExp(r'^(todo|task)\s+'), '');
+      final content = text.replaceFirst(_todoPrefixRegex, '');
       return _parseTodo(content);
     }
     if (text.startsWith('remind me to ')) {
@@ -58,13 +68,13 @@ class CommandParser {
       return AddNoteIntent(body: text.replaceFirst('note ', ''));
     }
     if (text.startsWith('take a note ') || text.startsWith('write down ') || text.startsWith('jot down ')) {
-      final content = text.replaceFirst(RegExp(r'^(take a note|write down|jot down)\s+'), '');
+      final content = text.replaceFirst(_notePrefixRegex, '');
       return AddNoteIntent(body: content);
     }
 
     // 3. Finance — Expense
     if (text.startsWith('expense ') || text.startsWith('spent ')) {
-      return _parseExpense(text.replaceFirst(RegExp(r'^(expense|spent)\s+'), ''));
+      return _parseExpense(text.replaceFirst(_expensePrefixRegex, ''));
     }
     if (text.startsWith('i spent ')) {
       return _parseExpense(text.replaceFirst('i spent ', ''));
@@ -72,7 +82,7 @@ class CommandParser {
 
     // 4. Health — Meal
     if (text.startsWith('meal ') || text.startsWith('log ') || text.startsWith('ate ')) {
-      return _parseMeal(text.replaceFirst(RegExp(r'^(meal|log|ate)\s+'), ''));
+      return _parseMeal(text.replaceFirst(_mealPrefixRegex, ''));
     }
     if (text.startsWith('i ate ') || text.startsWith('i had ')) {
       return _parseMeal(text.replaceFirst(RegExp(r'^(i ate|i had)\s+'), ''));
@@ -85,7 +95,12 @@ class CommandParser {
 
     // 6. Navigation
     if (text.startsWith('open ') || text.startsWith('show ') || text.startsWith('go to ')) {
-      return NavigateIntent(destination: text.replaceFirst(RegExp(r'^(open|show|go to)\s+'), ''));
+      return NavigateIntent(destination: text.replaceFirst(_navPrefixRegex, ''));
+    }
+
+    // 7. Telemetry — Block App
+    if (text.startsWith('block ')) {
+      return BlockAppIntent(appName: text.replaceFirst('block ', ''));
     }
 
     return UnknownIntent(raw: rawText);
@@ -111,8 +126,7 @@ class CommandParser {
 
   AddExpenseIntent _parseExpense(String content) {
     // Look for "AMOUNT on CATEGORY" or "AMOUNT CATEGORY"
-    final regex = RegExp(r'^([\d\.]+)\s+(?:on\s+)?(.+)$');
-    final match = regex.firstMatch(content);
+    final match = _expenseRegex.firstMatch(content);
     if (match != null) {
       return AddExpenseIntent(
         amount: double.tryParse(match.group(1)!) ?? 0.0,
@@ -120,8 +134,7 @@ class CommandParser {
       );
     }
     // Fallback: just amount
-    final amountOnlyRegex = RegExp(r'^([\d\.]+)$');
-    final matchOnly = amountOnlyRegex.firstMatch(content);
+    final matchOnly = _expenseAmountOnlyRegex.firstMatch(content);
     if (matchOnly != null) {
       return AddExpenseIntent(amount: double.tryParse(matchOnly.group(1)!) ?? 0.0, vendor: null);
     }
@@ -130,11 +143,10 @@ class CommandParser {
 
   LogMealIntent _parseMeal(String content) {
     // Look for "GRAMSg FOOD" or "GRAMS grams of FOOD"
-    final regex = RegExp(r'^(\d+)\s*(?:g|grams(?:\s+of)?)\s+(.+)$');
-    final match = regex.firstMatch(content);
+    final match = _mealRegex.firstMatch(content);
     if (match != null) {
       return LogMealIntent(
-        grams: int.tryParse(match.group(1)!),
+        grams: double.tryParse(match.group(1)!),
         food: match.group(2)!,
       );
     }

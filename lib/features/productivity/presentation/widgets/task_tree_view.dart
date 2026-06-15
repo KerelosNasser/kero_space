@@ -3,6 +3,7 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/productivity_collections.dart';
 import '../bloc/productivity_bloc.dart';
+import 'package:kero_space/core/app_theme.dart';
 
 class TaskTreeView extends StatefulWidget {
   final List<Task> allTasks;
@@ -103,11 +104,11 @@ class TreeItemWidget extends StatelessWidget {
             ),
             if (!entry.node.isCompleted)
               IconButton(
-                icon: const Icon(Icons.check, color: Colors.green),
+                icon: const Icon(Icons.check, color: AppTheme.accentMint),
                 onPressed: onComplete,
               ),
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete, color: AppTheme.accentRose),
               onPressed: onDelete,
             ),
           ],
