@@ -83,16 +83,31 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
 
   Future<void> _onCreateNote(_CreateNote event, Emitter<ProductivityState> emit) async {
     try {
+      final aiService = getIt<AIService>();
+      final allTasks = await _repository.getAllTasks();
+      final taskMap = allTasks.map((t) => {'id': t.id, 'title': t.title}).toList();
+
+      final linkedIds = await aiService.extractLinkedEntityIds(event.note.quillDelta, taskMap);
+      event.note.linkedTaskIds = linkedIds;
+
       await _repository.saveNote(event.note);
 
+      // Bidirectional linking: Update tasks to reference this Note
+      for (int taskId in linkedIds) {
+        final task = allTasks.firstWhere((t) => t.id == taskId, orElse: () => Task()..id = 0);
+        if (task.id != 0 && !task.linkedNoteIds.contains(event.note.id)) {
+          task.linkedNoteIds = List.from(task.linkedNoteIds)..add(event.note.id);
+          await _repository.saveTask(task);
+        }
+      }
+
       if (event.linkedTaskId != null) {
-        final allTasks = await _repository.getAllTasks();
         final task = allTasks.firstWhere(
           (t) => t.id == event.linkedTaskId,
-          orElse: () => Task(),
+          orElse: () => Task()..id = 0,
         );
-        if (task.id != 0) {
-          task.linkedNoteId = event.note.id;
+        if (task.id != 0 && !task.linkedNoteIds.contains(event.note.id)) {
+          task.linkedNoteIds = List.from(task.linkedNoteIds)..add(event.note.id);
           await _repository.saveTask(task);
         }
       }
@@ -105,7 +120,23 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
 
   Future<void> _onUpdateNote(_UpdateNote event, Emitter<ProductivityState> emit) async {
     try {
+      final aiService = getIt<AIService>();
+      final allTasks = await _repository.getAllTasks();
+      final taskMap = allTasks.map((t) => {'id': t.id, 'title': t.title}).toList();
+
+      final linkedIds = await aiService.extractLinkedEntityIds(event.note.quillDelta, taskMap);
+      event.note.linkedTaskIds = linkedIds;
+
       await _repository.saveNote(event.note);
+
+      for (int taskId in linkedIds) {
+        final task = allTasks.firstWhere((t) => t.id == taskId, orElse: () => Task()..id = 0);
+        if (task.id != 0 && !task.linkedNoteIds.contains(event.note.id)) {
+          task.linkedNoteIds = List.from(task.linkedNoteIds)..add(event.note.id);
+          await _repository.saveTask(task);
+        }
+      }
+
       add(const ProductivityEvent.loadData());
     } catch (e) {
       emit(ProductivityState.error('Failed to save. Please try again.'));

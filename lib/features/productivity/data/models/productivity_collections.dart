@@ -19,7 +19,8 @@ class Task {
   @Enumerated(EnumType.name)
   late TaskType type;
   int? parentId;
-  int? linkedNoteId;
+  List<int> linkedNoteIds = [];
+  List<int> linkedTaskIds = [];
   
   int? energyLevel; // 1=Low, 2=Med, 3=High
   
@@ -41,6 +42,7 @@ class Note {
   late String quillDelta;
   late DateTime updatedAt;
   late DateTime createdAt;
+  List<int> linkedTaskIds = [];
 }
 
 @collection

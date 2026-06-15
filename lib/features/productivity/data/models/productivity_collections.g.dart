@@ -52,34 +52,39 @@ const TaskSchema = CollectionSchema(
       name: r'isCompleted',
       type: IsarType.bool,
     ),
-    r'linkedNoteId': PropertySchema(
+    r'linkedNoteIds': PropertySchema(
       id: 7,
-      name: r'linkedNoteId',
-      type: IsarType.long,
+      name: r'linkedNoteIds',
+      type: IsarType.longList,
+    ),
+    r'linkedTaskIds': PropertySchema(
+      id: 8,
+      name: r'linkedTaskIds',
+      type: IsarType.longList,
     ),
     r'parentId': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'parentId',
       type: IsarType.long,
     ),
     r'platform': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'platform',
       type: IsarType.string,
     ),
     r'title': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'title',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'type',
       type: IsarType.string,
       enumMap: _TasktypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -117,6 +122,8 @@ int _taskEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.linkedNoteIds.length * 8;
+  bytesCount += 3 + object.linkedTaskIds.length * 8;
   bytesCount += 3 + object.platform.length * 3;
   bytesCount += 3 + object.title.length * 3;
   bytesCount += 3 + object.type.name.length * 3;
@@ -136,12 +143,13 @@ void _taskSerialize(
   writer.writeLong(offsets[4], object.energyLevel);
   writer.writeString(offsets[5], object.icon);
   writer.writeBool(offsets[6], object.isCompleted);
-  writer.writeLong(offsets[7], object.linkedNoteId);
-  writer.writeLong(offsets[8], object.parentId);
-  writer.writeString(offsets[9], object.platform);
-  writer.writeString(offsets[10], object.title);
-  writer.writeString(offsets[11], object.type.name);
-  writer.writeDateTime(offsets[12], object.updatedAt);
+  writer.writeLongList(offsets[7], object.linkedNoteIds);
+  writer.writeLongList(offsets[8], object.linkedTaskIds);
+  writer.writeLong(offsets[9], object.parentId);
+  writer.writeString(offsets[10], object.platform);
+  writer.writeString(offsets[11], object.title);
+  writer.writeString(offsets[12], object.type.name);
+  writer.writeDateTime(offsets[13], object.updatedAt);
 }
 
 Task _taskDeserialize(
@@ -159,13 +167,14 @@ Task _taskDeserialize(
   object.icon = reader.readStringOrNull(offsets[5]);
   object.id = id;
   object.isCompleted = reader.readBool(offsets[6]);
-  object.linkedNoteId = reader.readLongOrNull(offsets[7]);
-  object.parentId = reader.readLongOrNull(offsets[8]);
-  object.platform = reader.readString(offsets[9]);
-  object.title = reader.readString(offsets[10]);
-  object.type = _TasktypeValueEnumMap[reader.readStringOrNull(offsets[11])] ??
+  object.linkedNoteIds = reader.readLongList(offsets[7]) ?? [];
+  object.linkedTaskIds = reader.readLongList(offsets[8]) ?? [];
+  object.parentId = reader.readLongOrNull(offsets[9]);
+  object.platform = reader.readString(offsets[10]);
+  object.title = reader.readString(offsets[11]);
+  object.type = _TasktypeValueEnumMap[reader.readStringOrNull(offsets[12])] ??
       TaskType.project;
-  object.updatedAt = reader.readDateTime(offsets[12]);
+  object.updatedAt = reader.readDateTime(offsets[13]);
   return object;
 }
 
@@ -191,17 +200,19 @@ P _taskDeserializeProp<P>(
     case 6:
       return (reader.readBool(offset)) as P;
     case 7:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLongList(offset) ?? []) as P;
     case 8:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLongList(offset) ?? []) as P;
     case 9:
-      return (reader.readString(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 10:
       return (reader.readString(offset)) as P;
     case 11:
+      return (reader.readString(offset)) as P;
+    case 12:
       return (_TasktypeValueEnumMap[reader.readStringOrNull(offset)] ??
           TaskType.project) as P;
-    case 12:
+    case 13:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -979,72 +990,281 @@ extension TaskQueryFilter on QueryBuilder<Task, Task, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'linkedNoteId',
-      ));
-    });
-  }
-
-  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'linkedNoteId',
-      ));
-    });
-  }
-
-  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdEqualTo(
-      int? value) {
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdsElementEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'linkedNoteId',
+        property: r'linkedNoteIds',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdGreaterThan(
-    int? value, {
+  QueryBuilder<Task, Task, QAfterFilterCondition>
+      linkedNoteIdsElementGreaterThan(
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'linkedNoteId',
+        property: r'linkedNoteIds',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdLessThan(
-    int? value, {
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdsElementLessThan(
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'linkedNoteId',
+        property: r'linkedNoteIds',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdBetween(
-    int? lower,
-    int? upper, {
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdsElementBetween(
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'linkedNoteId',
+        property: r'linkedNoteIds',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedNoteIds',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedNoteIds',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedNoteIds',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedNoteIds',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition>
+      linkedNoteIdsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedNoteIds',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedNoteIdsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedNoteIds',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedTaskIdsElementEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'linkedTaskIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition>
+      linkedTaskIdsElementGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'linkedTaskIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedTaskIdsElementLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'linkedTaskIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedTaskIdsElementBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'linkedTaskIds',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedTaskIdsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedTaskIdsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedTaskIdsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedTaskIdsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition>
+      linkedTaskIdsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Task, Task, QAfterFilterCondition> linkedTaskIdsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -1644,18 +1864,6 @@ extension TaskQuerySortBy on QueryBuilder<Task, Task, QSortBy> {
     });
   }
 
-  QueryBuilder<Task, Task, QAfterSortBy> sortByLinkedNoteId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'linkedNoteId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Task, Task, QAfterSortBy> sortByLinkedNoteIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'linkedNoteId', Sort.desc);
-    });
-  }
-
   QueryBuilder<Task, Task, QAfterSortBy> sortByParentId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parentId', Sort.asc);
@@ -1814,18 +2022,6 @@ extension TaskQuerySortThenBy on QueryBuilder<Task, Task, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Task, Task, QAfterSortBy> thenByLinkedNoteId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'linkedNoteId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Task, Task, QAfterSortBy> thenByLinkedNoteIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'linkedNoteId', Sort.desc);
-    });
-  }
-
   QueryBuilder<Task, Task, QAfterSortBy> thenByParentId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parentId', Sort.asc);
@@ -1933,9 +2129,15 @@ extension TaskQueryWhereDistinct on QueryBuilder<Task, Task, QDistinct> {
     });
   }
 
-  QueryBuilder<Task, Task, QDistinct> distinctByLinkedNoteId() {
+  QueryBuilder<Task, Task, QDistinct> distinctByLinkedNoteIds() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'linkedNoteId');
+      return query.addDistinctBy(r'linkedNoteIds');
+    });
+  }
+
+  QueryBuilder<Task, Task, QDistinct> distinctByLinkedTaskIds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'linkedTaskIds');
     });
   }
 
@@ -2022,9 +2224,15 @@ extension TaskQueryProperty on QueryBuilder<Task, Task, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Task, int?, QQueryOperations> linkedNoteIdProperty() {
+  QueryBuilder<Task, List<int>, QQueryOperations> linkedNoteIdsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'linkedNoteId');
+      return query.addPropertyName(r'linkedNoteIds');
+    });
+  }
+
+  QueryBuilder<Task, List<int>, QQueryOperations> linkedTaskIdsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'linkedTaskIds');
     });
   }
 
@@ -2400,23 +2608,28 @@ const NoteSchema = CollectionSchema(
       name: r'deviceId',
       type: IsarType.string,
     ),
-    r'platform': PropertySchema(
+    r'linkedTaskIds': PropertySchema(
       id: 2,
+      name: r'linkedTaskIds',
+      type: IsarType.longList,
+    ),
+    r'platform': PropertySchema(
+      id: 3,
       name: r'platform',
       type: IsarType.string,
     ),
     r'quillDelta': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'quillDelta',
       type: IsarType.string,
     ),
     r'title': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'title',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -2442,6 +2655,7 @@ int _noteEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.deviceId.length * 3;
+  bytesCount += 3 + object.linkedTaskIds.length * 8;
   bytesCount += 3 + object.platform.length * 3;
   bytesCount += 3 + object.quillDelta.length * 3;
   bytesCount += 3 + object.title.length * 3;
@@ -2456,10 +2670,11 @@ void _noteSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeString(offsets[1], object.deviceId);
-  writer.writeString(offsets[2], object.platform);
-  writer.writeString(offsets[3], object.quillDelta);
-  writer.writeString(offsets[4], object.title);
-  writer.writeDateTime(offsets[5], object.updatedAt);
+  writer.writeLongList(offsets[2], object.linkedTaskIds);
+  writer.writeString(offsets[3], object.platform);
+  writer.writeString(offsets[4], object.quillDelta);
+  writer.writeString(offsets[5], object.title);
+  writer.writeDateTime(offsets[6], object.updatedAt);
 }
 
 Note _noteDeserialize(
@@ -2472,10 +2687,11 @@ Note _noteDeserialize(
   object.createdAt = reader.readDateTime(offsets[0]);
   object.deviceId = reader.readString(offsets[1]);
   object.id = id;
-  object.platform = reader.readString(offsets[2]);
-  object.quillDelta = reader.readString(offsets[3]);
-  object.title = reader.readString(offsets[4]);
-  object.updatedAt = reader.readDateTime(offsets[5]);
+  object.linkedTaskIds = reader.readLongList(offsets[2]) ?? [];
+  object.platform = reader.readString(offsets[3]);
+  object.quillDelta = reader.readString(offsets[4]);
+  object.title = reader.readString(offsets[5]);
+  object.updatedAt = reader.readDateTime(offsets[6]);
   return object;
 }
 
@@ -2491,12 +2707,14 @@ P _noteDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readLongList(offset) ?? []) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -2822,6 +3040,145 @@ extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
         upper: upper,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> linkedTaskIdsElementEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'linkedTaskIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition>
+      linkedTaskIdsElementGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'linkedTaskIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> linkedTaskIdsElementLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'linkedTaskIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> linkedTaskIdsElementBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'linkedTaskIds',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> linkedTaskIdsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> linkedTaskIdsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> linkedTaskIdsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> linkedTaskIdsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition>
+      linkedTaskIdsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> linkedTaskIdsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'linkedTaskIds',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -3444,6 +3801,12 @@ extension NoteQueryWhereDistinct on QueryBuilder<Note, Note, QDistinct> {
     });
   }
 
+  QueryBuilder<Note, Note, QDistinct> distinctByLinkedTaskIds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'linkedTaskIds');
+    });
+  }
+
   QueryBuilder<Note, Note, QDistinct> distinctByPlatform(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -3488,6 +3851,12 @@ extension NoteQueryProperty on QueryBuilder<Note, Note, QQueryProperty> {
   QueryBuilder<Note, String, QQueryOperations> deviceIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'deviceId');
+    });
+  }
+
+  QueryBuilder<Note, List<int>, QQueryOperations> linkedTaskIdsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'linkedTaskIds');
     });
   }
 

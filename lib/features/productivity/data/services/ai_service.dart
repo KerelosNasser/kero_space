@@ -134,4 +134,35 @@ energyLevel must be 1 (Low), 2 (Medium), or 3 (High).'''
       return "Untitled Note";
     }
   }
+
+  /// Analyzes text content and maps it to existing tasks or projects.
+  Future<List<int>> extractLinkedEntityIds(String content, List<Map<String, dynamic>> availableEntities) async {
+    if (content.trim().isEmpty || availableEntities.isEmpty) return [];
+    try {
+      final entitiesJson = jsonEncode(availableEntities.map((e) => {"id": e["id"], "title": e["title"]}).toList());
+      final response = await _dio.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        options: Options(headers: {
+          'Authorization': 'Bearer $_openRouterApiKey',
+          'Content-Type': 'application/json',
+        }),
+        data: {
+          'model': 'openai/gpt-oss-120b:free',
+          'messages': [
+            {'role': 'system', 'content': 'You are a strict data mapper. Match the user\'s note content to the provided JSON list of tasks/projects. Return ONLY a JSON array of integers representing the IDs of the related tasks/projects. E.g. [1, 5]. If none match, return [].'},
+            {'role': 'user', 'content': 'Available entities: $entitiesJson\n\nNote content: $content'}
+          ],
+        },
+      );
+      
+      final reply = response.data['choices'][0]['message']['content'].toString().trim();
+      final cleanReply = reply.replaceAll('```json', '').replaceAll('```', '');
+      
+      final List<dynamic> parsed = jsonDecode(cleanReply);
+      return parsed.cast<int>();
+    } catch (e) {
+      debugPrint('AI Service Error (extractLinkedEntityIds): $e');
+      return [];
+    }
+  }
 }

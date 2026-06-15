@@ -151,9 +151,11 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
         child: BlocBuilder<ProductivityBloc, ProductivityState>(
           builder: (context, state) {
             List<Task> currentSubtasks = subtasks;
+            List<Note> currentRelatedNotes = [];
             state.maybeWhen(
-              loaded: (allTasks, _, _) {
+              loaded: (allTasks, _, allNotes) {
                 currentSubtasks = allTasks.where((t) => t.parentId == project.id).toList();
+                currentRelatedNotes = allNotes.where((note) => note.linkedTaskIds.contains(project.id)).toList();
               },
               orElse: () {},
             );
@@ -209,6 +211,32 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                     ),
                   ),
                   const Divider(height: 1, thickness: 1, color: Colors.black12),
+                  if (currentRelatedNotes.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8.0, bottom: 8.0),
+                            child: Text('Related Notes (AI Auto-Linked)', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentCyan)),
+                          ),
+                          ...currentRelatedNotes.map((note) => Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(color: AppTheme.accentCyan, width: 1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              leading: const Icon(Icons.auto_awesome, color: AppTheme.accentCyan, size: 20),
+                              title: Text(note.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                              dense: true,
+                            ),
+                          )),
+                          const Divider(height: 24),
+                        ],
+                      ),
+                    ),
                   Expanded(
                     child: currentSubtasks.isEmpty
                       ? const Center(child: Text("No tasks in this project yet.", style: TextStyle(color: AppTheme.textSecondary)))
