@@ -141,4 +141,24 @@ class FinanceRepository {
         .limit(limit)
         .findAll();
   }
+
+  Future<void> saveHolding(EGXHolding holding) async {
+    await _isar.writeTxn(() async {
+      await _isar.eGXHoldings.put(holding);
+    });
+  }
+
+  Future<EGXHolding?> getHoldingForTicker(String ticker) async {
+    return await _isar.eGXHoldings.where().tickerEqualTo(ticker).findFirst();
+  }
+
+  Future<List<EGXHolding>> getAllHoldings() async {
+    return await _isar.eGXHoldings.where().findAll();
+  }
+
+  Future<void> deleteHolding(int id) async {
+    await _isar.writeTxn(() async {
+      await _isar.eGXHoldings.delete(id);
+    });
+  }
 }

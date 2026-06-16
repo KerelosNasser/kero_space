@@ -70,4 +70,21 @@ void main() {
     expect(history.length, 1);
     expect(history.first.currentPrice, 135.0);
   });
+
+  test('Saves, retrieves and deletes EGX holdings', () async {
+    final holding = EGXHolding()
+      ..ticker = 'COMI'
+      ..quantity = 10
+      ..averageCost = 135.50
+      ..purchaseDate = DateTime.now();
+
+    await repository.saveHolding(holding);
+    final fetched = await repository.getHoldingForTicker('COMI');
+    expect(fetched, isNotNull);
+    expect(fetched!.quantity, 10);
+
+    await repository.deleteHolding(fetched.id);
+    final deleted = await repository.getHoldingForTicker('COMI');
+    expect(deleted, isNull);
+  });
 }
