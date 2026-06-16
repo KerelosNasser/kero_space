@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_notification_listener/flutter_notification_listener.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
+import 'package:kero_space/features/finance/presentation/widgets/overview_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/transactions_tab.dart';
+import 'package:kero_space/features/finance/presentation/widgets/subscriptions_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/portfolio_tab.dart';
 import 'package:kero_space/shared/widgets/shimmer/finance_skeleton.dart';
 import 'package:kero_space/shared/widgets/inline_error_widget.dart';
@@ -46,15 +48,16 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Finance Module'),
+          title: const Text('Kero Money Hub'),
           bottom: const TabBar(
-            isScrollable: true,
             tabs: [
-              Tab(icon: Icon(Icons.list), text: 'Txns'),
-              Tab(icon: Icon(Icons.trending_up), text: 'Portfolio'),
+              Tab(icon: Icon(Icons.dashboard), text: 'Overview'),
+              Tab(icon: Icon(Icons.receipt_long), text: 'Txns'),
+              Tab(icon: Icon(Icons.autorenew), text: 'Subs'),
+              Tab(icon: Icon(Icons.show_chart), text: 'Stocks'),
             ],
           ),
         ),
@@ -65,7 +68,9 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
             } else if (state is FinanceLoaded) {
               return TabBarView(
                 children: [
+                  OverviewTab(state: state),
                   TransactionsTab(state: state),
+                  SubscriptionsTab(state: state),
                   PortfolioTab(state: state),
                 ],
               );
