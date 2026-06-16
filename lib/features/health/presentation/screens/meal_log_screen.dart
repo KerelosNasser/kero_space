@@ -65,34 +65,55 @@ class _MealLogScreenState extends State<MealLogScreen> {
                           shape: BoxShape.circle,
                           color: AppTheme.accentMint.withValues(alpha: 0.1),
                         ),
-                        child: const Icon(Icons.restaurant, size: 48, color: AppTheme.accentMint),
+                        child: const Icon(
+                          Icons.restaurant,
+                          size: 48,
+                          color: AppTheme.accentMint,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      widget.ingredient.name, 
+                      widget.ingredient.name,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${totalCalories.toStringAsFixed(0)} kcal', 
+                      '${totalCalories.toStringAsFixed(0)} kcal',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: AppTheme.accentMint)
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.accentMint,
+                      ),
                     ),
-                    
+
                     const SizedBox(height: 40),
-                    
+
                     // Grams Input Card
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.bgElevated,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
                         children: [
-                          const Text('Amount', style: TextStyle(fontSize: 16, color: AppTheme.textSecondary)),
+                          const Text(
+                            'Amount',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
                           const Spacer(),
                           SizedBox(
                             width: 120,
@@ -100,12 +121,20 @@ class _MealLogScreenState extends State<MealLogScreen> {
                               controller: _gramsController,
                               keyboardType: TextInputType.number,
                               textAlign: TextAlign.right,
-                              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
+                              ),
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 isDense: true,
                                 suffixText: 'g',
-                                suffixStyle: TextStyle(fontSize: 16, color: AppTheme.textSecondary, fontWeight: FontWeight.normal),
+                                suffixStyle: TextStyle(
+                                  fontSize: 16,
+                                  color: AppTheme.textSecondary,
+                                  fontWeight: FontWeight.normal,
+                                ),
                               ),
                               onChanged: (val) {
                                 setState(() {
@@ -117,24 +146,39 @@ class _MealLogScreenState extends State<MealLogScreen> {
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Macros Breakdown
                     Row(
                       children: [
-                        _buildMacroCard('Protein', totalProtein, AppTheme.accentCyan),
+                        _buildMacroCard(
+                          'Protein',
+                          totalProtein,
+                          AppTheme.accentCyan,
+                        ),
                         const SizedBox(width: 12),
-                        _buildMacroCard('Carbs', totalCarbs, AppTheme.accentRose),
+                        _buildMacroCard(
+                          'Carbs',
+                          totalCarbs,
+                          AppTheme.accentRose,
+                        ),
                         const SizedBox(width: 12),
                         _buildMacroCard('Fat', totalFat, AppTheme.accentGold),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // Meal Settings (Time & Type)
-                    const Text('Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                    const Text(
+                      'Details',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -143,13 +187,18 @@ class _MealLogScreenState extends State<MealLogScreen> {
                             onTap: () async {
                               final time = await showTimePicker(
                                 context: context,
-                                initialTime: TimeOfDay.fromDateTime(_selectedTime),
+                                initialTime: TimeOfDay.fromDateTime(
+                                  _selectedTime,
+                                ),
                               );
                               if (time != null) {
                                 setState(() {
                                   _selectedTime = DateTime(
-                                    _selectedTime.year, _selectedTime.month, _selectedTime.day,
-                                    time.hour, time.minute,
+                                    _selectedTime.year,
+                                    _selectedTime.month,
+                                    _selectedTime.day,
+                                    time.hour,
+                                    time.minute,
                                   );
                                 });
                               }
@@ -164,9 +213,22 @@ class _MealLogScreenState extends State<MealLogScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Time', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                                  const Text(
+                                    'Time',
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text(DateFormat.jm().format(_selectedTime), style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                                  Text(
+                                    DateFormat.jm().format(_selectedTime),
+                                    style: const TextStyle(
+                                      color: AppTheme.textPrimary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -175,7 +237,10 @@ class _MealLogScreenState extends State<MealLogScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: AppTheme.bgElevated,
                               borderRadius: BorderRadius.circular(16),
@@ -183,19 +248,40 @@ class _MealLogScreenState extends State<MealLogScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Type', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                                const Text(
+                                  'Type',
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
                                 DropdownButtonHideUnderline(
                                   child: DropdownButton<MealType>(
                                     value: _selectedMealType,
                                     isExpanded: true,
                                     dropdownColor: AppTheme.bgElevated,
-                                    icon: const Icon(Icons.keyboard_arrow_down, color: AppTheme.textSecondary),
-                                    items: MealType.values.map((type) => DropdownMenuItem(
-                                      value: type,
-                                      child: Text(type.name.toUpperCase(), style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                                    )).toList(),
+                                    icon: const Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                    items: MealType.values
+                                        .map(
+                                          (type) => DropdownMenuItem(
+                                            value: type,
+                                            child: Text(
+                                              type.name.toUpperCase(),
+                                              style: const TextStyle(
+                                                color: AppTheme.textPrimary,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
                                     onChanged: (val) {
-                                      if (val != null) setState(() => _selectedMealType = val);
+                                      if (val != null)
+                                        setState(() => _selectedMealType = val);
                                     },
                                   ),
                                 ),
@@ -212,23 +298,37 @@ class _MealLogScreenState extends State<MealLogScreen> {
             ),
             // Bottom Action Button
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.bgElevated,
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, -5))
-                ],
-              ),
+              padding: const EdgeInsets.all(30),
               child: ElevatedButton(
-                onPressed: () => _saveMeal(ratio, totalCalories, totalProtein, totalCarbs, totalFat, _selectedTime, _selectedMealType),
+                onPressed: () => _saveMeal(
+                  ratio,
+                  totalCalories,
+                  totalProtein,
+                  totalCarbs,
+                  totalFat,
+                  _selectedTime,
+                  _selectedMealType,
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.accentMint,
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   elevation: 0,
                 ),
-                child: const Text('Add to Diary', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Add to Diary',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],
@@ -248,30 +348,67 @@ class _MealLogScreenState extends State<MealLogScreen> {
         ),
         child: Column(
           children: [
-            Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text('${value.toStringAsFixed(1)}g', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              '${value.toStringAsFixed(1)}g',
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _saveMeal(double ratio, double cals, double pro, double carbs, double fat, DateTime time, MealType type) async {
+  void _saveMeal(
+    double ratio,
+    double cals,
+    double pro,
+    double carbs,
+    double fat,
+    DateTime time,
+    MealType type,
+  ) async {
     final state = context.read<HealthBloc>().state;
-    
+
     if (state.isFastingMode && !widget.ingredient.isFastingCompliant) {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppTheme.bgElevated,
-          title: const Text('Fasting Breach Warning', style: TextStyle(color: AppTheme.textPrimary)),
-          content: const Text('This ingredient is not compliant with your fast. Log it anyway?', style: TextStyle(color: AppTheme.textSecondary)),
+          title: const Text(
+            'Fasting Breach Warning',
+            style: TextStyle(color: AppTheme.textPrimary),
+          ),
+          content: const Text(
+            'This ingredient is not compliant with your fast. Log it anyway?',
+            style: TextStyle(color: AppTheme.textSecondary),
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary))),
             TextButton(
-              onPressed: () => Navigator.pop(ctx, true), 
-              child: const Text('Log Anyway', style: TextStyle(color: AppTheme.accentRose))
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text(
+                'Log Anyway',
+                style: TextStyle(color: AppTheme.accentRose),
+              ),
             ),
           ],
         ),
@@ -297,7 +434,9 @@ class _MealLogScreenState extends State<MealLogScreen> {
       ..fatUnsaturated = widget.ingredient.fatUnsaturated * ratio
       ..cholesterol = widget.ingredient.cholesterol * ratio
       ..sodium = widget.ingredient.sodium * ratio
-      ..glycemicIndex = widget.ingredient.glycemicIndex // index doesn't scale
+      ..glycemicIndex = widget
+          .ingredient
+          .glycemicIndex // index doesn't scale
       ..timestamp = time
       ..mealType = type;
 

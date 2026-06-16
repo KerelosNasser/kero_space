@@ -102,7 +102,7 @@ class DeepNutritionCards extends StatelessWidget {
 
   Widget _buildHorizontalStackedBar(List<_BarSegment> segments) {
     final double total = segments.fold(0, (sum, seg) => sum + seg.value);
-    if (total <= 0) return const SizedBox.shrink();
+    if (total <= 0 || total.isNaN) return const SizedBox.shrink();
 
     return Container(
       height: 12,
@@ -114,6 +114,7 @@ class DeepNutritionCards extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       child: Row(
         children: segments.map((seg) {
+          if (seg.value.isNaN || seg.value <= 0) return const SizedBox.shrink();
           final int flex = (seg.value / total * 100).round();
           if (flex == 0) return const SizedBox.shrink();
           return Expanded(
@@ -179,43 +180,46 @@ class _NutritionExpandableCardState extends State<_NutritionExpandableCard> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: AppTheme.bgElevated,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          onExpansionChanged: (val) => setState(() => _isExpanded = val),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-          leading: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: widget.iconColor.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: AppTheme.bgElevated,
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            onExpansionChanged: (val) => setState(() => _isExpanded = val),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: widget.iconColor.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(widget.icon, color: widget.iconColor, size: 20),
             ),
-            child: Icon(widget.icon, color: widget.iconColor, size: 20),
+            title: Text(
+              widget.title,
+              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.totalValue,
+                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  color: AppTheme.textSecondary,
+                ),
+              ],
+            ),
+            children: widget.children,
           ),
-          title: Text(
-            widget.title,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.totalValue,
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                color: AppTheme.textSecondary,
-              ),
-            ],
-          ),
-          children: widget.children,
         ),
       ),
     );
