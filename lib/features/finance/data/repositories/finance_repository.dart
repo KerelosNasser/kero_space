@@ -126,4 +126,19 @@ class FinanceRepository {
   Future<List<CareerTask>> getAllCareerTasks() async {
     return await _isar.careerTasks.where().findAll();
   }
+
+  Future<void> savePriceSnapshot(EGXPriceSnapshot snapshot) async {
+    await _isar.writeTxn(() async {
+      await _isar.eGXPriceSnapshots.put(snapshot);
+    });
+  }
+
+  Future<List<EGXPriceSnapshot>> getSnapshotsForTicker(String ticker, {int limit = 10}) async {
+    return await _isar.eGXPriceSnapshots
+        .where()
+        .tickerEqualTo(ticker)
+        .sortByTimestampDesc()
+        .limit(limit)
+        .findAll();
+  }
 }

@@ -146,19 +146,41 @@ class OverviewTab extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final stock = state.watchlist[index];
                     final price = state.tickerPrices[stock.ticker];
+                    final dailyPct = state.tickerDailyChanges[stock.ticker] ?? 0.0;
+                    final sentiment = state.tickerSentiments[stock.ticker] ?? 'Neutral';
+
+                    final isUp = dailyPct >= 0;
+                    final trendColor = isUp ? AppTheme.accentMint : AppTheme.accentRose;
+
                     return Card(
                       color: AppTheme.bgElevated,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(stock.ticker, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(stock.ticker, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                Text(
+                                  sentiment.contains('Bullish') ? '▲' : sentiment.contains('Bearish') ? '▼' : '●',
+                                  style: TextStyle(
+                                    color: sentiment.contains('Bullish') 
+                                        ? AppTheme.accentMint 
+                                        : sentiment.contains('Bearish') 
+                                            ? AppTheme.accentRose 
+                                            : Colors.grey, 
+                                    fontSize: 10,
+                                  ),
+                                )
+                              ],
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               price != null ? '${price.toStringAsFixed(2)} EGP' : 'Scraping...',
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.accentMint),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: trendColor),
                             ),
                           ],
                         ),

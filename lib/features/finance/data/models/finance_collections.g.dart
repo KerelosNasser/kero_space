@@ -4760,23 +4760,28 @@ const EGXPriceSnapshotSchema = CollectionSchema(
   name: r'EGXPriceSnapshot',
   id: -8813234484078360451,
   properties: {
-    r'changePercentage': PropertySchema(
+    r'changeAmount': PropertySchema(
       id: 0,
+      name: r'changeAmount',
+      type: IsarType.double,
+    ),
+    r'changePercentage': PropertySchema(
+      id: 1,
       name: r'changePercentage',
       type: IsarType.double,
     ),
     r'currentPrice': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'currentPrice',
       type: IsarType.double,
     ),
     r'ticker': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'ticker',
       type: IsarType.string,
     ),
     r'timestamp': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'timestamp',
       type: IsarType.dateTime,
     )
@@ -4825,10 +4830,11 @@ void _eGXPriceSnapshotSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDouble(offsets[0], object.changePercentage);
-  writer.writeDouble(offsets[1], object.currentPrice);
-  writer.writeString(offsets[2], object.ticker);
-  writer.writeDateTime(offsets[3], object.timestamp);
+  writer.writeDouble(offsets[0], object.changeAmount);
+  writer.writeDouble(offsets[1], object.changePercentage);
+  writer.writeDouble(offsets[2], object.currentPrice);
+  writer.writeString(offsets[3], object.ticker);
+  writer.writeDateTime(offsets[4], object.timestamp);
 }
 
 EGXPriceSnapshot _eGXPriceSnapshotDeserialize(
@@ -4838,11 +4844,12 @@ EGXPriceSnapshot _eGXPriceSnapshotDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = EGXPriceSnapshot();
-  object.changePercentage = reader.readDouble(offsets[0]);
-  object.currentPrice = reader.readDouble(offsets[1]);
+  object.changeAmount = reader.readDouble(offsets[0]);
+  object.changePercentage = reader.readDouble(offsets[1]);
+  object.currentPrice = reader.readDouble(offsets[2]);
   object.id = id;
-  object.ticker = reader.readString(offsets[2]);
-  object.timestamp = reader.readDateTime(offsets[3]);
+  object.ticker = reader.readString(offsets[3]);
+  object.timestamp = reader.readDateTime(offsets[4]);
   return object;
 }
 
@@ -4858,8 +4865,10 @@ P _eGXPriceSnapshotDeserializeProp<P>(
     case 1:
       return (reader.readDouble(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 3:
+      return (reader.readString(offset)) as P;
+    case 4:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -5005,6 +5014,72 @@ extension EGXPriceSnapshotQueryWhere
 
 extension EGXPriceSnapshotQueryFilter
     on QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QFilterCondition> {
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterFilterCondition>
+      changeAmountEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'changeAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterFilterCondition>
+      changeAmountGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'changeAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterFilterCondition>
+      changeAmountLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'changeAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterFilterCondition>
+      changeAmountBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'changeAmount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterFilterCondition>
       changePercentageEqualTo(
     double value, {
@@ -5395,6 +5470,20 @@ extension EGXPriceSnapshotQueryLinks
 extension EGXPriceSnapshotQuerySortBy
     on QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QSortBy> {
   QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterSortBy>
+      sortByChangeAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'changeAmount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterSortBy>
+      sortByChangeAmountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'changeAmount', Sort.desc);
+    });
+  }
+
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterSortBy>
       sortByChangePercentage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'changePercentage', Sort.asc);
@@ -5453,6 +5542,20 @@ extension EGXPriceSnapshotQuerySortBy
 
 extension EGXPriceSnapshotQuerySortThenBy
     on QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QSortThenBy> {
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterSortBy>
+      thenByChangeAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'changeAmount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterSortBy>
+      thenByChangeAmountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'changeAmount', Sort.desc);
+    });
+  }
+
   QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QAfterSortBy>
       thenByChangePercentage() {
     return QueryBuilder.apply(this, (query) {
@@ -5526,6 +5629,13 @@ extension EGXPriceSnapshotQuerySortThenBy
 extension EGXPriceSnapshotQueryWhereDistinct
     on QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QDistinct> {
   QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QDistinct>
+      distinctByChangeAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'changeAmount');
+    });
+  }
+
+  QueryBuilder<EGXPriceSnapshot, EGXPriceSnapshot, QDistinct>
       distinctByChangePercentage() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'changePercentage');
@@ -5559,6 +5669,13 @@ extension EGXPriceSnapshotQueryProperty
   QueryBuilder<EGXPriceSnapshot, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<EGXPriceSnapshot, double, QQueryOperations>
+      changeAmountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'changeAmount');
     });
   }
 

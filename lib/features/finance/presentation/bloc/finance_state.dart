@@ -16,6 +16,10 @@ class FinanceLoaded extends FinanceState {
   final List<Budget> budgets;
   final List<EGXWatchlist> watchlist;
   final Map<String, double> tickerPrices;
+  final Map<String, double> tickerDailyChanges;
+  final Map<String, double> tickerMonthlyChanges;
+  final Map<String, String> tickerSentiments;
+  final Map<String, List<double>> tickerHistories;
   final double totalIncome;
   final double totalExpense;
   final List<MoneySource> moneySources;
@@ -27,6 +31,10 @@ class FinanceLoaded extends FinanceState {
     required this.budgets,
     required this.watchlist,
     required this.tickerPrices,
+    required this.tickerDailyChanges,
+    required this.tickerMonthlyChanges,
+    required this.tickerSentiments,
+    required this.tickerHistories,
     required this.totalIncome,
     required this.totalExpense,
     required this.moneySources,
@@ -40,6 +48,10 @@ class FinanceLoaded extends FinanceState {
         budgets,
         watchlist,
         tickerPrices,
+        tickerDailyChanges,
+        tickerMonthlyChanges,
+        tickerSentiments,
+        tickerHistories,
         totalIncome,
         totalExpense,
         moneySources,

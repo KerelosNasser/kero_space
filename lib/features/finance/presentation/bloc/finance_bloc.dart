@@ -92,6 +92,10 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         budgets: budgets,
         watchlist: watchlist,
         tickerPrices: const {},
+        tickerDailyChanges: const {},
+        tickerMonthlyChanges: const {},
+        tickerSentiments: const {},
+        tickerHistories: const {},
         totalIncome: income,
         totalExpense: expense,
         moneySources: sources,
@@ -115,16 +119,65 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       RefreshStockPrices event, Emitter<FinanceState> emit) async {
     if (state is FinanceLoaded) {
       final currentState = state as FinanceLoaded;
-      Map<String, double> newPrices = Map.from(currentState.tickerPrices);
       
-      final futures = currentState.watchlist.map((stock) async {
-        final price = await _egxScraperService.fetchPrice(stock.ticker);
-        return MapEntry(stock.ticker, price);
-      }).toList();
-      final results = await Future.wait(futures);
-      for (final entry in results) {
-        if (entry.value != null) {
-          newPrices[entry.key] = entry.value!;
+      Map<String, double> prices = {};
+      Map<String, double> dailyChanges = {};
+      Map<String, double> monthlyChanges = {};
+      Map<String, String> sentiments = {};
+      Map<String, List<double>> histories = {};
+
+      for (final stock in currentState.watchlist) {
+        final result = await _egxScraperService.fetchPrice(stock.ticker);
+        if (result != null) {
+          // Save snapshot to database
+          final snapshot = EGXPriceSnapshot()
+            ..ticker = stock.ticker
+            ..currentPrice = result.price
+            ..changeAmount = result.changeAmount
+            ..changePercentage = result.changePercentage
+            ..timestamp = DateTime.now();
+          await _financeRepository.savePriceSnapshot(snapshot);
+
+          // Get price history
+          final history = await _financeRepository.getSnapshotsForTicker(stock.ticker, limit: 30);
+          final priceHistory = history.map((s) => s.currentPrice).toList().reversed.toList();
+          histories[stock.ticker] = priceHistory;
+
+          // 7-day Simple Moving Average (SMA)
+          double sma = result.price;
+          if (priceHistory.length >= 3) {
+            sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
+          }
+
+          // 30-day/Monthly change estimation
+          double monthlyDiff = 0.0;
+          if (priceHistory.length >= 5) {
+            final oldPrice = priceHistory.first;
+            monthlyDiff = oldPrice > 0 ? ((result.price - oldPrice) / oldPrice) * 100 : 0.0;
+          } else {
+            monthlyDiff = result.changePercentage; // fallback
+          }
+
+          // Sentiment indicator
+          String sentiment = 'Neutral';
+          if (priceHistory.length >= 3) {
+            if (result.changeAmount > 0 && result.price > sma) {
+              sentiment = 'Strong Bullish';
+            } else if (result.changeAmount > 0 && result.price <= sma) {
+              sentiment = 'Weak Bullish';
+            } else if (result.changeAmount < 0 && result.price < sma) {
+              sentiment = 'Strong Bearish';
+            } else if (result.changeAmount < 0 && result.price >= sma) {
+              sentiment = 'Weak Bearish';
+            }
+          } else {
+            sentiment = result.changeAmount >= 0 ? 'Bullish' : 'Bearish'; // simple trend fallback
+          }
+
+          prices[stock.ticker] = result.price;
+          dailyChanges[stock.ticker] = result.changePercentage;
+          monthlyChanges[stock.ticker] = monthlyDiff;
+          sentiments[stock.ticker] = sentiment;
         }
       }
 
@@ -132,7 +185,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         transactions: currentState.transactions,
         budgets: currentState.budgets,
         watchlist: currentState.watchlist,
-        tickerPrices: newPrices,
+        tickerPrices: prices,
+        tickerDailyChanges: dailyChanges,
+        tickerMonthlyChanges: monthlyChanges,
+        tickerSentiments: sentiments,
+        tickerHistories: histories,
         totalIncome: currentState.totalIncome,
         totalExpense: currentState.totalExpense,
         moneySources: currentState.moneySources,
@@ -287,6 +344,10 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         budgets: currentState.budgets,
         watchlist: currentState.watchlist,
         tickerPrices: currentState.tickerPrices,
+        tickerDailyChanges: currentState.tickerDailyChanges,
+        tickerMonthlyChanges: currentState.tickerMonthlyChanges,
+        tickerSentiments: currentState.tickerSentiments,
+        tickerHistories: currentState.tickerHistories,
         totalIncome: currentState.totalIncome,
         totalExpense: currentState.totalExpense,
         moneySources: currentState.moneySources,

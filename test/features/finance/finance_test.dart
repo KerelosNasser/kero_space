@@ -33,5 +33,15 @@ void main() {
         ..date = DateTime.now();
       expect(tx.sourceName, 'Upwork');
     });
+
+    test('EGXPriceSnapshot includes changeAmount', () {
+      final snapshot = EGXPriceSnapshot()
+        ..ticker = 'COMI'
+        ..currentPrice = 135.50
+        ..changePercentage = 1.2
+        ..changeAmount = 1.50
+        ..timestamp = DateTime.now();
+      expect(snapshot.changeAmount, 1.50);
+    });
   });
 }

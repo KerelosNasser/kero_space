@@ -56,4 +56,18 @@ void main() {
     final updatedSource = await isar.moneySources.where().nameEqualTo('QNB').findFirst();
     expect(updatedSource!.balance, 1700.0);
   });
+
+  test('Saves and retrieves price snapshots', () async {
+    final snapshot = EGXPriceSnapshot()
+      ..ticker = 'COMI'
+      ..currentPrice = 135.0
+      ..changeAmount = 1.0
+      ..changePercentage = 0.74
+      ..timestamp = DateTime.now();
+
+    await repository.savePriceSnapshot(snapshot);
+    final history = await repository.getSnapshotsForTicker('COMI');
+    expect(history.length, 1);
+    expect(history.first.currentPrice, 135.0);
+  });
 }

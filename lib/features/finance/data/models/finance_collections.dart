@@ -77,6 +77,7 @@ class EGXPriceSnapshot {
   
   late double currentPrice;
   late double changePercentage;
+  late double changeAmount;
   late DateTime timestamp;
 }
 
