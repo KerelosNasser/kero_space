@@ -1033,44 +1033,89 @@ const MealEntrySchema = CollectionSchema(
       name: r'carbs',
       type: IsarType.double,
     ),
-    r'deviceId': PropertySchema(
+    r'cholesterol': PropertySchema(
       id: 2,
+      name: r'cholesterol',
+      type: IsarType.double,
+    ),
+    r'deviceId': PropertySchema(
+      id: 3,
       name: r'deviceId',
       type: IsarType.string,
     ),
+    r'fastCarbs': PropertySchema(
+      id: 4,
+      name: r'fastCarbs',
+      type: IsarType.double,
+    ),
     r'fat': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'fat',
       type: IsarType.double,
     ),
+    r'fatSaturated': PropertySchema(
+      id: 6,
+      name: r'fatSaturated',
+      type: IsarType.double,
+    ),
+    r'fatUnsaturated': PropertySchema(
+      id: 7,
+      name: r'fatUnsaturated',
+      type: IsarType.double,
+    ),
+    r'fiber': PropertySchema(
+      id: 8,
+      name: r'fiber',
+      type: IsarType.double,
+    ),
+    r'glycemicIndex': PropertySchema(
+      id: 9,
+      name: r'glycemicIndex',
+      type: IsarType.double,
+    ),
     r'grams': PropertySchema(
-      id: 4,
+      id: 10,
       name: r'grams',
       type: IsarType.double,
     ),
     r'mealType': PropertySchema(
-      id: 5,
+      id: 11,
       name: r'mealType',
       type: IsarType.byte,
       enumMap: _MealEntrymealTypeEnumValueMap,
     ),
     r'name': PropertySchema(
-      id: 6,
+      id: 12,
       name: r'name',
       type: IsarType.string,
     ),
     r'platform': PropertySchema(
-      id: 7,
+      id: 13,
       name: r'platform',
       type: IsarType.string,
     ),
     r'protein': PropertySchema(
-      id: 8,
+      id: 14,
       name: r'protein',
       type: IsarType.double,
     ),
+    r'slowCarbs': PropertySchema(
+      id: 15,
+      name: r'slowCarbs',
+      type: IsarType.double,
+    ),
+    r'sodium': PropertySchema(
+      id: 16,
+      name: r'sodium',
+      type: IsarType.double,
+    ),
+    r'sugar': PropertySchema(
+      id: 17,
+      name: r'sugar',
+      type: IsarType.double,
+    ),
     r'timestamp': PropertySchema(
-      id: 9,
+      id: 18,
       name: r'timestamp',
       type: IsarType.dateTime,
     )
@@ -1109,14 +1154,23 @@ void _mealEntrySerialize(
 ) {
   writer.writeDouble(offsets[0], object.calories);
   writer.writeDouble(offsets[1], object.carbs);
-  writer.writeString(offsets[2], object.deviceId);
-  writer.writeDouble(offsets[3], object.fat);
-  writer.writeDouble(offsets[4], object.grams);
-  writer.writeByte(offsets[5], object.mealType.index);
-  writer.writeString(offsets[6], object.name);
-  writer.writeString(offsets[7], object.platform);
-  writer.writeDouble(offsets[8], object.protein);
-  writer.writeDateTime(offsets[9], object.timestamp);
+  writer.writeDouble(offsets[2], object.cholesterol);
+  writer.writeString(offsets[3], object.deviceId);
+  writer.writeDouble(offsets[4], object.fastCarbs);
+  writer.writeDouble(offsets[5], object.fat);
+  writer.writeDouble(offsets[6], object.fatSaturated);
+  writer.writeDouble(offsets[7], object.fatUnsaturated);
+  writer.writeDouble(offsets[8], object.fiber);
+  writer.writeDouble(offsets[9], object.glycemicIndex);
+  writer.writeDouble(offsets[10], object.grams);
+  writer.writeByte(offsets[11], object.mealType.index);
+  writer.writeString(offsets[12], object.name);
+  writer.writeString(offsets[13], object.platform);
+  writer.writeDouble(offsets[14], object.protein);
+  writer.writeDouble(offsets[15], object.slowCarbs);
+  writer.writeDouble(offsets[16], object.sodium);
+  writer.writeDouble(offsets[17], object.sugar);
+  writer.writeDateTime(offsets[18], object.timestamp);
 }
 
 MealEntry _mealEntryDeserialize(
@@ -1128,17 +1182,26 @@ MealEntry _mealEntryDeserialize(
   final object = MealEntry();
   object.calories = reader.readDouble(offsets[0]);
   object.carbs = reader.readDouble(offsets[1]);
-  object.deviceId = reader.readString(offsets[2]);
-  object.fat = reader.readDouble(offsets[3]);
-  object.grams = reader.readDouble(offsets[4]);
+  object.cholesterol = reader.readDouble(offsets[2]);
+  object.deviceId = reader.readString(offsets[3]);
+  object.fastCarbs = reader.readDouble(offsets[4]);
+  object.fat = reader.readDouble(offsets[5]);
+  object.fatSaturated = reader.readDouble(offsets[6]);
+  object.fatUnsaturated = reader.readDouble(offsets[7]);
+  object.fiber = reader.readDouble(offsets[8]);
+  object.glycemicIndex = reader.readDouble(offsets[9]);
+  object.grams = reader.readDouble(offsets[10]);
   object.id = id;
   object.mealType =
-      _MealEntrymealTypeValueEnumMap[reader.readByteOrNull(offsets[5])] ??
+      _MealEntrymealTypeValueEnumMap[reader.readByteOrNull(offsets[11])] ??
           MealType.breakfast;
-  object.name = reader.readString(offsets[6]);
-  object.platform = reader.readString(offsets[7]);
-  object.protein = reader.readDouble(offsets[8]);
-  object.timestamp = reader.readDateTime(offsets[9]);
+  object.name = reader.readString(offsets[12]);
+  object.platform = reader.readString(offsets[13]);
+  object.protein = reader.readDouble(offsets[14]);
+  object.slowCarbs = reader.readDouble(offsets[15]);
+  object.sodium = reader.readDouble(offsets[16]);
+  object.sugar = reader.readDouble(offsets[17]);
+  object.timestamp = reader.readDateTime(offsets[18]);
   return object;
 }
 
@@ -1154,21 +1217,39 @@ P _mealEntryDeserializeProp<P>(
     case 1:
       return (reader.readDouble(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
-    case 3:
       return (reader.readDouble(offset)) as P;
+    case 3:
+      return (reader.readString(offset)) as P;
     case 4:
       return (reader.readDouble(offset)) as P;
     case 5:
-      return (_MealEntrymealTypeValueEnumMap[reader.readByteOrNull(offset)] ??
-          MealType.breakfast) as P;
+      return (reader.readDouble(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 8:
       return (reader.readDouble(offset)) as P;
     case 9:
+      return (reader.readDouble(offset)) as P;
+    case 10:
+      return (reader.readDouble(offset)) as P;
+    case 11:
+      return (_MealEntrymealTypeValueEnumMap[reader.readByteOrNull(offset)] ??
+          MealType.breakfast) as P;
+    case 12:
+      return (reader.readString(offset)) as P;
+    case 13:
+      return (reader.readString(offset)) as P;
+    case 14:
+      return (reader.readDouble(offset)) as P;
+    case 15:
+      return (reader.readDouble(offset)) as P;
+    case 16:
+      return (reader.readDouble(offset)) as P;
+    case 17:
+      return (reader.readDouble(offset)) as P;
+    case 18:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1403,6 +1484,69 @@ extension MealEntryQueryFilter
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> cholesterolEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'cholesterol',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      cholesterolGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'cholesterol',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> cholesterolLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'cholesterol',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> cholesterolBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'cholesterol',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> deviceIdEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1534,6 +1678,69 @@ extension MealEntryQueryFilter
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fastCarbsEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fastCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      fastCarbsGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fastCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fastCarbsLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fastCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fastCarbsBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fastCarbs',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fatEqualTo(
     double value, {
     double epsilon = Query.epsilon,
@@ -1587,6 +1794,264 @@ extension MealEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'fat',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fatSaturatedEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fatSaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      fatSaturatedGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fatSaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      fatSaturatedLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fatSaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fatSaturatedBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fatSaturated',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      fatUnsaturatedEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fatUnsaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      fatUnsaturatedGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fatUnsaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      fatUnsaturatedLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fatUnsaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      fatUnsaturatedBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fatUnsaturated',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fiberEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fiber',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fiberGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fiber',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fiberLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fiber',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> fiberBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fiber',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      glycemicIndexEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'glycemicIndex',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      glycemicIndexGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'glycemicIndex',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      glycemicIndexLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'glycemicIndex',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      glycemicIndexBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'glycemicIndex',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -2087,6 +2552,193 @@ extension MealEntryQueryFilter
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> slowCarbsEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'slowCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition>
+      slowCarbsGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'slowCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> slowCarbsLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'slowCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> slowCarbsBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'slowCarbs',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> sodiumEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sodium',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> sodiumGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sodium',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> sodiumLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sodium',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> sodiumBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sodium',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> sugarEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sugar',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> sugarGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sugar',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> sugarLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sugar',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> sugarBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sugar',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterFilterCondition> timestampEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -2173,6 +2825,18 @@ extension MealEntryQuerySortBy on QueryBuilder<MealEntry, MealEntry, QSortBy> {
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByCholesterol() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cholesterol', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByCholesterolDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cholesterol', Sort.desc);
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deviceId', Sort.asc);
@@ -2185,6 +2849,18 @@ extension MealEntryQuerySortBy on QueryBuilder<MealEntry, MealEntry, QSortBy> {
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFastCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fastCarbs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFastCarbsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fastCarbs', Sort.desc);
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFat() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fat', Sort.asc);
@@ -2194,6 +2870,54 @@ extension MealEntryQuerySortBy on QueryBuilder<MealEntry, MealEntry, QSortBy> {
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFatDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fat', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFatSaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatSaturated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFatSaturatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatSaturated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFatUnsaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatUnsaturated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFatUnsaturatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatUnsaturated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFiber() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fiber', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByFiberDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fiber', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByGlycemicIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'glycemicIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByGlycemicIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'glycemicIndex', Sort.desc);
     });
   }
 
@@ -2257,6 +2981,42 @@ extension MealEntryQuerySortBy on QueryBuilder<MealEntry, MealEntry, QSortBy> {
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortBySlowCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'slowCarbs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortBySlowCarbsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'slowCarbs', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortBySodium() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sodium', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortBySodiumDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sodium', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortBySugar() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sugar', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortBySugarDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sugar', Sort.desc);
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> sortByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
@@ -2296,6 +3056,18 @@ extension MealEntryQuerySortThenBy
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByCholesterol() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cholesterol', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByCholesterolDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cholesterol', Sort.desc);
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deviceId', Sort.asc);
@@ -2308,6 +3080,18 @@ extension MealEntryQuerySortThenBy
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFastCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fastCarbs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFastCarbsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fastCarbs', Sort.desc);
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFat() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fat', Sort.asc);
@@ -2317,6 +3101,54 @@ extension MealEntryQuerySortThenBy
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFatDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fat', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFatSaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatSaturated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFatSaturatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatSaturated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFatUnsaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatUnsaturated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFatUnsaturatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatUnsaturated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFiber() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fiber', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByFiberDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fiber', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByGlycemicIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'glycemicIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByGlycemicIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'glycemicIndex', Sort.desc);
     });
   }
 
@@ -2392,6 +3224,42 @@ extension MealEntryQuerySortThenBy
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenBySlowCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'slowCarbs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenBySlowCarbsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'slowCarbs', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenBySodium() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sodium', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenBySodiumDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sodium', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenBySugar() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sugar', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenBySugarDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sugar', Sort.desc);
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QAfterSortBy> thenByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
@@ -2419,6 +3287,12 @@ extension MealEntryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByCholesterol() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'cholesterol');
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByDeviceId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2426,9 +3300,39 @@ extension MealEntryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByFastCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fastCarbs');
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByFat() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'fat');
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByFatSaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fatSaturated');
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByFatUnsaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fatUnsaturated');
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByFiber() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fiber');
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByGlycemicIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'glycemicIndex');
     });
   }
 
@@ -2464,6 +3368,24 @@ extension MealEntryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctBySlowCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'slowCarbs');
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctBySodium() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sodium');
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QDistinct> distinctBySugar() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sugar');
+    });
+  }
+
   QueryBuilder<MealEntry, MealEntry, QDistinct> distinctByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'timestamp');
@@ -2491,15 +3413,51 @@ extension MealEntryQueryProperty
     });
   }
 
+  QueryBuilder<MealEntry, double, QQueryOperations> cholesterolProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'cholesterol');
+    });
+  }
+
   QueryBuilder<MealEntry, String, QQueryOperations> deviceIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'deviceId');
     });
   }
 
+  QueryBuilder<MealEntry, double, QQueryOperations> fastCarbsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fastCarbs');
+    });
+  }
+
   QueryBuilder<MealEntry, double, QQueryOperations> fatProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'fat');
+    });
+  }
+
+  QueryBuilder<MealEntry, double, QQueryOperations> fatSaturatedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fatSaturated');
+    });
+  }
+
+  QueryBuilder<MealEntry, double, QQueryOperations> fatUnsaturatedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fatUnsaturated');
+    });
+  }
+
+  QueryBuilder<MealEntry, double, QQueryOperations> fiberProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fiber');
+    });
+  }
+
+  QueryBuilder<MealEntry, double, QQueryOperations> glycemicIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'glycemicIndex');
     });
   }
 
@@ -2533,6 +3491,24 @@ extension MealEntryQueryProperty
     });
   }
 
+  QueryBuilder<MealEntry, double, QQueryOperations> slowCarbsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'slowCarbs');
+    });
+  }
+
+  QueryBuilder<MealEntry, double, QQueryOperations> sodiumProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sodium');
+    });
+  }
+
+  QueryBuilder<MealEntry, double, QQueryOperations> sugarProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sugar');
+    });
+  }
+
   QueryBuilder<MealEntry, DateTime, QQueryOperations> timestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'timestamp');
@@ -2561,34 +3537,79 @@ const IngredientSchema = CollectionSchema(
       name: r'carbs',
       type: IsarType.double,
     ),
-    r'deviceId': PropertySchema(
+    r'cholesterol': PropertySchema(
       id: 2,
+      name: r'cholesterol',
+      type: IsarType.double,
+    ),
+    r'deviceId': PropertySchema(
+      id: 3,
       name: r'deviceId',
       type: IsarType.string,
     ),
+    r'fastCarbs': PropertySchema(
+      id: 4,
+      name: r'fastCarbs',
+      type: IsarType.double,
+    ),
     r'fat': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'fat',
       type: IsarType.double,
     ),
+    r'fatSaturated': PropertySchema(
+      id: 6,
+      name: r'fatSaturated',
+      type: IsarType.double,
+    ),
+    r'fatUnsaturated': PropertySchema(
+      id: 7,
+      name: r'fatUnsaturated',
+      type: IsarType.double,
+    ),
+    r'fiber': PropertySchema(
+      id: 8,
+      name: r'fiber',
+      type: IsarType.double,
+    ),
+    r'glycemicIndex': PropertySchema(
+      id: 9,
+      name: r'glycemicIndex',
+      type: IsarType.double,
+    ),
     r'isFastingCompliant': PropertySchema(
-      id: 4,
+      id: 10,
       name: r'isFastingCompliant',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 5,
+      id: 11,
       name: r'name',
       type: IsarType.string,
     ),
     r'platform': PropertySchema(
-      id: 6,
+      id: 12,
       name: r'platform',
       type: IsarType.string,
     ),
     r'protein': PropertySchema(
-      id: 7,
+      id: 13,
       name: r'protein',
+      type: IsarType.double,
+    ),
+    r'slowCarbs': PropertySchema(
+      id: 14,
+      name: r'slowCarbs',
+      type: IsarType.double,
+    ),
+    r'sodium': PropertySchema(
+      id: 15,
+      name: r'sodium',
+      type: IsarType.double,
+    ),
+    r'sugar': PropertySchema(
+      id: 16,
+      name: r'sugar',
       type: IsarType.double,
     )
   },
@@ -2626,12 +3647,21 @@ void _ingredientSerialize(
 ) {
   writer.writeDouble(offsets[0], object.calories);
   writer.writeDouble(offsets[1], object.carbs);
-  writer.writeString(offsets[2], object.deviceId);
-  writer.writeDouble(offsets[3], object.fat);
-  writer.writeBool(offsets[4], object.isFastingCompliant);
-  writer.writeString(offsets[5], object.name);
-  writer.writeString(offsets[6], object.platform);
-  writer.writeDouble(offsets[7], object.protein);
+  writer.writeDouble(offsets[2], object.cholesterol);
+  writer.writeString(offsets[3], object.deviceId);
+  writer.writeDouble(offsets[4], object.fastCarbs);
+  writer.writeDouble(offsets[5], object.fat);
+  writer.writeDouble(offsets[6], object.fatSaturated);
+  writer.writeDouble(offsets[7], object.fatUnsaturated);
+  writer.writeDouble(offsets[8], object.fiber);
+  writer.writeDouble(offsets[9], object.glycemicIndex);
+  writer.writeBool(offsets[10], object.isFastingCompliant);
+  writer.writeString(offsets[11], object.name);
+  writer.writeString(offsets[12], object.platform);
+  writer.writeDouble(offsets[13], object.protein);
+  writer.writeDouble(offsets[14], object.slowCarbs);
+  writer.writeDouble(offsets[15], object.sodium);
+  writer.writeDouble(offsets[16], object.sugar);
 }
 
 Ingredient _ingredientDeserialize(
@@ -2643,13 +3673,22 @@ Ingredient _ingredientDeserialize(
   final object = Ingredient();
   object.calories = reader.readDouble(offsets[0]);
   object.carbs = reader.readDouble(offsets[1]);
-  object.deviceId = reader.readString(offsets[2]);
-  object.fat = reader.readDouble(offsets[3]);
+  object.cholesterol = reader.readDouble(offsets[2]);
+  object.deviceId = reader.readString(offsets[3]);
+  object.fastCarbs = reader.readDouble(offsets[4]);
+  object.fat = reader.readDouble(offsets[5]);
+  object.fatSaturated = reader.readDouble(offsets[6]);
+  object.fatUnsaturated = reader.readDouble(offsets[7]);
+  object.fiber = reader.readDouble(offsets[8]);
+  object.glycemicIndex = reader.readDouble(offsets[9]);
   object.id = id;
-  object.isFastingCompliant = reader.readBool(offsets[4]);
-  object.name = reader.readString(offsets[5]);
-  object.platform = reader.readString(offsets[6]);
-  object.protein = reader.readDouble(offsets[7]);
+  object.isFastingCompliant = reader.readBool(offsets[10]);
+  object.name = reader.readString(offsets[11]);
+  object.platform = reader.readString(offsets[12]);
+  object.protein = reader.readDouble(offsets[13]);
+  object.slowCarbs = reader.readDouble(offsets[14]);
+  object.sodium = reader.readDouble(offsets[15]);
+  object.sugar = reader.readDouble(offsets[16]);
   return object;
 }
 
@@ -2665,16 +3704,34 @@ P _ingredientDeserializeProp<P>(
     case 1:
       return (reader.readDouble(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
-    case 3:
       return (reader.readDouble(offset)) as P;
+    case 3:
+      return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readBool(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 7:
+      return (reader.readDouble(offset)) as P;
+    case 8:
+      return (reader.readDouble(offset)) as P;
+    case 9:
+      return (reader.readDouble(offset)) as P;
+    case 10:
+      return (reader.readBool(offset)) as P;
+    case 11:
+      return (reader.readString(offset)) as P;
+    case 12:
+      return (reader.readString(offset)) as P;
+    case 13:
+      return (reader.readDouble(offset)) as P;
+    case 14:
+      return (reader.readDouble(offset)) as P;
+    case 15:
+      return (reader.readDouble(offset)) as P;
+    case 16:
       return (reader.readDouble(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -2897,6 +3954,72 @@ extension IngredientQueryFilter
     });
   }
 
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      cholesterolEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'cholesterol',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      cholesterolGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'cholesterol',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      cholesterolLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'cholesterol',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      cholesterolBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'cholesterol',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> deviceIdEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -3031,6 +4154,69 @@ extension IngredientQueryFilter
     });
   }
 
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> fastCarbsEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fastCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fastCarbsGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fastCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> fastCarbsLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fastCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> fastCarbsBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fastCarbs',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> fatEqualTo(
     double value, {
     double epsilon = Query.epsilon,
@@ -3084,6 +4270,266 @@ extension IngredientQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'fat',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fatSaturatedEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fatSaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fatSaturatedGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fatSaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fatSaturatedLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fatSaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fatSaturatedBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fatSaturated',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fatUnsaturatedEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fatUnsaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fatUnsaturatedGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fatUnsaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fatUnsaturatedLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fatUnsaturated',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      fatUnsaturatedBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fatUnsaturated',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> fiberEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fiber',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> fiberGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fiber',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> fiberLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fiber',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> fiberBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fiber',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      glycemicIndexEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'glycemicIndex',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      glycemicIndexGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'glycemicIndex',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      glycemicIndexLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'glycemicIndex',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      glycemicIndexBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'glycemicIndex',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -3482,6 +4928,193 @@ extension IngredientQueryFilter
       ));
     });
   }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> slowCarbsEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'slowCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition>
+      slowCarbsGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'slowCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> slowCarbsLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'slowCarbs',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> slowCarbsBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'slowCarbs',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> sodiumEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sodium',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> sodiumGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sodium',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> sodiumLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sodium',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> sodiumBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sodium',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> sugarEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sugar',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> sugarGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sugar',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> sugarLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sugar',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterFilterCondition> sugarBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sugar',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
 }
 
 extension IngredientQueryObject
@@ -3516,6 +5149,18 @@ extension IngredientQuerySortBy
     });
   }
 
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByCholesterol() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cholesterol', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByCholesterolDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cholesterol', Sort.desc);
+    });
+  }
+
   QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deviceId', Sort.asc);
@@ -3528,6 +5173,18 @@ extension IngredientQuerySortBy
     });
   }
 
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFastCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fastCarbs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFastCarbsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fastCarbs', Sort.desc);
+    });
+  }
+
   QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFat() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fat', Sort.asc);
@@ -3537,6 +5194,55 @@ extension IngredientQuerySortBy
   QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFatDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fat', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFatSaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatSaturated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFatSaturatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatSaturated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFatUnsaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatUnsaturated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy>
+      sortByFatUnsaturatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatUnsaturated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFiber() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fiber', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByFiberDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fiber', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByGlycemicIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'glycemicIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortByGlycemicIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'glycemicIndex', Sort.desc);
     });
   }
 
@@ -3589,6 +5295,42 @@ extension IngredientQuerySortBy
       return query.addSortBy(r'protein', Sort.desc);
     });
   }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortBySlowCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'slowCarbs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortBySlowCarbsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'slowCarbs', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortBySodium() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sodium', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortBySodiumDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sodium', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortBySugar() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sugar', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> sortBySugarDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sugar', Sort.desc);
+    });
+  }
 }
 
 extension IngredientQuerySortThenBy
@@ -3617,6 +5359,18 @@ extension IngredientQuerySortThenBy
     });
   }
 
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByCholesterol() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cholesterol', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByCholesterolDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'cholesterol', Sort.desc);
+    });
+  }
+
   QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deviceId', Sort.asc);
@@ -3629,6 +5383,18 @@ extension IngredientQuerySortThenBy
     });
   }
 
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFastCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fastCarbs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFastCarbsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fastCarbs', Sort.desc);
+    });
+  }
+
   QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFat() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fat', Sort.asc);
@@ -3638,6 +5404,55 @@ extension IngredientQuerySortThenBy
   QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFatDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'fat', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFatSaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatSaturated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFatSaturatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatSaturated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFatUnsaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatUnsaturated', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy>
+      thenByFatUnsaturatedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fatUnsaturated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFiber() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fiber', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByFiberDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fiber', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByGlycemicIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'glycemicIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenByGlycemicIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'glycemicIndex', Sort.desc);
     });
   }
 
@@ -3702,6 +5517,42 @@ extension IngredientQuerySortThenBy
       return query.addSortBy(r'protein', Sort.desc);
     });
   }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenBySlowCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'slowCarbs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenBySlowCarbsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'slowCarbs', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenBySodium() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sodium', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenBySodiumDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sodium', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenBySugar() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sugar', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterSortBy> thenBySugarDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sugar', Sort.desc);
+    });
+  }
 }
 
 extension IngredientQueryWhereDistinct
@@ -3718,6 +5569,12 @@ extension IngredientQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctByCholesterol() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'cholesterol');
+    });
+  }
+
   QueryBuilder<Ingredient, Ingredient, QDistinct> distinctByDeviceId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -3725,9 +5582,39 @@ extension IngredientQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctByFastCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fastCarbs');
+    });
+  }
+
   QueryBuilder<Ingredient, Ingredient, QDistinct> distinctByFat() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'fat');
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctByFatSaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fatSaturated');
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctByFatUnsaturated() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fatUnsaturated');
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctByFiber() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fiber');
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctByGlycemicIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'glycemicIndex');
     });
   }
 
@@ -3757,6 +5644,24 @@ extension IngredientQueryWhereDistinct
       return query.addDistinctBy(r'protein');
     });
   }
+
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctBySlowCarbs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'slowCarbs');
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctBySodium() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sodium');
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QDistinct> distinctBySugar() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sugar');
+    });
+  }
 }
 
 extension IngredientQueryProperty
@@ -3779,15 +5684,51 @@ extension IngredientQueryProperty
     });
   }
 
+  QueryBuilder<Ingredient, double, QQueryOperations> cholesterolProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'cholesterol');
+    });
+  }
+
   QueryBuilder<Ingredient, String, QQueryOperations> deviceIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'deviceId');
     });
   }
 
+  QueryBuilder<Ingredient, double, QQueryOperations> fastCarbsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fastCarbs');
+    });
+  }
+
   QueryBuilder<Ingredient, double, QQueryOperations> fatProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'fat');
+    });
+  }
+
+  QueryBuilder<Ingredient, double, QQueryOperations> fatSaturatedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fatSaturated');
+    });
+  }
+
+  QueryBuilder<Ingredient, double, QQueryOperations> fatUnsaturatedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fatUnsaturated');
+    });
+  }
+
+  QueryBuilder<Ingredient, double, QQueryOperations> fiberProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fiber');
+    });
+  }
+
+  QueryBuilder<Ingredient, double, QQueryOperations> glycemicIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'glycemicIndex');
     });
   }
 
@@ -3813,6 +5754,24 @@ extension IngredientQueryProperty
   QueryBuilder<Ingredient, double, QQueryOperations> proteinProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'protein');
+    });
+  }
+
+  QueryBuilder<Ingredient, double, QQueryOperations> slowCarbsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'slowCarbs');
+    });
+  }
+
+  QueryBuilder<Ingredient, double, QQueryOperations> sodiumProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sodium');
+    });
+  }
+
+  QueryBuilder<Ingredient, double, QQueryOperations> sugarProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sugar');
     });
   }
 }

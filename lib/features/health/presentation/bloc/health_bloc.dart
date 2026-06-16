@@ -58,6 +58,15 @@ class HealthState extends Equatable {
   final double dailyCarbs;
   final double dailyFat;
   
+  final double dailyFiber;
+  final double dailySugar;
+  final double dailyFastCarbs;
+  final double dailySlowCarbs;
+  final double dailyFatSaturated;
+  final double dailyFatUnsaturated;
+  final double dailyCholesterol;
+  final double dailySodium;
+  
   final double bmrTarget;
   final bool isFastingMode;
   final List<MealEntry> todayMeals;
@@ -73,6 +82,14 @@ class HealthState extends Equatable {
     this.dailyProtein = 0,
     this.dailyCarbs = 0,
     this.dailyFat = 0,
+    this.dailyFiber = 0,
+    this.dailySugar = 0,
+    this.dailyFastCarbs = 0,
+    this.dailySlowCarbs = 0,
+    this.dailyFatSaturated = 0,
+    this.dailyFatUnsaturated = 0,
+    this.dailyCholesterol = 0,
+    this.dailySodium = 0,
     this.bmrTarget = 2000,
     this.isFastingMode = false,
     this.todayMeals = const [],
@@ -88,6 +105,14 @@ class HealthState extends Equatable {
     double? dailyProtein,
     double? dailyCarbs,
     double? dailyFat,
+    double? dailyFiber,
+    double? dailySugar,
+    double? dailyFastCarbs,
+    double? dailySlowCarbs,
+    double? dailyFatSaturated,
+    double? dailyFatUnsaturated,
+    double? dailyCholesterol,
+    double? dailySodium,
     double? bmrTarget,
     bool? isFastingMode,
     List<MealEntry>? todayMeals,
@@ -103,6 +128,14 @@ class HealthState extends Equatable {
       dailyProtein: dailyProtein ?? this.dailyProtein,
       dailyCarbs: dailyCarbs ?? this.dailyCarbs,
       dailyFat: dailyFat ?? this.dailyFat,
+      dailyFiber: dailyFiber ?? this.dailyFiber,
+      dailySugar: dailySugar ?? this.dailySugar,
+      dailyFastCarbs: dailyFastCarbs ?? this.dailyFastCarbs,
+      dailySlowCarbs: dailySlowCarbs ?? this.dailySlowCarbs,
+      dailyFatSaturated: dailyFatSaturated ?? this.dailyFatSaturated,
+      dailyFatUnsaturated: dailyFatUnsaturated ?? this.dailyFatUnsaturated,
+      dailyCholesterol: dailyCholesterol ?? this.dailyCholesterol,
+      dailySodium: dailySodium ?? this.dailySodium,
       bmrTarget: bmrTarget ?? this.bmrTarget,
       isFastingMode: isFastingMode ?? this.isFastingMode,
       todayMeals: todayMeals ?? this.todayMeals,
@@ -113,7 +146,9 @@ class HealthState extends Equatable {
   @override
   List<Object?> get props => [
         status, steps, heartRate, sleepMinutes, dailyCalories, dailyProtein,
-        dailyCarbs, dailyFat, bmrTarget, isFastingMode, todayMeals, errorMessage
+        dailyCarbs, dailyFat, dailyFiber, dailySugar, dailyFastCarbs, dailySlowCarbs,
+        dailyFatSaturated, dailyFatUnsaturated, dailyCholesterol, dailySodium,
+        bmrTarget, isFastingMode, todayMeals, errorMessage
       ];
 }
 
@@ -161,11 +196,22 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
       // Load nutrition
       final meals = await _nutritionRepo.getDailyMeals(now);
       double cals = 0, pro = 0, carbs = 0, fat = 0;
+      double fiber = 0, sugar = 0, fastCarbs = 0, slowCarbs = 0;
+      double fatSat = 0, fatUnsat = 0, chol = 0, sod = 0;
+      
       for (var m in meals) {
         cals += m.calories;
         pro += m.protein;
         carbs += m.carbs;
         fat += m.fat;
+        fiber += m.fiber;
+        sugar += m.sugar;
+        fastCarbs += m.fastCarbs;
+        slowCarbs += m.slowCarbs;
+        fatSat += m.fatSaturated;
+        fatUnsat += m.fatUnsaturated;
+        chol += m.cholesterol;
+        sod += m.sodium;
       }
 
       // Load BMR
@@ -181,6 +227,14 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
         dailyProtein: pro,
         dailyCarbs: carbs,
         dailyFat: fat,
+        dailyFiber: fiber,
+        dailySugar: sugar,
+        dailyFastCarbs: fastCarbs,
+        dailySlowCarbs: slowCarbs,
+        dailyFatSaturated: fatSat,
+        dailyFatUnsaturated: fatUnsat,
+        dailyCholesterol: chol,
+        dailySodium: sod,
         bmrTarget: bmr,
         isFastingMode: isFasting,
         todayMeals: meals,

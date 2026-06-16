@@ -25,6 +25,15 @@ class MealEntry {
   late double protein;
   late double carbs;
   late double fat;
+  late double fiber;
+  late double sugar;
+  late double fastCarbs;
+  late double slowCarbs;
+  late double fatSaturated;
+  late double fatUnsaturated;
+  late double cholesterol;
+  late double sodium;
+  late double glycemicIndex;
   late DateTime timestamp;
   @enumerated
   MealType mealType = MealType.snack;
@@ -40,6 +49,15 @@ class Ingredient {
   late double protein;
   late double carbs;
   late double fat;
+  late double fiber;
+  late double sugar;
+  late double fastCarbs;
+  late double slowCarbs;
+  late double fatSaturated;
+  late double fatUnsaturated;
+  late double cholesterol;
+  late double sodium;
+  late double glycemicIndex;
   late bool isFastingCompliant;
 }
 

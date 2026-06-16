@@ -26,33 +26,34 @@ class AiScannerService {
           },
         ),
         data: {
-          'model': 'meta-llama/llama-3.2-90b-vision-instruct',
-          'response_format': { "type": "json_object" },
+          'model': 'nvidia/llama-nemotron-rerank-vl-1b-v2:free',
+          'response_format': {"type": "json_object"},
           'messages': [
             {
               'role': 'user',
               'content': [
                 {
                   'type': 'text',
-                  'text': 'Analyze this food image. Estimate its macronutrients per 100g and return ONLY a valid JSON object with EXACTLY this schema: {"name": "Food Name", "calories": 150, "protein": 10.5, "carbs": 20.0, "fat": 5.0, "isFastingCompliant": true}. Do not use markdown blocks, just the raw JSON.'
+                  'text': 'Analyze this food image. Estimate its macronutrients per 100g and return ONLY a valid JSON object with EXACTLY this schema: {"name": "Food Name", "calories": 150, "protein": 10.5, "carbs": 20.0, "fat": 5.0, "fiber": 2.0, "sugar": 5.0, "fastCarbs": 13.0, "slowCarbs": 7.0, "fatSaturated": 1.5, "fatUnsaturated": 3.5, "cholesterol": 10.0, "sodium": 120.0, "glycemicIndex": 55.0, "isFastingCompliant": true}. Do not use markdown blocks, just the raw JSON.',
                 },
                 {
                   'type': 'image_url',
-                  'image_url': {
-                    'url': 'data:image/jpeg;base64,$base64Image'
-                  }
-                }
-              ]
-            }
-          ]
-        }
+                  'image_url': {'url': 'data:image/jpeg;base64,$base64Image'},
+                },
+              ],
+            },
+          ],
+        },
       );
 
       if (response.statusCode == 200) {
         String content = response.data['choices'][0]['message']['content'];
-        content = content.replaceAll('```json', '').replaceAll('```', '').trim();
+        content = content
+            .replaceAll('```json', '')
+            .replaceAll('```', '')
+            .trim();
         final json = jsonDecode(content);
-        
+
         return Ingredient()
           ..deviceId = 'local'
           ..platform = 'ai'
@@ -61,6 +62,15 @@ class AiScannerService {
           ..protein = (json['protein'] ?? 0).toDouble()
           ..carbs = (json['carbs'] ?? 0).toDouble()
           ..fat = (json['fat'] ?? 0).toDouble()
+          ..fiber = (json['fiber'] ?? 0).toDouble()
+          ..sugar = (json['sugar'] ?? 0).toDouble()
+          ..fastCarbs = (json['fastCarbs'] ?? 0).toDouble()
+          ..slowCarbs = (json['slowCarbs'] ?? 0).toDouble()
+          ..fatSaturated = (json['fatSaturated'] ?? 0).toDouble()
+          ..fatUnsaturated = (json['fatUnsaturated'] ?? 0).toDouble()
+          ..cholesterol = (json['cholesterol'] ?? 0).toDouble()
+          ..sodium = (json['sodium'] ?? 0).toDouble()
+          ..glycemicIndex = (json['glycemicIndex'] ?? 0).toDouble()
           ..isFastingCompliant = json['isFastingCompliant'] ?? false;
       }
       return null;
