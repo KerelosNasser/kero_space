@@ -42,29 +42,31 @@ class HealthDashboardScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               // The Top Big Circle
-              SizedBox(
-                height: 200,
-                width: 200,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CircularProgressIndicator(
-                      value: caloriesRatio,
-                      strokeWidth: 15,
-                      backgroundColor: AppTheme.bgElevated,
-                      color: caloriesRatio > 1.0 ? AppTheme.accentRose : AppTheme.accentMint,
-                      strokeCap: StrokeCap.round,
-                    ),
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('${state.dailyCalories.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 36, color: AppTheme.textPrimary)),
-                          Text('/ ${state.bmrTarget.toInt()} kcal', style: const TextStyle(fontSize: 16, color: AppTheme.textSecondary)),
-                        ],
+              Center(
+                child: SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircularProgressIndicator(
+                        value: caloriesRatio,
+                        strokeWidth: 15,
+                        backgroundColor: AppTheme.bgElevated,
+                        color: caloriesRatio > 1.0 ? AppTheme.accentRose : AppTheme.accentMint,
+                        strokeCap: StrokeCap.round,
                       ),
-                    )
-                  ],
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('${state.dailyCalories.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 36, color: AppTheme.textPrimary)),
+                            Text('/ ${state.bmrTarget.toInt()} kcal', style: const TextStyle(fontSize: 16, color: AppTheme.textSecondary)),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 32),

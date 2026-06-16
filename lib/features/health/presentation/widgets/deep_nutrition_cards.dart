@@ -10,7 +10,7 @@ class DeepNutritionCards extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HealthBloc, HealthState>(
       builder: (context, state) {
-        if (state.dailyCalories == 0) return const SizedBox.shrink();
+        // Removed the dailyCalories == 0 check to always show the UI framework
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -40,7 +40,6 @@ class DeepNutritionCards extends StatelessWidget {
 
   Widget _buildCarbCard(HealthState state) {
     final double totalCarbs = state.dailyCarbs;
-    if (totalCarbs <= 0) return const SizedBox.shrink();
 
     final double fastCarbs = state.dailyFastCarbs;
     final double slowCarbs = state.dailySlowCarbs;
@@ -69,7 +68,6 @@ class DeepNutritionCards extends StatelessWidget {
 
   Widget _buildFatCard(HealthState state) {
     final double totalFat = state.dailyFat;
-    if (totalFat <= 0) return const SizedBox.shrink();
 
     return _NutritionExpandableCard(
       title: 'Fats',
