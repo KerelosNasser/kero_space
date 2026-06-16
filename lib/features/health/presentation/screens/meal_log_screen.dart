@@ -280,8 +280,9 @@ class _MealLogScreenState extends State<MealLogScreen> {
                                         )
                                         .toList(),
                                     onChanged: (val) {
-                                      if (val != null)
+                                      if (val != null) {
                                         setState(() => _selectedMealType = val);
+                                      }
                                     },
                                   ),
                                 ),
@@ -426,17 +427,15 @@ class _MealLogScreenState extends State<MealLogScreen> {
       ..protein = pro
       ..carbs = carbs
       ..fat = fat
-      ..fiber = widget.ingredient.fiber * ratio
-      ..sugar = widget.ingredient.sugar * ratio
-      ..fastCarbs = widget.ingredient.fastCarbs * ratio
-      ..slowCarbs = widget.ingredient.slowCarbs * ratio
-      ..fatSaturated = widget.ingredient.fatSaturated * ratio
-      ..fatUnsaturated = widget.ingredient.fatUnsaturated * ratio
-      ..cholesterol = widget.ingredient.cholesterol * ratio
-      ..sodium = widget.ingredient.sodium * ratio
-      ..glycemicIndex = widget
-          .ingredient
-          .glycemicIndex // index doesn't scale
+      ..fiber = (widget.ingredient.fiber.isNaN ? 0.0 : widget.ingredient.fiber) * ratio
+      ..sugar = (widget.ingredient.sugar.isNaN ? 0.0 : widget.ingredient.sugar) * ratio
+      ..fastCarbs = (widget.ingredient.fastCarbs.isNaN ? 0.0 : widget.ingredient.fastCarbs) * ratio
+      ..slowCarbs = (widget.ingredient.slowCarbs.isNaN ? 0.0 : widget.ingredient.slowCarbs) * ratio
+      ..fatSaturated = (widget.ingredient.fatSaturated.isNaN ? 0.0 : widget.ingredient.fatSaturated) * ratio
+      ..fatUnsaturated = (widget.ingredient.fatUnsaturated.isNaN ? 0.0 : widget.ingredient.fatUnsaturated) * ratio
+      ..cholesterol = (widget.ingredient.cholesterol.isNaN ? 0.0 : widget.ingredient.cholesterol) * ratio
+      ..sodium = (widget.ingredient.sodium.isNaN ? 0.0 : widget.ingredient.sodium) * ratio
+      ..glycemicIndex = widget.ingredient.glycemicIndex.isNaN ? 0.0 : widget.ingredient.glycemicIndex
       ..timestamp = time
       ..mealType = type;
 

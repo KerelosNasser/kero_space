@@ -200,18 +200,18 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
       double fatSat = 0, fatUnsat = 0, chol = 0, sod = 0;
       
       for (var m in meals) {
-        cals += m.calories;
-        pro += m.protein;
-        carbs += m.carbs;
-        fat += m.fat;
-        fiber += m.fiber;
-        sugar += m.sugar;
-        fastCarbs += m.fastCarbs;
-        slowCarbs += m.slowCarbs;
-        fatSat += m.fatSaturated;
-        fatUnsat += m.fatUnsaturated;
-        chol += m.cholesterol;
-        sod += m.sodium;
+        cals += m.calories.isNaN ? 0.0 : m.calories;
+        pro += m.protein.isNaN ? 0.0 : m.protein;
+        carbs += m.carbs.isNaN ? 0.0 : m.carbs;
+        fat += m.fat.isNaN ? 0.0 : m.fat;
+        fiber += m.fiber.isNaN ? 0.0 : m.fiber;
+        sugar += m.sugar.isNaN ? 0.0 : m.sugar;
+        fastCarbs += m.fastCarbs.isNaN ? 0.0 : m.fastCarbs;
+        slowCarbs += m.slowCarbs.isNaN ? 0.0 : m.slowCarbs;
+        fatSat += m.fatSaturated.isNaN ? 0.0 : m.fatSaturated;
+        fatUnsat += m.fatUnsaturated.isNaN ? 0.0 : m.fatUnsaturated;
+        chol += m.cholesterol.isNaN ? 0.0 : m.cholesterol;
+        sod += m.sodium.isNaN ? 0.0 : m.sodium;
       }
 
       // Load BMR
