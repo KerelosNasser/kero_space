@@ -22,7 +22,8 @@ class EGXScraperService {
       
       if (response.statusCode == 200) {
         var document = parse(response.data);
-        var priceElement = document.querySelector('.market-summary__price');
+        var priceElement = document.querySelector('.market-summary__last-price') ??
+                           document.querySelector('.market-summary__price');
         
         if (priceElement != null) {
           String priceText = priceElement.text.replaceAll(RegExp(r'[^0-9.]'), '');
