@@ -18,8 +18,8 @@ class Transaction {
   
   String? memo;
   String? vendor;
+  String? sourceName; // To link to MoneySource
   
-  /// Whether this was automatically created via Notification Listener
   bool isAutoParsed = false;
 }
 
@@ -31,6 +31,29 @@ class Budget {
   late String category;
   
   late double monthlyLimit;
+}
+
+@collection
+class MoneySource {
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true)
+  late String name;
+  
+  late double balance;
+}
+
+@collection
+class Subscription {
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true)
+  late String name;
+  
+  late double amount;
+  late String billingCycle; // 'MONTHLY', 'YEARLY'
+  late DateTime nextRenewalDate;
+  late bool isAutoRenew;
 }
 
 @collection
