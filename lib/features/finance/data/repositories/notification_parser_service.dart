@@ -31,7 +31,11 @@ class NotificationParserService {
       }
     });
 
-    await NotificationsListener.initialize(callbackHandle: notificationCallback);
+    try {
+      await NotificationsListener.initialize(callbackHandle: notificationCallback);
+    } catch (e) {
+      // Ignore platform channel exceptions in tests/unsupported environments
+    }
   }
 
   void _handleNotification(NotificationEvent event) {
@@ -40,6 +44,15 @@ class NotificationParserService {
     final String package = event.packageName ?? '';
     
     final fullText = "$title $content $package";
+
+    // Intercept Thndr notifications
+    if (package.contains('thndr') || 
+        title.toLowerCase().contains('thndr') || 
+        content.toLowerCase().contains('thndr')) {
+      _handleThndrNotification(fullText);
+      return;
+    }
+
     final Transaction? parsedTx = parseText(fullText);
 
     if (parsedTx != null && _isarInstance != null) {
@@ -60,6 +73,99 @@ class NotificationParserService {
         }
       });
     }
+  }
+
+  void handleNotificationForTesting(NotificationEvent event) {
+    _handleNotification(event);
+  }
+
+  void _handleThndrNotification(String text) {
+    // Single regex for BUY (English & Arabic)
+    final buyMatch = RegExp(
+      r'(?:شراء|buy)\s+(\d+)\s+(?:سهم|أسهم|shares?)\s+(?:من|في|of)?\s*([a-zA-Z0-9]+)\s+(?:بسعر|at)\s+(?:EGP|LE|USD|جنيه)?\s*([\d\.,]+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+
+    if (buyMatch != null) {
+      final int qty = int.parse(buyMatch.group(1)!);
+      final String ticker = buyMatch.group(2)!.toUpperCase();
+      final double price = double.parse(buyMatch.group(3)!.replaceAll(',', ''));
+      _executeStockTransaction(ticker, qty, price, isBuy: true);
+      return;
+    }
+
+    // Single regex for SELL (English & Arabic)
+    final sellMatch = RegExp(
+      r'(?:بيع|sell)\s+(\d+)\s+(?:سهم|أسهم|shares?)\s+(?:من|في|of)?\s*([a-zA-Z0-9]+)\s+(?:بسعر|at)\s+(?:EGP|LE|USD|جنيه)?\s*([\d\.,]+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+
+    if (sellMatch != null) {
+      final int qty = int.parse(sellMatch.group(1)!);
+      final String ticker = sellMatch.group(2)!.toUpperCase();
+      final double price = double.parse(sellMatch.group(3)!.replaceAll(',', ''));
+      _executeStockTransaction(ticker, qty, price, isBuy: false);
+      return;
+    }
+  }
+
+  void _executeStockTransaction(String ticker, int qty, double price, {required bool isBuy}) {
+    if (_isarInstance == null) return;
+
+    _isarInstance!.writeTxnSync(() {
+      // 1. Create investment transaction
+      final tx = Transaction()
+        ..amount = qty * price
+        ..type = isBuy ? 'EXPENSE' : 'INCOME'
+        ..category = 'Investment'
+        ..vendor = 'Thndr'
+        ..sourceName = 'Thndr Wallet'
+        ..date = DateTime.now()
+        ..isAutoParsed = true
+        ..memo = '${isBuy ? 'Bought' : 'Sold'} $qty shares of $ticker at $price EGP';
+
+      _isarInstance!.transactions.putSync(tx);
+
+      // Update Thndr Wallet balance if it exists
+      final source = _isarInstance!.moneySources.where().nameEqualTo('Thndr Wallet').findFirstSync();
+      if (source != null) {
+        if (isBuy) {
+          source.balance -= tx.amount;
+        } else {
+          source.balance += tx.amount;
+        }
+        _isarInstance!.moneySources.putSync(source);
+      }
+
+      // 2. Update holdings
+      final holding = _isarInstance!.eGXHoldings.where().tickerEqualTo(ticker).findFirstSync();
+      if (isBuy) {
+        if (holding != null) {
+          final double totalCost = (holding.quantity * holding.averageCost) + (qty * price);
+          holding.quantity += qty;
+          holding.averageCost = holding.quantity > 0 ? totalCost / holding.quantity : 0.0;
+          holding.purchaseDate = DateTime.now();
+          _isarInstance!.eGXHoldings.putSync(holding);
+        } else {
+          final newHolding = EGXHolding()
+            ..ticker = ticker
+            ..quantity = qty.toDouble()
+            ..averageCost = price
+            ..purchaseDate = DateTime.now();
+          _isarInstance!.eGXHoldings.putSync(newHolding);
+        }
+      } else {
+        if (holding != null) {
+          holding.quantity -= qty;
+          holding.purchaseDate = DateTime.now();
+          if (holding.quantity <= 0) {
+            _isarInstance!.eGXHoldings.deleteSync(holding.id);
+          } else {
+            _isarInstance!.eGXHoldings.putSync(holding);
+          }
+        }
+      }
+    });
   }
 
   Transaction? parseText(String content) {

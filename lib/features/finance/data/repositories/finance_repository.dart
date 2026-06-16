@@ -57,6 +57,13 @@ class FinanceRepository {
 
   Future<void> addSubscription(Subscription subscription) async {
     await _isar.writeTxn(() async {
+      // If inserting a new subscription, check if one with the same name already exists
+      if (subscription.id == Isar.autoIncrement) {
+        final existing = await _isar.subscriptions.where().nameEqualTo(subscription.name).findFirst();
+        if (existing != null) {
+          subscription.id = existing.id;
+        }
+      }
       await _isar.subscriptions.put(subscription);
     });
   }
