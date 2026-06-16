@@ -43,6 +43,8 @@ class IsarService {
         UserProfileSchema,
         TransactionSchema,
         BudgetSchema,
+        MoneySourceSchema,
+        SubscriptionSchema,
         EGXHoldingSchema,
         EGXPriceSnapshotSchema,
         EGXWatchlistSchema,
