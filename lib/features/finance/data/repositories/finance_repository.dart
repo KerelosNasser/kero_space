@@ -9,6 +9,19 @@ class FinanceRepository {
   Future<void> addTransaction(Transaction transaction) async {
     await _isar.writeTxn(() async {
       await _isar.transactions.put(transaction);
+      
+      // Update MoneySource balance if linked
+      if (transaction.sourceName != null) {
+        final source = await _isar.moneySources.where().nameEqualTo(transaction.sourceName!).findFirst();
+        if (source != null) {
+          if (transaction.type == 'INCOME') {
+            source.balance += transaction.amount;
+          } else if (transaction.type == 'EXPENSE') {
+            source.balance -= transaction.amount;
+          }
+          await _isar.moneySources.put(source);
+        }
+      }
     });
   }
 
@@ -18,6 +31,40 @@ class FinanceRepository {
         .sortByDateDesc()
         .limit(limit)
         .findAll();
+  }
+
+  // MoneySource CRUD
+  Future<List<MoneySource>> getAllMoneySources() async {
+    return await _isar.moneySources.where().findAll();
+  }
+
+  Future<void> addMoneySource(MoneySource source) async {
+    await _isar.writeTxn(() async {
+      await _isar.moneySources.put(source);
+    });
+  }
+
+  Future<void> deleteMoneySource(int id) async {
+    await _isar.writeTxn(() async {
+      await _isar.moneySources.delete(id);
+    });
+  }
+
+  // Subscription CRUD
+  Future<List<Subscription>> getAllSubscriptions() async {
+    return await _isar.subscriptions.where().findAll();
+  }
+
+  Future<void> addSubscription(Subscription subscription) async {
+    await _isar.writeTxn(() async {
+      await _isar.subscriptions.put(subscription);
+    });
+  }
+
+  Future<void> deleteSubscription(int id) async {
+    await _isar.writeTxn(() async {
+      await _isar.subscriptions.delete(id);
+    });
   }
 
   Future<void> setBudget(String category, double limit) async {
@@ -35,7 +82,6 @@ class FinanceRepository {
     return await _isar.budgets.where().findAll();
   }
   
-  // Watchlist
   Future<void> addToWatchlist(String ticker, String name) async {
     await _isar.writeTxn(() async {
       final existing = await _isar.eGXWatchlists.where().tickerEqualTo(ticker).findFirst();
@@ -55,7 +101,6 @@ class FinanceRepository {
     return await _isar.eGXWatchlists.where().findAll();
   }
 
-  // Career Task (Kanban)
   Future<void> addCareerTask(CareerTask task) async {
     await _isar.writeTxn(() async {
       await _isar.careerTasks.put(task);
