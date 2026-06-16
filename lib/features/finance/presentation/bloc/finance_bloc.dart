@@ -87,15 +87,68 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
         existingAdvice = (state as FinanceLoaded).aiAdvice;
       }
 
+      // Query database caches to emit immediately and prevent loading flicker
+      Map<String, double> prices = {};
+      Map<String, double> dailyChanges = {};
+      Map<String, double> monthlyChanges = {};
+      Map<String, String> sentiments = {};
+      Map<String, List<double>> histories = {};
+
+      for (final stock in watchlist) {
+        final history = await _financeRepository.getSnapshotsForTicker(stock.ticker, limit: 30);
+        if (history.isNotEmpty) {
+          final last = history.first;
+          final priceHistory = history.map((s) => s.currentPrice).toList().reversed.toList();
+          
+          prices[stock.ticker] = last.currentPrice;
+          dailyChanges[stock.ticker] = last.changePercentage;
+          histories[stock.ticker] = priceHistory;
+
+          // 7-day Simple Moving Average (SMA)
+          double sma = last.currentPrice;
+          if (priceHistory.length >= 3) {
+            sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
+          }
+
+          // 30-day/Monthly change estimation
+          double monthlyDiff = 0.0;
+          if (priceHistory.length >= 5) {
+            final oldPrice = priceHistory.first;
+            monthlyDiff = oldPrice > 0 ? ((last.currentPrice - oldPrice) / oldPrice) * 100 : 0.0;
+          } else {
+            monthlyDiff = last.changePercentage; // fallback
+          }
+
+          // Sentiment indicator
+          String sentiment = 'Neutral';
+          if (priceHistory.length >= 3) {
+            if (last.changeAmount > 0 && last.currentPrice > sma) {
+              sentiment = 'Strong Bullish';
+            } else if (last.changeAmount > 0 && last.currentPrice <= sma) {
+              sentiment = 'Weak Bullish';
+            } else if (last.changeAmount < 0 && last.currentPrice < sma) {
+              sentiment = 'Strong Bearish';
+            } else if (last.changeAmount < 0 && last.currentPrice >= sma) {
+              sentiment = 'Weak Bearish';
+            }
+          } else {
+            sentiment = last.changeAmount >= 0 ? 'Bullish' : 'Bearish'; // simple trend fallback
+          }
+
+          monthlyChanges[stock.ticker] = monthlyDiff;
+          sentiments[stock.ticker] = sentiment;
+        }
+      }
+
       emit(FinanceLoaded(
         transactions: transactions,
         budgets: budgets,
         watchlist: watchlist,
-        tickerPrices: const {},
-        tickerDailyChanges: const {},
-        tickerMonthlyChanges: const {},
-        tickerSentiments: const {},
-        tickerHistories: const {},
+        tickerPrices: prices,
+        tickerDailyChanges: dailyChanges,
+        tickerMonthlyChanges: monthlyChanges,
+        tickerSentiments: sentiments,
+        tickerHistories: histories,
         totalIncome: income,
         totalExpense: expense,
         moneySources: sources,
@@ -104,7 +157,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       ));
 
       if (watchlist.isNotEmpty) {
-        add(RefreshStockPrices());
+        add(const RefreshStockPrices(force: false));
       }
       
       if (existingAdvice == null) {
@@ -127,57 +180,143 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       Map<String, List<double>> histories = {};
 
       for (final stock in currentState.watchlist) {
-        final result = await _egxScraperService.fetchPrice(stock.ticker);
-        if (result != null) {
-          // Save snapshot to database
-          final snapshot = EGXPriceSnapshot()
-            ..ticker = stock.ticker
-            ..currentPrice = result.price
-            ..changeAmount = result.changeAmount
-            ..changePercentage = result.changePercentage
-            ..timestamp = DateTime.now();
-          await _financeRepository.savePriceSnapshot(snapshot);
-
-          // Get price history
-          final history = await _financeRepository.getSnapshotsForTicker(stock.ticker, limit: 30);
-          final priceHistory = history.map((s) => s.currentPrice).toList().reversed.toList();
-          histories[stock.ticker] = priceHistory;
-
-          // 7-day Simple Moving Average (SMA)
-          double sma = result.price;
-          if (priceHistory.length >= 3) {
-            sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
-          }
-
-          // 30-day/Monthly change estimation
-          double monthlyDiff = 0.0;
-          if (priceHistory.length >= 5) {
-            final oldPrice = priceHistory.first;
-            monthlyDiff = oldPrice > 0 ? ((result.price - oldPrice) / oldPrice) * 100 : 0.0;
-          } else {
-            monthlyDiff = result.changePercentage; // fallback
-          }
-
-          // Sentiment indicator
-          String sentiment = 'Neutral';
-          if (priceHistory.length >= 3) {
-            if (result.changeAmount > 0 && result.price > sma) {
-              sentiment = 'Strong Bullish';
-            } else if (result.changeAmount > 0 && result.price <= sma) {
-              sentiment = 'Weak Bullish';
-            } else if (result.changeAmount < 0 && result.price < sma) {
-              sentiment = 'Strong Bearish';
-            } else if (result.changeAmount < 0 && result.price >= sma) {
-              sentiment = 'Weak Bearish';
+        // Retrieve local snapshots to check cache freshness
+        final history = await _financeRepository.getSnapshotsForTicker(stock.ticker, limit: 30);
+        
+        bool needScrape = true;
+        if (!event.force && history.isNotEmpty) {
+          final lastSnapshot = history.first;
+          if (_isCacheValid(lastSnapshot.timestamp)) {
+            needScrape = false;
+            
+            // Populate maps from cache
+            final priceHistory = history.map((s) => s.currentPrice).toList().reversed.toList();
+            histories[stock.ticker] = priceHistory;
+            prices[stock.ticker] = lastSnapshot.currentPrice;
+            dailyChanges[stock.ticker] = lastSnapshot.changePercentage;
+            
+            double sma = lastSnapshot.currentPrice;
+            if (priceHistory.length >= 3) {
+              sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
             }
-          } else {
-            sentiment = result.changeAmount >= 0 ? 'Bullish' : 'Bearish'; // simple trend fallback
+            double monthlyDiff = 0.0;
+            if (priceHistory.length >= 5) {
+              final oldPrice = priceHistory.first;
+              monthlyDiff = oldPrice > 0 ? ((lastSnapshot.currentPrice - oldPrice) / oldPrice) * 100 : 0.0;
+            } else {
+              monthlyDiff = lastSnapshot.changePercentage;
+            }
+            monthlyChanges[stock.ticker] = monthlyDiff;
+            
+            String sentiment = 'Neutral';
+            if (priceHistory.length >= 3) {
+              if (lastSnapshot.changeAmount > 0 && lastSnapshot.currentPrice > sma) {
+                sentiment = 'Strong Bullish';
+              } else if (lastSnapshot.changeAmount > 0 && lastSnapshot.currentPrice <= sma) {
+                sentiment = 'Weak Bullish';
+              } else if (lastSnapshot.changeAmount < 0 && lastSnapshot.currentPrice < sma) {
+                sentiment = 'Strong Bearish';
+              } else if (lastSnapshot.changeAmount < 0 && lastSnapshot.currentPrice >= sma) {
+                sentiment = 'Weak Bearish';
+              }
+            } else {
+              sentiment = lastSnapshot.changeAmount >= 0 ? 'Bullish' : 'Bearish';
+            }
+            sentiments[stock.ticker] = sentiment;
           }
+        }
 
-          prices[stock.ticker] = result.price;
-          dailyChanges[stock.ticker] = result.changePercentage;
-          monthlyChanges[stock.ticker] = monthlyDiff;
-          sentiments[stock.ticker] = sentiment;
+        if (needScrape) {
+          final result = await _egxScraperService.fetchPrice(stock.ticker);
+          if (result != null) {
+            // Save snapshot to database
+            final snapshot = EGXPriceSnapshot()
+              ..ticker = stock.ticker
+              ..currentPrice = result.price
+              ..changeAmount = result.changeAmount
+              ..changePercentage = result.changePercentage
+              ..timestamp = DateTime.now();
+            await _financeRepository.savePriceSnapshot(snapshot);
+
+            // Re-fetch history to include new snapshot
+            final updatedHistory = await _financeRepository.getSnapshotsForTicker(stock.ticker, limit: 30);
+            final priceHistory = updatedHistory.map((s) => s.currentPrice).toList().reversed.toList();
+            histories[stock.ticker] = priceHistory;
+
+            // 7-day Simple Moving Average (SMA)
+            double sma = result.price;
+            if (priceHistory.length >= 3) {
+              sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
+            }
+
+            // 30-day/Monthly change estimation
+            double monthlyDiff = 0.0;
+            if (priceHistory.length >= 5) {
+              final oldPrice = priceHistory.first;
+              monthlyDiff = oldPrice > 0 ? ((result.price - oldPrice) / oldPrice) * 100 : 0.0;
+            } else {
+              monthlyDiff = result.changePercentage; // fallback
+            }
+
+            // Sentiment indicator
+            String sentiment = 'Neutral';
+            if (priceHistory.length >= 3) {
+              if (result.changeAmount > 0 && result.price > sma) {
+                sentiment = 'Strong Bullish';
+              } else if (result.changeAmount > 0 && result.price <= sma) {
+                sentiment = 'Weak Bullish';
+              } else if (result.changeAmount < 0 && result.price < sma) {
+                sentiment = 'Strong Bearish';
+              } else if (result.changeAmount < 0 && result.price >= sma) {
+                sentiment = 'Weak Bearish';
+              }
+            } else {
+              sentiment = result.changeAmount >= 0 ? 'Bullish' : 'Bearish'; // simple trend fallback
+            }
+
+            prices[stock.ticker] = result.price;
+            dailyChanges[stock.ticker] = result.changePercentage;
+            monthlyChanges[stock.ticker] = monthlyDiff;
+            sentiments[stock.ticker] = sentiment;
+          } else {
+            // If scrape failed but we have history, preserve it
+            if (history.isNotEmpty) {
+              final lastSnapshot = history.first;
+              final priceHistory = history.map((s) => s.currentPrice).toList().reversed.toList();
+              histories[stock.ticker] = priceHistory;
+              prices[stock.ticker] = lastSnapshot.currentPrice;
+              dailyChanges[stock.ticker] = lastSnapshot.changePercentage;
+              
+              double sma = lastSnapshot.currentPrice;
+              if (priceHistory.length >= 3) {
+                sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
+              }
+              double monthlyDiff = 0.0;
+              if (priceHistory.length >= 5) {
+                final oldPrice = priceHistory.first;
+                monthlyDiff = oldPrice > 0 ? ((lastSnapshot.currentPrice - oldPrice) / oldPrice) * 100 : 0.0;
+              } else {
+                monthlyDiff = lastSnapshot.changePercentage;
+              }
+              monthlyChanges[stock.ticker] = monthlyDiff;
+              
+              String sentiment = 'Neutral';
+              if (priceHistory.length >= 3) {
+                if (lastSnapshot.changeAmount > 0 && lastSnapshot.currentPrice > sma) {
+                  sentiment = 'Strong Bullish';
+                } else if (lastSnapshot.changeAmount > 0 && lastSnapshot.currentPrice <= sma) {
+                  sentiment = 'Weak Bullish';
+                } else if (lastSnapshot.changeAmount < 0 && lastSnapshot.currentPrice < sma) {
+                  sentiment = 'Strong Bearish';
+                } else if (lastSnapshot.changeAmount < 0 && lastSnapshot.currentPrice >= sma) {
+                  sentiment = 'Weak Bearish';
+                }
+              } else {
+                sentiment = lastSnapshot.changeAmount >= 0 ? 'Bullish' : 'Bearish';
+              }
+              sentiments[stock.ticker] = sentiment;
+            }
+          }
         }
       }
 
@@ -357,5 +496,43 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     } catch (e) {
       debugPrint('AI Advice generation failed: $e');
     }
+  }
+
+  bool _isCacheValid(DateTime lastScrapeTime) {
+    final now = DateTime.now();
+    
+    // Convert to Cairo Time (UTC+3)
+    final nowCairo = now.toUtc().add(const Duration(hours: 3));
+    final lastCairo = lastScrapeTime.toUtc().add(const Duration(hours: 3));
+    
+    // Check if same day
+    if (lastCairo.year == nowCairo.year && 
+        lastCairo.month == nowCairo.month && 
+        lastCairo.day == nowCairo.day) {
+      
+      // If we scraped after 2:30 PM (14:30) Cairo time close, cache is fully valid
+      if (lastCairo.hour > 14 || (lastCairo.hour == 14 && lastCairo.minute >= 30)) {
+        return true;
+      }
+      
+      // If market is still open/running, avoid spamming: allow 15-minute cache
+      if (nowCairo.difference(lastCairo).inMinutes < 15) {
+        return true;
+      }
+    }
+    
+    // If weekend (Friday or Saturday) in Cairo, check if last scrape was after Thursday 2:30 PM close
+    if (nowCairo.weekday == DateTime.friday || nowCairo.weekday == DateTime.saturday) {
+      final daysToSubtract = nowCairo.weekday == DateTime.friday ? 1 : 2;
+      final lastThursdayClose = DateTime(nowCairo.year, nowCairo.month, nowCairo.day)
+          .subtract(Duration(days: daysToSubtract))
+          .add(const Duration(hours: 14, minutes: 30));
+      
+      if (lastCairo.isAfter(lastThursdayClose)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 }

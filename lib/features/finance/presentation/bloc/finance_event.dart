@@ -9,7 +9,14 @@ abstract class FinanceEvent extends Equatable {
 
 class LoadFinanceData extends FinanceEvent {}
 
-class RefreshStockPrices extends FinanceEvent {}
+class RefreshStockPrices extends FinanceEvent {
+  final bool force;
+
+  const RefreshStockPrices({this.force = false});
+
+  @override
+  List<Object?> get props => [force];
+}
 
 class AddTransactionEvent extends FinanceEvent {
   final double amount;

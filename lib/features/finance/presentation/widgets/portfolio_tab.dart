@@ -23,7 +23,7 @@ class PortfolioTab extends StatelessWidget {
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async {
-              context.read<FinanceBloc>().add(RefreshStockPrices());
+              context.read<FinanceBloc>().add(const RefreshStockPrices(force: true));
               await Future.delayed(const Duration(seconds: 1));
             },
             child: state.watchlist.isEmpty
@@ -38,9 +38,9 @@ class PortfolioTab extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.85,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.82,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                     ),
                     itemCount: state.watchlist.length,
                     itemBuilder: (context, index) {
@@ -60,115 +60,187 @@ class PortfolioTab extends StatelessWidget {
                         spots.add(FlSpot(i.toDouble(), priceHistory[i]));
                       }
 
-                      return Card(
-                        color: AppTheme.bgElevated,
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      stock.ticker,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, size: 16, color: AppTheme.accentRose),
-                                    onPressed: () {
-                                      context.read<FinanceBloc>().add(RemoveFromWatchlistEvent(stock.ticker));
-                                    },
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  )
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                price != null ? '${price.toStringAsFixed(2)} EGP' : 'Scraping...',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: trendColor),
-                              ),
-                              Text(
-                                '${isUp ? "+" : ""}${dailyPct.toStringAsFixed(2)}%',
-                                style: TextStyle(fontSize: 12, color: trendColor, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 6),
-                              
-                              // Monthly change indicator
-                              Text(
-                                'Monthly: ${monthlyPct >= 0 ? "+" : ""}${monthlyPct.toStringAsFixed(1)}%',
-                                style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
-                              ),
-                              const SizedBox(height: 6),
-
-                              // Sentiment Badge
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: sentiment.contains('Bullish') 
-                                      ? AppTheme.accentMint.withValues(alpha: 0.15) 
-                                      : sentiment.contains('Bearish')
-                                          ? AppTheme.accentRose.withValues(alpha: 0.15)
-                                          : Colors.grey.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(
-                                    color: sentiment.contains('Bullish') 
-                                        ? AppTheme.accentMint 
-                                        : sentiment.contains('Bearish')
-                                            ? AppTheme.accentRose
-                                            : Colors.grey,
-                                    width: 0.5,
-                                  ),
-                                ),
-                                child: Text(
-                                  sentiment,
-                                  style: TextStyle(
-                                    fontSize: 9, 
-                                    fontWeight: FontWeight.bold,
-                                    color: sentiment.contains('Bullish') 
-                                        ? AppTheme.accentMint 
-                                        : sentiment.contains('Bearish')
-                                            ? AppTheme.accentRose
-                                            : Colors.grey,
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-
-                              // Mini Sparkline Graph
-                              if (spots.length >= 2)
-                                SizedBox(
-                                  height: 40,
-                                  child: LineChart(
-                                    LineChartData(
-                                      gridData: const FlGridData(show: false),
-                                      titlesData: const FlTitlesData(show: false),
-                                      borderData: FlBorderData(show: false),
-                                      lineBarsData: [
-                                        LineChartBarData(
-                                          spots: spots,
-                                          isCurved: true,
-                                          color: trendColor,
-                                          barWidth: 2,
-                                          dotData: const FlDotData(show: false),
-                                          belowBarData: BarAreaData(show: false),
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.bgElevated,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header: Ticker & Delete
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        stock.ticker,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          letterSpacing: 0.5,
                                         ),
-                                      ],
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                  ),
-                                )
-                              else
-                                const SizedBox(
-                                  height: 40,
-                                  child: Center(
-                                    child: Text('Gathering chart data...', style: TextStyle(fontSize: 8, color: AppTheme.textSecondary)),
+                                    GestureDetector(
+                                      onTap: () {
+                                        context.read<FinanceBloc>().add(RemoveFromWatchlistEvent(stock.ticker));
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.05),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 14,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                
+                                // Price
+                                Text(
+                                  price != null ? price.toStringAsFixed(2) : 'Scraping...',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 20,
+                                    color: trendColor,
                                   ),
                                 ),
-                            ],
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${isUp ? "▲" : "▼"} ${dailyPct.abs().toStringAsFixed(2)}%',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: trendColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'EGP',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppTheme.textSecondary.withValues(alpha: 0.8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+
+                                // Trends Row: Monthly & Sentiment
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      '30D: ${monthlyPct >= 0 ? "+" : ""}${monthlyPct.toStringAsFixed(1)}%',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: monthlyPct >= 0 ? AppTheme.accentMint : AppTheme.accentRose,
+                                      ),
+                                    ),
+                                    
+                                    // Sentiment Badge
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: sentiment.contains('Bullish') 
+                                            ? AppTheme.accentMint.withValues(alpha: 0.1) 
+                                            : sentiment.contains('Bearish')
+                                                ? AppTheme.accentRose.withValues(alpha: 0.1)
+                                                : Colors.grey.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: sentiment.contains('Bullish') 
+                                              ? AppTheme.accentMint.withValues(alpha: 0.3) 
+                                              : sentiment.contains('Bearish')
+                                                  ? AppTheme.accentRose.withValues(alpha: 0.3)
+                                                  : Colors.grey.withValues(alpha: 0.3),
+                                          width: 0.5,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        sentiment,
+                                        style: TextStyle(
+                                          fontSize: 8, 
+                                          fontWeight: FontWeight.bold,
+                                          color: sentiment.contains('Bullish') 
+                                              ? AppTheme.accentMint 
+                                              : sentiment.contains('Bearish')
+                                                  ? AppTheme.accentRose
+                                                  : Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Spacer(),
+
+                                // Mini Sparkline Graph
+                                if (spots.length >= 2)
+                                  SizedBox(
+                                    height: 36,
+                                    child: LineChart(
+                                      LineChartData(
+                                        gridData: const FlGridData(show: false),
+                                        titlesData: const FlTitlesData(show: false),
+                                        borderData: FlBorderData(show: false),
+                                        lineBarsData: [
+                                          LineChartBarData(
+                                            spots: spots,
+                                            isCurved: true,
+                                            color: trendColor,
+                                            barWidth: 2,
+                                            dotData: const FlDotData(show: false),
+                                            belowBarData: BarAreaData(
+                                              show: true,
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  trendColor.withValues(alpha: 0.15),
+                                                  trendColor.withValues(alpha: 0.0)
+                                                ],
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  const SizedBox(
+                                    height: 36,
+                                    child: Center(
+                                      child: Text(
+                                        'Gathering chart data...', 
+                                        style: TextStyle(fontSize: 8, color: AppTheme.textSecondary),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       );

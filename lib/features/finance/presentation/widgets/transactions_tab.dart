@@ -177,7 +177,7 @@ class TransactionsTab extends StatelessWidget {
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (innerContext, setState) {
             return AlertDialog(
               title: const Text('Log Transaction'),
               content: Column(
@@ -270,7 +270,7 @@ class TransactionsTab extends StatelessWidget {
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (innerContext, setState) {
             return AlertDialog(
               title: const Text('Configure Budget'),
               content: Column(
