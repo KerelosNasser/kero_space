@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'core/data/isar_service.dart';
 import 'core/di/injection.dart';
 import 'package:kero_space/features/finance/data/repositories/notification_parser_service.dart';
+import 'package:kero_space/features/finance/data/services/finance_worker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'dart:io' show Platform;
@@ -45,6 +46,10 @@ void main() async {
 
   // Set up dependency injection (GetIt)
   setupLocator();
+
+  // Initialize background scraper worker
+  FinanceWorker.initializeWorkmanager();
+  FinanceWorker.scheduleDailyRefresh();
 
   // Initialize background notification parser
   await getIt<NotificationParserService>().initialize(IsarService.instance);
