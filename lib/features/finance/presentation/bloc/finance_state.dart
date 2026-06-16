@@ -11,21 +11,6 @@ class FinanceInitial extends FinanceState {}
 
 class FinanceLoading extends FinanceState {}
 
-class CorrelationDataPoint extends Equatable {
-  final DateTime date;
-  final double cumulativeWealth;
-  final double dailyCaloricSurplus;
-
-  const CorrelationDataPoint({
-    required this.date,
-    required this.cumulativeWealth,
-    required this.dailyCaloricSurplus,
-  });
-
-  @override
-  List<Object?> get props => [date, cumulativeWealth, dailyCaloricSurplus];
-}
-
 class FinanceLoaded extends FinanceState {
   final List<Transaction> transactions;
   final List<Budget> budgets;
@@ -33,8 +18,9 @@ class FinanceLoaded extends FinanceState {
   final Map<String, double> tickerPrices;
   final double totalIncome;
   final double totalExpense;
-  final List<CareerTask> careerTasks;
-  final List<CorrelationDataPoint> correlationTimeline;
+  final List<MoneySource> moneySources;
+  final List<Subscription> subscriptions;
+  final String? aiAdvice;
 
   const FinanceLoaded({
     required this.transactions,
@@ -43,8 +29,9 @@ class FinanceLoaded extends FinanceState {
     required this.tickerPrices,
     required this.totalIncome,
     required this.totalExpense,
-    required this.careerTasks,
-    required this.correlationTimeline,
+    required this.moneySources,
+    required this.subscriptions,
+    this.aiAdvice,
   });
 
   @override
@@ -55,8 +42,9 @@ class FinanceLoaded extends FinanceState {
         tickerPrices,
         totalIncome,
         totalExpense,
-        careerTasks,
-        correlationTimeline,
+        moneySources,
+        subscriptions,
+        aiAdvice,
       ];
 }
 

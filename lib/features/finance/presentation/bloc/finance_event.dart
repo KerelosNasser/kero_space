@@ -16,16 +16,18 @@ class AddTransactionEvent extends FinanceEvent {
   final String type;
   final String category;
   final String? vendor;
+  final String? sourceName;
 
   const AddTransactionEvent({
     required this.amount,
     required this.type,
     required this.category,
     this.vendor,
+    this.sourceName,
   });
 
   @override
-  List<Object?> get props => [amount, type, category, vendor];
+  List<Object?> get props => [amount, type, category, vendor, sourceName];
 }
 
 class SetBudgetEvent extends FinanceEvent {
@@ -57,30 +59,60 @@ class RemoveFromWatchlistEvent extends FinanceEvent {
   List<Object?> get props => [ticker];
 }
 
-class AddCareerTaskEvent extends FinanceEvent {
-  final CareerTask task;
+class AddMoneySourceEvent extends FinanceEvent {
+  final String name;
+  final double balance;
 
-  const AddCareerTaskEvent(this.task);
-
-  @override
-  List<Object?> get props => [task];
-}
-
-class UpdateCareerTaskStatusEvent extends FinanceEvent {
-  final int taskId;
-  final String newStatus;
-
-  const UpdateCareerTaskStatusEvent(this.taskId, this.newStatus);
+  const AddMoneySourceEvent(this.name, this.balance);
 
   @override
-  List<Object?> get props => [taskId, newStatus];
+  List<Object?> get props => [name, balance];
 }
 
-class DeleteCareerTaskEvent extends FinanceEvent {
-  final int taskId;
+class DeleteMoneySourceEvent extends FinanceEvent {
+  final int id;
 
-  const DeleteCareerTaskEvent(this.taskId);
+  const DeleteMoneySourceEvent(this.id);
 
   @override
-  List<Object?> get props => [taskId];
+  List<Object?> get props => [id];
 }
+
+class AddSubscriptionEvent extends FinanceEvent {
+  final String name;
+  final double amount;
+  final String billingCycle;
+  final DateTime nextRenewalDate;
+  final bool isAutoRenew;
+
+  const AddSubscriptionEvent({
+    required this.name,
+    required this.amount,
+    required this.billingCycle,
+    required this.nextRenewalDate,
+    required this.isAutoRenew,
+  });
+
+  @override
+  List<Object?> get props => [name, amount, billingCycle, nextRenewalDate, isAutoRenew];
+}
+
+class DeleteSubscriptionEvent extends FinanceEvent {
+  final int id;
+
+  const DeleteSubscriptionEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class AIQuickLogEvent extends FinanceEvent {
+  final String text;
+
+  const AIQuickLogEvent(this.text);
+
+  @override
+  List<Object?> get props => [text];
+}
+
+class RefreshAIAdviceEvent extends FinanceEvent {}
