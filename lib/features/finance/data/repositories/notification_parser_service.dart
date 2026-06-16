@@ -22,8 +22,6 @@ class NotificationParserService {
 
   Future<void> initialize(Isar isar) async {
     _isarInstance = isar;
-    
-    // Register port for background isolate communication
     _port = ReceivePort();
     IsolateNameServer.registerPortWithName(_port!.sendPort, _isolateName);
     
@@ -33,39 +31,39 @@ class NotificationParserService {
       }
     });
 
-    // Start listening
     await NotificationsListener.initialize(callbackHandle: notificationCallback);
   }
-
-
 
   void _handleNotification(NotificationEvent event) {
     final String content = event.text ?? '';
     final String title = event.title ?? '';
     final String package = event.packageName ?? '';
     
-    // Only parse if it comes from known financial packages (this can be expanded)
-    if (!package.contains('banking') && 
-        !package.contains('vodafone') && 
-        !package.contains('instapay') &&
-        !package.contains('cib')) {
-      // For now, let's just run regex against everything if no specific package filtering is preferred
-      // but in production filtering by package saves processing.
-    }
-
-    final fullText = "$title $content";
-    final Transaction? parsedTx = _parseText(fullText);
+    final fullText = "$title $content $package";
+    final Transaction? parsedTx = parseText(fullText);
 
     if (parsedTx != null && _isarInstance != null) {
-      // Save the transaction to DB automatically
       _isarInstance!.writeTxnSync(() {
         _isarInstance!.transactions.putSync(parsedTx);
+        
+        // Auto-update matched MoneySource balance if it exists
+        if (parsedTx.sourceName != null) {
+          final source = _isarInstance!.moneySources.where().nameEqualTo(parsedTx.sourceName!).findFirstSync();
+          if (source != null) {
+            if (parsedTx.type == 'INCOME') {
+              source.balance += parsedTx.amount;
+            } else {
+              source.balance -= parsedTx.amount;
+            }
+            _isarInstance!.moneySources.putSync(source);
+          }
+        }
       });
     }
   }
 
-  Transaction? _parseText(String content) {
-    // 1. Vodafone Cash patterns
+  Transaction? parseText(String content) {
+    // 1. Vodafone Cash
     final vfReceiveMatch = RegExp(r'received\s+([\d,\.]+)\s*EGP\s+from\s+([\d\w]+)', caseSensitive: false).firstMatch(content);
     if (vfReceiveMatch != null) {
       return Transaction()
@@ -73,6 +71,7 @@ class NotificationParserService {
         ..vendor = vfReceiveMatch.group(2)
         ..type = 'INCOME'
         ..category = _autoCategorize(vfReceiveMatch.group(2)!)
+        ..sourceName = 'Vodafone Cash'
         ..date = DateTime.now()
         ..isAutoParsed = true;
     }
@@ -84,23 +83,51 @@ class NotificationParserService {
         ..vendor = vfSendMatch.group(2)
         ..type = 'EXPENSE'
         ..category = _autoCategorize(vfSendMatch.group(2)!)
+        ..sourceName = 'Vodafone Cash'
         ..date = DateTime.now()
         ..isAutoParsed = true;
     }
 
-    // 2. CIB Pattern
-    final cibMatch = RegExp(r'purchase\s+of\s+EGP\s+([\d,\.]+)\s+from\s+(.*?)\s+on\s+card', caseSensitive: false).firstMatch(content);
-    if (cibMatch != null) {
+    // 2. QNB
+    final qnbMatch = RegExp(r'purchase\s+transaction\s+done\s+on\s+card\s+\d+\s+with\s+amount\s+EGP\s+([\d,\.]+)\s+at\s+(.*?)(?=\s+on|\.|$)', caseSensitive: false).firstMatch(content);
+    if (qnbMatch != null) {
       return Transaction()
-        ..amount = double.parse(cibMatch.group(1)!.replaceAll(',', ''))
-        ..vendor = cibMatch.group(2)
+        ..amount = double.parse(qnbMatch.group(1)!.replaceAll(',', ''))
+        ..vendor = qnbMatch.group(2)
         ..type = 'EXPENSE'
-        ..category = _autoCategorize(cibMatch.group(2)!)
+        ..category = _autoCategorize(qnbMatch.group(2)!)
+        ..sourceName = 'QNB'
         ..date = DateTime.now()
         ..isAutoParsed = true;
     }
 
-    // 3. Instapay pattern
+    // 3. NBE
+    final nbeMatch = RegExp(r'purchase\s+transaction\s+of\s+EGP\s+([\d,\.]+)\s+from\s+(.*?)\s+using\s+card', caseSensitive: false).firstMatch(content);
+    if (nbeMatch != null) {
+      return Transaction()
+        ..amount = double.parse(nbeMatch.group(1)!.replaceAll(',', ''))
+        ..vendor = nbeMatch.group(2)
+        ..type = 'EXPENSE'
+        ..category = _autoCategorize(nbeMatch.group(2)!)
+        ..sourceName = 'NBE'
+        ..date = DateTime.now()
+        ..isAutoParsed = true;
+    }
+
+    // 4. Bybit Card
+    final bybitMatch = RegExp(r'Bybit\s+Card:\s+Transaction\s+of\s+([\d,\.]+)\s+(?:USD|EUR|EGP)\s+successful\s+at\s+(.*?)(?=\.|$)', caseSensitive: false).firstMatch(content);
+    if (bybitMatch != null) {
+      return Transaction()
+        ..amount = double.parse(bybitMatch.group(1)!.replaceAll(',', ''))
+        ..vendor = bybitMatch.group(2)
+        ..type = 'EXPENSE'
+        ..category = _autoCategorize(bybitMatch.group(2)!)
+        ..sourceName = 'Bybit'
+        ..date = DateTime.now()
+        ..isAutoParsed = true;
+    }
+
+    // 5. Instapay
     final instapayMatch = RegExp(r'successfully\s+sent\s+(?:EGP|LE)\s*([\d,\.]+)\s+to\s+(.*?)(?=\s+via|\.|$)', caseSensitive: false).firstMatch(content);
     if (instapayMatch != null) {
       return Transaction()
@@ -108,6 +135,7 @@ class NotificationParserService {
         ..vendor = instapayMatch.group(2)
         ..type = 'EXPENSE'
         ..category = _autoCategorize(instapayMatch.group(2)!)
+        ..sourceName = 'Instapay'
         ..date = DateTime.now()
         ..isAutoParsed = true;
     }
