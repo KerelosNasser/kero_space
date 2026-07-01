@@ -18,74 +18,87 @@ class _CalorieConfigScreenState extends State<CalorieConfigScreen> {
   int age = 25;
   double activityLevel = 1.55; // Moderate
 
+  late final List<Widget> _formFields;
+
+  @override
+  void initState() {
+    super.initState();
+    _buildFormFields();
+  }
+
+  void _buildFormFields() {
+    _formFields = [
+      TextFormField(
+        initialValue: height.toString(),
+        decoration: const InputDecoration(labelText: 'Height (cm)'),
+        keyboardType: TextInputType.number,
+        validator: (val) {
+          if (val == null || val.isEmpty) return 'Please enter height';
+          final n = double.tryParse(val);
+          if (n == null || n <= 0) return 'Enter a valid height';
+          return null;
+        },
+        onSaved: (val) => height = double.parse(val ?? '0'),
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        initialValue: weight.toString(),
+        decoration: const InputDecoration(labelText: 'Weight (kg)'),
+        keyboardType: TextInputType.number,
+        validator: (val) {
+          if (val == null || val.isEmpty) return 'Please enter weight';
+          final n = double.tryParse(val);
+          if (n == null || n <= 0) return 'Enter a valid weight';
+          return null;
+        },
+        onSaved: (val) => weight = double.parse(val ?? '0'),
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        initialValue: age.toString(),
+        decoration: const InputDecoration(labelText: 'Age'),
+        keyboardType: TextInputType.number,
+        validator: (val) {
+          if (val == null || val.isEmpty) return 'Please enter age';
+          final n = int.tryParse(val);
+          if (n == null || n <= 0 || n > 120) return 'Enter a valid age (1-120)';
+          return null;
+        },
+        onSaved: (val) => age = int.parse(val ?? '0'),
+      ),
+      const SizedBox(height: 16),
+      DropdownButtonFormField<double>(
+        initialValue: activityLevel,
+        decoration: const InputDecoration(labelText: 'Activity Level'),
+        items: const [
+          DropdownMenuItem(value: 1.2, child: Text('Sedentary (Little to no exercise)')),
+          DropdownMenuItem(value: 1.375, child: Text('Lightly active (Light exercise 1-3 days/week)')),
+          DropdownMenuItem(value: 1.55, child: Text('Moderately active (Moderate exercise 3-5 days/week)')),
+          DropdownMenuItem(value: 1.725, child: Text('Very active (Hard exercise 6-7 days/week)')),
+          DropdownMenuItem(value: 1.9, child: Text('Extra active (Very hard exercise, physical job)')),
+        ],
+        onChanged: (val) {
+          setState(() => activityLevel = val ?? 1.2);
+        },
+      ),
+      const SizedBox(height: 32),
+      ElevatedButton(
+        onPressed: _saveProfile,
+        child: const Text('Calculate BMR & Save'),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Calorie Target Configuration')),
       body: Form(
         key: _formKey,
-        child: ListView(
+        child: ListView.builder(
           padding: const EdgeInsets.all(16.0),
-          children: [
-            TextFormField(
-              initialValue: height.toString(),
-              decoration: const InputDecoration(labelText: 'Height (cm)'),
-              keyboardType: TextInputType.number,
-              validator: (val) {
-                if (val == null || val.isEmpty) return 'Please enter height';
-                final n = double.tryParse(val);
-                if (n == null || n <= 0) return 'Enter a valid height';
-                return null;
-              },
-              onSaved: (val) => height = double.parse(val ?? '0'),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              initialValue: weight.toString(),
-              decoration: const InputDecoration(labelText: 'Weight (kg)'),
-              keyboardType: TextInputType.number,
-              validator: (val) {
-                if (val == null || val.isEmpty) return 'Please enter weight';
-                final n = double.tryParse(val);
-                if (n == null || n <= 0) return 'Enter a valid weight';
-                return null;
-              },
-              onSaved: (val) => weight = double.parse(val ?? '0'),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              initialValue: age.toString(),
-              decoration: const InputDecoration(labelText: 'Age'),
-              keyboardType: TextInputType.number,
-              validator: (val) {
-                if (val == null || val.isEmpty) return 'Please enter age';
-                final n = int.tryParse(val);
-                if (n == null || n <= 0 || n > 120) return 'Enter a valid age (1-120)';
-                return null;
-              },
-              onSaved: (val) => age = int.parse(val ?? '0'),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<double>(
-              initialValue: activityLevel,
-              decoration: const InputDecoration(labelText: 'Activity Level'),
-              items: const [
-                DropdownMenuItem(value: 1.2, child: Text('Sedentary (Little to no exercise)')),
-                DropdownMenuItem(value: 1.375, child: Text('Lightly active (Light exercise 1-3 days/week)')),
-                DropdownMenuItem(value: 1.55, child: Text('Moderately active (Moderate exercise 3-5 days/week)')),
-                DropdownMenuItem(value: 1.725, child: Text('Very active (Hard exercise 6-7 days/week)')),
-                DropdownMenuItem(value: 1.9, child: Text('Extra active (Very hard exercise, physical job)')),
-              ],
-              onChanged: (val) {
-                setState(() => activityLevel = val ?? 1.2);
-              },
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _saveProfile,
-              child: const Text('Calculate BMR & Save'),
-            )
-          ],
+          itemCount: _formFields.length,
+          itemBuilder: (_, i) => _formFields[i],
         ),
       ),
     );

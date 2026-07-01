@@ -4,6 +4,12 @@ import android.accessibilityservice.AccessibilityService
 import android.graphics.Rect
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import com.example.kero_space.telemetry.BlacklistPreferencesStore
@@ -12,12 +18,24 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val TAG = "KeroSpaceAccess"
+
+        // Pre-compiled regex patterns — one-time compilation instead of per-call.
+        // kart numba: 1234-5678-9012-3456 or 1234567890123456
+        private val CARD_REGEX = Regex("\\b\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b")
+        // Email: user@domain.tld
+        private val EMAIL_REGEX = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
     }
 
     private var currentContext: String = SubAppDetector.CONTEXT_NORMAL
     private var currentPackage: String = ""
     private var contextStartTime: Long = 0
     private var isBlockedByQuota: Boolean = false
+
+    /**
+     * Dedicated scope for offloading CPU-bound sanitization off the event thread.
+     * Uses [Dispatchers.Default] for regex-heavy text processing.
+     */
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
@@ -50,46 +68,55 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                 ) return
 
                 val rawText = event.text?.joinToString(" ")?.ifEmpty { null }
-                val sanitizedText = sanitizeText(rawText, viewId)
 
                 val rect = Rect()
                 event.source?.getBoundsInScreen(rect)
                 val clickX = rect.centerX()
                 val clickY = rect.centerY()
+                val timestamp = System.currentTimeMillis()
 
-                val json = JSONObject().apply {
-                    put("type", "CLICK")
-                    put("packageName", packageName)
-                    put("className", className)
-                    put("viewId", viewId)
-                    put("text", sanitizedText ?: JSONObject.NULL)
-                    put("clickX", clickX)
-                    put("clickY", clickY)
-                    put("timestamp", System.currentTimeMillis())
-                }.toString()
-
-                KeroSpaceForegroundService.accessibilityEventSink?.success(json)
-                KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
+                // Offload sanitization (regex-heavy) to [Dispatchers.Default] to keep
+                // the accessibility event receiver thread responsive.
+                serviceScope.launch {
+                    val sanitizedText = sanitizeText(rawText, viewId)
+                    withContext(Dispatchers.Main) {
+                        val json = JSONObject().apply {
+                            put("type", "CLICK")
+                            put("packageName", packageName)
+                            put("className", className)
+                            put("viewId", viewId)
+                            put("text", sanitizedText ?: JSONObject.NULL)
+                            put("clickX", clickX)
+                            put("clickY", clickY)
+                            put("timestamp", timestamp)
+                        }.toString()
+                        KeroSpaceForegroundService.accessibilityEventSink?.success(json)
+                        KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
+                    }
+                }
             }
         }
     }
 
+    /**
+     * Sanitizes text payloads that pass the fast-path PII filter in
+     * [onAccessibilityEvent]. Called from [Dispatchers.Default] inside a
+     * [serviceScope] coroutine so regex CPU work never blocks the event thread.
+     *
+     * Pre-compiled [CARD_REGEX] and [EMAIL_REGEX] avoid re-compilation on every call.
+     * The fast-path `viewId` PII check has already run at the caller — only
+     * content-based redaction (card numbers, emails) runs here.
+     */
     private fun sanitizeText(text: String?, viewId: String): String? {
         if (text == null) return null
 
-        if (viewId.contains("password", ignoreCase = true) ||
-            viewId.contains("pin", ignoreCase = true) ||
-            viewId.contains("secret", ignoreCase = true)) {
-            return "[REDACTED]"
-        }
-
-        var sanitized = text.replace(Regex("\\b\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b"), "[CARD_REDACTED]")
+        var sanitized = text.replace(CARD_REGEX, "[CARD_REDACTED]")
 
         if (viewId.contains("email", ignoreCase = true) ||
             viewId.contains("login", ignoreCase = true) ||
             viewId.contains("username", ignoreCase = true) ||
             viewId.contains("signin", ignoreCase = true)) {
-            sanitized = sanitized.replace(Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"), "[EMAIL_REDACTED]")
+            sanitized = sanitized.replace(EMAIL_REGEX, "[EMAIL_REDACTED]")
         }
 
         return sanitized
@@ -209,6 +236,11 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {
         Log.w(TAG, "Accessibility Service Interrupted")
+    }
+
+    override fun onDestroy() {
+        serviceScope.cancel()
+        super.onDestroy()
     }
 
     private fun recordBlockerDecision(packageName: String, outcome: String) {

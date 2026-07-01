@@ -34,6 +34,16 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        // Teardown main-engine event sinks to prevent memory leaks when the
+        // FlutterActivity is destroyed without a clean onCancel cycle.
+        KeroSpaceForegroundService.wakeWordEventSink = null
+        KeroSpaceForegroundService.screenEventSink = null
+        KeroSpaceForegroundService.accessibilityEventSink = null
+        KeroSpaceForegroundService.usageStatsEventSink = null
+        super.onDestroy()
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         setupMainMethodsChannel(flutterEngine)
@@ -184,26 +194,39 @@ class MainActivity : FlutterFragmentActivity() {
 
     // ─── EventChannels (main engine ↔ Dart UI) ───────────────────────────────
 
+    @Suppress("UNUSED_ANONYMOUS_PARAMETER")
     private fun setupEventChannels(flutterEngine: FlutterEngine) {
         val messenger = flutterEngine.dartExecutor.binaryMessenger
-        listOf(
-            "kero_space/wake_word" to { sink: EventChannel.EventSink? ->
-                KeroSpaceForegroundService.wakeWordEventSink = sink
+        val mainChannels = mapOf(
+            "kero_space/wake_word" to { s: EventChannel.EventSink? ->
+                KeroSpaceForegroundService.wakeWordEventSink = s
             },
-            "kero_space/screen_events" to { sink: EventChannel.EventSink? ->
-                KeroSpaceForegroundService.screenEventSink = sink
+            "kero_space/screen_events" to { s: EventChannel.EventSink? ->
+                KeroSpaceForegroundService.screenEventSink = s
             },
-            "kero_space/accessibility" to { sink: EventChannel.EventSink? ->
-                KeroSpaceForegroundService.accessibilityEventSink = sink
+            "kero_space/accessibility" to { s: EventChannel.EventSink? ->
+                KeroSpaceForegroundService.accessibilityEventSink = s
             },
-            "kero_space/usage_stats" to { sink: EventChannel.EventSink? ->
-                KeroSpaceForegroundService.usageStatsEventSink = sink
+            "kero_space/usage_stats" to { s: EventChannel.EventSink? ->
+                KeroSpaceForegroundService.usageStatsEventSink = s
             },
-        ).forEach { (channelName, assign) ->
+        )
+        mainChannels.forEach { (channelName, assign) ->
             EventChannel(messenger, channelName).setStreamHandler(
                 object : EventChannel.StreamHandler {
-                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) = assign(events)
-                    override fun onCancel(arguments: Any?) = assign(null)
+                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                        Log.d(TAG, "stream onListen — $channelName")
+                        assign(events)
+                    }
+
+                    override fun onCancel(arguments: Any?) {
+                        Log.d(TAG, "stream onCancel — $channelName")
+                        try {
+                            assign(null)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "stream onCancel error — $channelName", e)
+                        }
+                    }
                 },
             )
         }

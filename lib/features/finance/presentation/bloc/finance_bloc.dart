@@ -1,14 +1,13 @@
 // ignore_for_file: prefer_initializing_formals
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'dart:convert';
-import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kero_space/features/finance/data/models/finance_collections.dart';
 import 'package:kero_space/features/finance/data/repositories/finance_repository.dart';
 import 'package:kero_space/features/finance/data/repositories/egx_scraper_service.dart';
 import 'package:kero_space/features/finance/data/services/finance_notification_service.dart';
+import 'package:kero_space/features/finance/data/services/stock_analysis_service.dart';
+import 'package:kero_space/features/finance/data/services/finance_ai_service.dart';
 
 part 'finance_event.dart';
 part 'finance_state.dart';
@@ -17,14 +16,17 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
   final FinanceRepository _financeRepository;
   final EGXScraperService _egxScraperService;
   final FinanceNotificationService _notificationService;
+  final FinanceAIService _financeAiService;
 
   FinanceBloc({
     required FinanceRepository financeRepository,
     required EGXScraperService egxScraperService,
     required FinanceNotificationService notificationService,
+    FinanceAIService? financeAiService,
   })  : _financeRepository = financeRepository,
         _egxScraperService = egxScraperService,
         _notificationService = notificationService,
+        _financeAiService = financeAiService ?? FinanceAIService(),
         super(FinanceInitial()) {
 
     on<LoadFinanceData>(_onLoadFinanceData);
@@ -104,39 +106,15 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
           dailyChanges[stock.ticker] = last.changePercentage;
           histories[stock.ticker] = priceHistory;
 
-          // 7-day Simple Moving Average (SMA)
-          double sma = last.currentPrice;
-          if (priceHistory.length >= 3) {
-            sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
-          }
+          final analysis = await StockAnalysisService.analyze(
+            priceHistory: priceHistory,
+            currentPrice: last.currentPrice,
+            changeAmount: last.changeAmount,
+            changePercentage: last.changePercentage,
+          );
 
-          // 30-day/Monthly change estimation
-          double monthlyDiff = 0.0;
-          if (priceHistory.length >= 5) {
-            final oldPrice = priceHistory.first;
-            monthlyDiff = oldPrice > 0 ? ((last.currentPrice - oldPrice) / oldPrice) * 100 : 0.0;
-          } else {
-            monthlyDiff = last.changePercentage; // fallback
-          }
-
-          // Sentiment indicator
-          String sentiment = 'Neutral';
-          if (priceHistory.length >= 3) {
-            if (last.changeAmount > 0 && last.currentPrice > sma) {
-              sentiment = 'Strong Bullish';
-            } else if (last.changeAmount > 0 && last.currentPrice <= sma) {
-              sentiment = 'Weak Bullish';
-            } else if (last.changeAmount < 0 && last.currentPrice < sma) {
-              sentiment = 'Strong Bearish';
-            } else if (last.changeAmount < 0 && last.currentPrice >= sma) {
-              sentiment = 'Weak Bearish';
-            }
-          } else {
-            sentiment = last.changeAmount >= 0 ? 'Bullish' : 'Bearish'; // simple trend fallback
-          }
-
-          monthlyChanges[stock.ticker] = monthlyDiff;
-          sentiments[stock.ticker] = sentiment;
+          monthlyChanges[stock.ticker] = analysis.monthlyDiff;
+          sentiments[stock.ticker] = analysis.sentiment;
         }
       }
 
@@ -195,34 +173,14 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
             prices[stock.ticker] = lastSnapshot.currentPrice;
             dailyChanges[stock.ticker] = lastSnapshot.changePercentage;
             
-            double sma = lastSnapshot.currentPrice;
-            if (priceHistory.length >= 3) {
-              sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
-            }
-            double monthlyDiff = 0.0;
-            if (priceHistory.length >= 5) {
-              final oldPrice = priceHistory.first;
-              monthlyDiff = oldPrice > 0 ? ((lastSnapshot.currentPrice - oldPrice) / oldPrice) * 100 : 0.0;
-            } else {
-              monthlyDiff = lastSnapshot.changePercentage;
-            }
-            monthlyChanges[stock.ticker] = monthlyDiff;
-            
-            String sentiment = 'Neutral';
-            if (priceHistory.length >= 3) {
-              if (lastSnapshot.changeAmount > 0 && lastSnapshot.currentPrice > sma) {
-                sentiment = 'Strong Bullish';
-              } else if (lastSnapshot.changeAmount > 0 && lastSnapshot.currentPrice <= sma) {
-                sentiment = 'Weak Bullish';
-              } else if (lastSnapshot.changeAmount < 0 && lastSnapshot.currentPrice < sma) {
-                sentiment = 'Strong Bearish';
-              } else if (lastSnapshot.changeAmount < 0 && lastSnapshot.currentPrice >= sma) {
-                sentiment = 'Weak Bearish';
-              }
-            } else {
-              sentiment = lastSnapshot.changeAmount >= 0 ? 'Bullish' : 'Bearish';
-            }
-            sentiments[stock.ticker] = sentiment;
+            final analysis = await StockAnalysisService.analyze(
+              priceHistory: priceHistory,
+              currentPrice: lastSnapshot.currentPrice,
+              changeAmount: lastSnapshot.changeAmount,
+              changePercentage: lastSnapshot.changePercentage,
+            );
+            monthlyChanges[stock.ticker] = analysis.monthlyDiff;
+            sentiments[stock.ticker] = analysis.sentiment;
           }
         }
 
@@ -243,41 +201,17 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
             final priceHistory = updatedHistory.map((s) => s.currentPrice).toList().reversed.toList();
             histories[stock.ticker] = priceHistory;
 
-            // 7-day Simple Moving Average (SMA)
-            double sma = result.price;
-            if (priceHistory.length >= 3) {
-              sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
-            }
-
-            // 30-day/Monthly change estimation
-            double monthlyDiff = 0.0;
-            if (priceHistory.length >= 5) {
-              final oldPrice = priceHistory.first;
-              monthlyDiff = oldPrice > 0 ? ((result.price - oldPrice) / oldPrice) * 100 : 0.0;
-            } else {
-              monthlyDiff = result.changePercentage; // fallback
-            }
-
-            // Sentiment indicator
-            String sentiment = 'Neutral';
-            if (priceHistory.length >= 3) {
-              if (result.changeAmount > 0 && result.price > sma) {
-                sentiment = 'Strong Bullish';
-              } else if (result.changeAmount > 0 && result.price <= sma) {
-                sentiment = 'Weak Bullish';
-              } else if (result.changeAmount < 0 && result.price < sma) {
-                sentiment = 'Strong Bearish';
-              } else if (result.changeAmount < 0 && result.price >= sma) {
-                sentiment = 'Weak Bearish';
-              }
-            } else {
-              sentiment = result.changeAmount >= 0 ? 'Bullish' : 'Bearish'; // simple trend fallback
-            }
-
             prices[stock.ticker] = result.price;
             dailyChanges[stock.ticker] = result.changePercentage;
-            monthlyChanges[stock.ticker] = monthlyDiff;
-            sentiments[stock.ticker] = sentiment;
+
+            final analysis = await StockAnalysisService.analyze(
+              priceHistory: priceHistory,
+              currentPrice: result.price,
+              changeAmount: result.changeAmount,
+              changePercentage: result.changePercentage,
+            );
+            monthlyChanges[stock.ticker] = analysis.monthlyDiff;
+            sentiments[stock.ticker] = analysis.sentiment;
           } else {
             // If scrape failed but we have history, preserve it
             if (history.isNotEmpty) {
@@ -287,34 +221,14 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
               prices[stock.ticker] = lastSnapshot.currentPrice;
               dailyChanges[stock.ticker] = lastSnapshot.changePercentage;
               
-              double sma = lastSnapshot.currentPrice;
-              if (priceHistory.length >= 3) {
-                sma = priceHistory.take(7).reduce((a, b) => a + b) / priceHistory.take(7).length;
-              }
-              double monthlyDiff = 0.0;
-              if (priceHistory.length >= 5) {
-                final oldPrice = priceHistory.first;
-                monthlyDiff = oldPrice > 0 ? ((lastSnapshot.currentPrice - oldPrice) / oldPrice) * 100 : 0.0;
-              } else {
-                monthlyDiff = lastSnapshot.changePercentage;
-              }
-              monthlyChanges[stock.ticker] = monthlyDiff;
-              
-              String sentiment = 'Neutral';
-              if (priceHistory.length >= 3) {
-                if (lastSnapshot.changeAmount > 0 && lastSnapshot.currentPrice > sma) {
-                  sentiment = 'Strong Bullish';
-                } else if (lastSnapshot.changeAmount > 0 && lastSnapshot.currentPrice <= sma) {
-                  sentiment = 'Weak Bullish';
-                } else if (lastSnapshot.changeAmount < 0 && lastSnapshot.currentPrice < sma) {
-                  sentiment = 'Strong Bearish';
-                } else if (lastSnapshot.changeAmount < 0 && lastSnapshot.currentPrice >= sma) {
-                  sentiment = 'Weak Bearish';
-                }
-              } else {
-                sentiment = lastSnapshot.changeAmount >= 0 ? 'Bullish' : 'Bearish';
-              }
-              sentiments[stock.ticker] = sentiment;
+              final analysis = await StockAnalysisService.analyze(
+                priceHistory: priceHistory,
+                currentPrice: lastSnapshot.currentPrice,
+                changeAmount: lastSnapshot.changeAmount,
+                changePercentage: lastSnapshot.changePercentage,
+              );
+              monthlyChanges[stock.ticker] = analysis.monthlyDiff;
+              sentiments[stock.ticker] = analysis.sentiment;
             }
           }
         }
@@ -408,33 +322,12 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       AIQuickLogEvent event, Emitter<FinanceState> emit) async {
     if (state is! FinanceLoaded) return;
     try {
-      final key = dotenv.env['OPENROUTER_API_KEY'] ?? '';
-      final dio = Dio();
-      final res = await dio.post(
-        'https://openrouter.ai/api/v1/chat/completions',
-        options: Options(headers: {
-          'Authorization': 'Bearer $key',
-          'Content-Type': 'application/json',
-        }),
-        data: {
-          'model': 'openai/gpt-oss-120b:free',
-          'messages': [
-            {
-              'role': 'system',
-              'content': 'You are a strict transaction parser. Analyze the user\'s message and parse it into transaction properties. Respond ONLY with a JSON object, no markdown blocks. Structure:\n{"amount": double, "type": "INCOME"|"EXPENSE", "category": "Dining"|"Transport"|"Groceries"|"Salary"|"Other", "vendor": "name or null", "sourceName": "matched bank or source name or null"}'
-            },
-            {'role': 'user', 'content': event.text}
-          ]
-        }
-      );
-
-      final clean = res.data['choices'][0]['message']['content'].toString().trim().replaceAll('```json', '').replaceAll('```', '');
-      final parsed = jsonDecode(clean);
+      final parsed = await _financeAiService.quickLogTransaction(event.text);
       final double amount = (parsed['amount'] as num).toDouble();
       final String type = parsed['type'] as String;
       final String category = parsed['category'] as String;
-      final String? vendor = parsed['vendor'];
-      final String? srcName = parsed['sourceName'];
+      final String? vendor = parsed['vendor'] as String?;
+      final String? srcName = parsed['sourceName'] as String?;
 
       add(AddTransactionEvent(
         amount: amount,
@@ -453,31 +346,13 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     if (state is! FinanceLoaded) return;
     final currentState = state as FinanceLoaded;
     try {
-      final key = dotenv.env['OPENROUTER_API_KEY'] ?? '';
-      final dio = Dio();
-      
       final String txSummary = currentState.transactions.take(10).map((t) => '${t.type}: ${t.amount} EGP for ${t.vendor ?? t.category}').join(', ');
       final String subSummary = currentState.subscriptions.map((s) => '${s.name} ${s.amount} EGP').join(', ');
 
-      final res = await dio.post(
-        'https://openrouter.ai/api/v1/chat/completions',
-        options: Options(headers: {
-          'Authorization': 'Bearer $key',
-          'Content-Type': 'application/json',
-        }),
-        data: {
-          'model': 'openai/gpt-oss-120b:free',
-          'messages': [
-            {
-              'role': 'system',
-              'content': 'You are a financial advisor. Write a single short paragraph (maximum 3 sentences) giving the user highly specific financial advice or highlights of their budget. Keep it concise, friendly, and practical.'
-            },
-            {'role': 'user', 'content': 'My recent transactions: $txSummary. My subscriptions: $subSummary.'}
-          ]
-        }
+      final advice = await _financeAiService.refreshAdvice(
+        transactionSummary: txSummary,
+        subscriptionSummary: subSummary,
       );
-
-      final advice = res.data['choices'][0]['message']['content'].toString().trim();
       emit(FinanceLoaded(
         transactions: currentState.transactions,
         budgets: currentState.budgets,

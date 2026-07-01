@@ -25,7 +25,7 @@ class ProductivityScreen extends StatefulWidget {
   State<ProductivityScreen> createState() => _ProductivityScreenState();
 }
 
-class _ProductivityScreenState extends State<ProductivityScreen> with SingleTickerProviderStateMixin {
+class _ProductivityScreenState extends State<ProductivityScreen> {
   static const _methodsChannel = MethodChannel('kero_space/methods');
   int _selectedEnergyLevel = 2; // Default to Medium
 

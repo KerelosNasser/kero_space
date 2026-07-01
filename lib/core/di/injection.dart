@@ -29,6 +29,7 @@ import 'package:kero_space/features/finance/data/repositories/finance_repository
 import 'package:kero_space/features/finance/data/repositories/egx_scraper_service.dart';
 import 'package:kero_space/features/finance/data/repositories/notification_parser_service.dart';
 import 'package:kero_space/features/finance/data/services/finance_notification_service.dart';
+import 'package:kero_space/features/finance/data/services/finance_ai_service.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 
 // Voice module
@@ -82,11 +83,15 @@ void setupLocator() {
   getIt.registerLazySingleton<FinanceNotificationService>(
     () => FinanceNotificationService(),
   );
+  getIt.registerLazySingleton<FinanceAIService>(
+    () => FinanceAIService(dio: getIt<Dio>()),
+  );
   getIt.registerLazySingleton<FinanceBloc>(
     () => FinanceBloc(
       financeRepository: getIt<FinanceRepository>(),
       egxScraperService: getIt<EGXScraperService>(),
       notificationService: getIt<FinanceNotificationService>(),
+      financeAiService: getIt<FinanceAIService>(),
     ),
   );
   getIt.registerLazySingleton<NotificationParserService>(

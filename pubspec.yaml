@@ -33,27 +33,27 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: any
+  cupertino_icons: ^1.0.9
   flutter_bloc: ^9.1.1
-  equatable: any
+  equatable: ^2.0.8
   isar: ^3.1.0+1
   isar_flutter_libs: ^3.1.0+1
-  fl_chart: any
-  rive: any
-  flutter_secure_storage: any
-  dio: any
-  get_it: any
-  injectable: any
+  fl_chart: ^1.2.0
+  rive: ^0.14.8
+  flutter_secure_storage: ^10.3.1
+  dio: ^5.9.2
+  get_it: ^9.2.1
+  injectable: ^2.7.1+4
   health: ^13.3.1
-  go_router: any
-  freezed_annotation: any
-  json_annotation: any
-  flutter_fancy_tree_view: any
+  go_router: ^17.3.0
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  flutter_fancy_tree_view: ^1.6.0
   flutter_quill: ^11.5.1
   path_provider: ^2.1.5
-  table_calendar: any
+  table_calendar: ^3.2.0
   permission_handler: ^12.0.3
-  local_auth: any
+  local_auth: ^3.0.1
   confetti: ^0.8.0
   animate_do: ^5.1.0
   workmanager: ^0.9.0+3
@@ -64,7 +64,7 @@ dependencies:
   bloc: ^9.2.1
   cryptography: ^2.9.0
   flutter_local_notifications: ^22.0.0
-  timezone: any
+  timezone: ^0.11.0
   installed_apps: ^2.1.1
   window_manager: ^0.5.1
   system_tray: ^2.0.3
@@ -81,11 +81,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: any
-  build_runner: any
-  freezed: any
-  json_serializable: any
-  injectable_generator: any
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.13
+  freezed: ^2.5.2
+  json_serializable: ^6.8.0
+  injectable_generator: ^2.4.2
   isar_generator: ^3.1.0+1
   integration_test:
     sdk: flutter

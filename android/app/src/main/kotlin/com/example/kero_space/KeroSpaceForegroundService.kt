@@ -21,12 +21,19 @@ import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import android.content.pm.PackageManager
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
 class KeroSpaceForegroundService : Service() {
 
@@ -93,17 +100,10 @@ class KeroSpaceForegroundService : Service() {
         createNotificationChannel()
         startForegroundWithNotification()
         registerReceivers()
+        // Staggered init: Flutter engine (heavy) first, then WakeWordService
+        // after the background engine is ready — prevents boot contention on
+        // the main thread from simultaneous Service + FlutterLoader init.
         startFlutterEngine()
-        val hasMic = ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-        if (hasMic) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(Intent(this, WakeWordService::class.java))
-            } else {
-                startService(Intent(this, WakeWordService::class.java))
-            }
-        } else {
-            Log.w(TAG, "RECORD_AUDIO not granted — skipping WakeWordService startup")
-        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
@@ -111,6 +111,15 @@ class KeroSpaceForegroundService : Service() {
     override fun onDestroy() {
         isRunning = false
         Log.d(TAG, "onDestroy")
+        // Null all event sinks to prevent leaks when the service is torn down
+        // without a clean StreamHandler.onCancel cycle (e.g. system force-stop).
+        screenEventSink = null
+        accessibilityEventSink = null
+        wakeWordEventSink = null
+        usageStatsEventSink = null
+        bgScreenEventSink = null
+        bgAccessibilityEventSink = null
+        bgUsageStatsEventSink = null
         serviceScope.cancel()
         unregisterReceiverSafe(screenReceiver)
         unregisterReceiverSafe(usageStatsReceiver)
@@ -189,24 +198,85 @@ class KeroSpaceForegroundService : Service() {
     private fun startFlutterEngine() {
         serviceScope.launch {
             try {
-                val flutterLoader: FlutterLoader = FlutterInjector.instance().flutterLoader()
-                flutterLoader.startInitialization(applicationContext)
-                flutterLoader.ensureInitializationComplete(applicationContext, null)
+                // Phase 1: FlutterLoader initialization (I/O heavy — disk + native libs).
+                launch {
+                    val flutterLoader: FlutterLoader = FlutterInjector.instance().flutterLoader()
+                    flutterLoader.startInitialization(applicationContext)
+                    flutterLoader.ensureInitializationComplete(applicationContext, null)
+                }.join()
 
-                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                // Phase 2: Schedule UsageStatsWorker early so the 15-min interval
+                // starts counting from boot, not from first Dart toggle.
+                scheduleUsageStatsWorker()
+
+                // Phase 3: Small delay to let system UI settle before allocating
+                // the FlutterEngine (which pins ~50 MB native memory).
+                delay(250)
+
+                withContext(Dispatchers.Main) {
+                    // Phase 4: Create FlutterEngine + register channels.
                     flutterEngine = FlutterEngine(applicationContext)
                     setupBackgroundChannels()
 
                     val entrypoint = DartExecutor.DartEntrypoint(
-                        flutterLoader.findAppBundlePath(),
+                        FlutterInjector.instance().flutterLoader().findAppBundlePath(),
                         "backgroundMain",
                     )
                     flutterEngine?.dartExecutor?.executeDartEntrypoint(entrypoint)
                     Log.d(TAG, "Headless FlutterEngine started — backgroundMain executing")
+
+                    // Phase 5: Start WakeWordService after engine is initialized
+                    // to spread boot-time service creation contention.
+                    startWakeWordServiceIfPermitted()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialise Headless FlutterEngine", e)
+                // Still attempt WakeWordService even if headless engine fails —
+                // it only emits on the main-engine sink (set by MainActivity).
+                withContext(Dispatchers.Main) {
+                    startWakeWordServiceIfPermitted()
+                }
             }
+        }
+    }
+
+    private fun startWakeWordServiceIfPermitted() {
+        val hasMic = ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.RECORD_AUDIO,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (hasMic) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(Intent(this, WakeWordService::class.java))
+            } else {
+                startService(Intent(this, WakeWordService::class.java))
+            }
+        } else {
+            Log.w(TAG, "RECORD_AUDIO not granted — skipping WakeWordService startup")
+        }
+    }
+
+    /**
+     * Schedules the [UsageStatsWorker] if it hasn't been scheduled already.
+     * Called from the staggered boot sequence to ensure usage stats collection
+     * starts automatically without waiting for a Dart-side toggle.
+     */
+    private fun scheduleUsageStatsWorker() {
+        try {
+            val constraints = Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                .build()
+            val workRequest = PeriodicWorkRequestBuilder<UsageStatsWorker>(15, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build()
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "UsageStatsWorker",
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest,
+            )
+            Log.d(TAG, "UsageStatsWorker scheduled (interval=15m)")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to schedule UsageStatsWorker", e)
         }
     }
 
@@ -221,19 +291,34 @@ class KeroSpaceForegroundService : Service() {
      * own Dart isolate. Shared sinks between engines are NOT possible because each engine
      * has its own independent binary messenger.
      */
+    @Suppress("UNUSED_ANONYMOUS_PARAMETER")
     private fun setupBackgroundChannels() {
         val messenger = flutterEngine?.dartExecutor?.binaryMessenger ?: return
 
         // EventChannels — background isolate variants (kero_space/bg/*)
-        listOf(
-            "kero_space/bg/screen_events" to { sink: EventChannel.EventSink? -> bgScreenEventSink = sink },
-            "kero_space/bg/accessibility" to { sink: EventChannel.EventSink? -> bgAccessibilityEventSink = sink },
-            "kero_space/bg/usage_stats" to { sink: EventChannel.EventSink? -> bgUsageStatsEventSink = sink },
-        ).forEach { (channelName, assign) ->
+        // onCancel sets the sink to null and wraps in try-catch so that FlutterEngine
+        // detach / hot-restart / isolate crash never leaves a dangling reference.
+        val bgChannels = mapOf(
+            "kero_space/bg/screen_events" to { s: EventChannel.EventSink? -> bgScreenEventSink = s },
+            "kero_space/bg/accessibility" to { s: EventChannel.EventSink? -> bgAccessibilityEventSink = s },
+            "kero_space/bg/usage_stats" to { s: EventChannel.EventSink? -> bgUsageStatsEventSink = s },
+        )
+        bgChannels.forEach { (channelName, assign) ->
             EventChannel(messenger, channelName).setStreamHandler(
                 object : EventChannel.StreamHandler {
-                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) = assign(events)
-                    override fun onCancel(arguments: Any?) = assign(null)
+                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                        Log.d(TAG, "bg stream onListen — $channelName")
+                        assign(events)
+                    }
+
+                    override fun onCancel(arguments: Any?) {
+                        Log.d(TAG, "bg stream onCancel — $channelName")
+                        try {
+                            assign(null)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "bg stream onCancel error — $channelName", e)
+                        }
+                    }
                 },
             )
         }

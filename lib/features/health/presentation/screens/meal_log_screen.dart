@@ -19,11 +19,18 @@ class _MealLogScreenState extends State<MealLogScreen> {
   late final TextEditingController _gramsController;
   DateTime _selectedTime = DateTime.now();
   MealType _selectedMealType = MealType.snack;
+  late final List<Widget Function()> _sections;
 
   @override
   void initState() {
     super.initState();
     _gramsController = TextEditingController(text: '100');
+    _sections = [
+      _buildHeaderSection,
+      _buildAmountSection,
+      _buildMacrosSection,
+      _buildDetailsSection,
+    ];
   }
 
   @override
@@ -32,14 +39,239 @@ class _MealLogScreenState extends State<MealLogScreen> {
     super.dispose();
   }
 
+  double get _ratio => grams / 100.0;
+  double get _totalCalories => widget.ingredient.calories * _ratio;
+  double get _totalProtein => widget.ingredient.protein * _ratio;
+  double get _totalCarbs => widget.ingredient.carbs * _ratio;
+  double get _totalFat => widget.ingredient.fat * _ratio;
+
+  Widget _buildHeaderSection() {
+    return Column(
+      children: [
+        // Hero Header
+        Center(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppTheme.accentMint.withValues(alpha: 0.1),
+            ),
+            child: const Icon(
+              Icons.restaurant,
+              size: 48,
+              color: AppTheme.accentMint,
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          widget.ingredient.name,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${_totalCalories.toStringAsFixed(0)} kcal',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.accentMint,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmountSection() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.bgElevated,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          const Text(
+            'Amount',
+            style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+          ),
+          const Spacer(),
+          SizedBox(
+            width: 120,
+            child: TextField(
+              controller: _gramsController,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+                suffixText: 'g',
+                suffixStyle: TextStyle(
+                  fontSize: 16,
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  grams = double.tryParse(val) ?? 0.0;
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMacrosSection() {
+    return Row(
+      children: [
+        _buildMacroCard('Protein', _totalProtein, AppTheme.accentCyan),
+        const SizedBox(width: 12),
+        _buildMacroCard('Carbs', _totalCarbs, AppTheme.accentRose),
+        const SizedBox(width: 12),
+        _buildMacroCard('Fat', _totalFat, AppTheme.accentGold),
+      ],
+    );
+  }
+
+  Widget _buildDetailsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Details',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.fromDateTime(_selectedTime),
+                  );
+                  if (time != null) {
+                    setState(() {
+                      _selectedTime = DateTime(
+                        _selectedTime.year,
+                        _selectedTime.month,
+                        _selectedTime.day,
+                        time.hour,
+                        time.minute,
+                      );
+                    });
+                  }
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.bgElevated,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Time',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat.jm().format(_selectedTime),
+                        style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.bgElevated,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Type',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton<MealType>(
+                        value: _selectedMealType,
+                        isExpanded: true,
+                        dropdownColor: AppTheme.bgElevated,
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: AppTheme.textSecondary,
+                        ),
+                        items: MealType.values
+                            .map(
+                              (type) => DropdownMenuItem(
+                                value: type,
+                                child: Text(
+                                  type.name.toUpperCase(),
+                                  style: const TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() => _selectedMealType = val);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    double ratio = grams / 100.0;
-    double totalCalories = widget.ingredient.calories * ratio;
-    double totalProtein = widget.ingredient.protein * ratio;
-    double totalCarbs = widget.ingredient.carbs * ratio;
-    double totalFat = widget.ingredient.fat * ratio;
-
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
@@ -47,254 +279,21 @@ class _MealLogScreenState extends State<MealLogScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      // Fix overflow by using SingleChildScrollView inside an Expanded column layout
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
+              child: ListView.builder(
                 padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Hero Header
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppTheme.accentMint.withValues(alpha: 0.1),
-                        ),
-                        child: const Icon(
-                          Icons.restaurant,
-                          size: 48,
-                          color: AppTheme.accentMint,
-                        ),
-                      ),
+                itemCount: _sections.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      top: index == 0 ? 0 : (index == 1 ? 40 : 24),
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      widget.ingredient.name,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${totalCalories.toStringAsFixed(0)} kcal',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.accentMint,
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Grams Input Card
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.bgElevated,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text(
-                            'Amount',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppTheme.textSecondary,
-                            ),
-                          ),
-                          const Spacer(),
-                          SizedBox(
-                            width: 120,
-                            child: TextField(
-                              controller: _gramsController,
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
-                              ),
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                isDense: true,
-                                suffixText: 'g',
-                                suffixStyle: TextStyle(
-                                  fontSize: 16,
-                                  color: AppTheme.textSecondary,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                              onChanged: (val) {
-                                setState(() {
-                                  grams = double.tryParse(val) ?? 0.0;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Macros Breakdown
-                    Row(
-                      children: [
-                        _buildMacroCard(
-                          'Protein',
-                          totalProtein,
-                          AppTheme.accentCyan,
-                        ),
-                        const SizedBox(width: 12),
-                        _buildMacroCard(
-                          'Carbs',
-                          totalCarbs,
-                          AppTheme.accentRose,
-                        ),
-                        const SizedBox(width: 12),
-                        _buildMacroCard('Fat', totalFat, AppTheme.accentGold),
-                      ],
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Meal Settings (Time & Type)
-                    const Text(
-                      'Details',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () async {
-                              final time = await showTimePicker(
-                                context: context,
-                                initialTime: TimeOfDay.fromDateTime(
-                                  _selectedTime,
-                                ),
-                              );
-                              if (time != null) {
-                                setState(() {
-                                  _selectedTime = DateTime(
-                                    _selectedTime.year,
-                                    _selectedTime.month,
-                                    _selectedTime.day,
-                                    time.hour,
-                                    time.minute,
-                                  );
-                                });
-                              }
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppTheme.bgElevated,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Time',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    DateFormat.jm().format(_selectedTime),
-                                    style: const TextStyle(
-                                      color: AppTheme.textPrimary,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.bgElevated,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Type',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                DropdownButtonHideUnderline(
-                                  child: DropdownButton<MealType>(
-                                    value: _selectedMealType,
-                                    isExpanded: true,
-                                    dropdownColor: AppTheme.bgElevated,
-                                    icon: const Icon(
-                                      Icons.keyboard_arrow_down,
-                                      color: AppTheme.textSecondary,
-                                    ),
-                                    items: MealType.values
-                                        .map(
-                                          (type) => DropdownMenuItem(
-                                            value: type,
-                                            child: Text(
-                                              type.name.toUpperCase(),
-                                              style: const TextStyle(
-                                                color: AppTheme.textPrimary,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                    onChanged: (val) {
-                                      if (val != null) {
-                                        setState(() => _selectedMealType = val);
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                    child: _sections[index](),
+                  );
+                },
               ),
             ),
             // Bottom Action Button
@@ -302,11 +301,6 @@ class _MealLogScreenState extends State<MealLogScreen> {
               padding: const EdgeInsets.all(30),
               child: ElevatedButton(
                 onPressed: () => _saveMeal(
-                  ratio,
-                  totalCalories,
-                  totalProtein,
-                  totalCarbs,
-                  totalFat,
                   _selectedTime,
                   _selectedMealType,
                 ),
@@ -373,11 +367,6 @@ class _MealLogScreenState extends State<MealLogScreen> {
   }
 
   void _saveMeal(
-    double ratio,
-    double cals,
-    double pro,
-    double carbs,
-    double fat,
     DateTime time,
     MealType type,
   ) async {
@@ -423,18 +412,18 @@ class _MealLogScreenState extends State<MealLogScreen> {
       ..platform = 'Android'
       ..name = widget.ingredient.name
       ..grams = grams
-      ..calories = cals
-      ..protein = pro
-      ..carbs = carbs
-      ..fat = fat
-      ..fiber = (widget.ingredient.fiber.isNaN ? 0.0 : widget.ingredient.fiber) * ratio
-      ..sugar = (widget.ingredient.sugar.isNaN ? 0.0 : widget.ingredient.sugar) * ratio
-      ..fastCarbs = (widget.ingredient.fastCarbs.isNaN ? 0.0 : widget.ingredient.fastCarbs) * ratio
-      ..slowCarbs = (widget.ingredient.slowCarbs.isNaN ? 0.0 : widget.ingredient.slowCarbs) * ratio
-      ..fatSaturated = (widget.ingredient.fatSaturated.isNaN ? 0.0 : widget.ingredient.fatSaturated) * ratio
-      ..fatUnsaturated = (widget.ingredient.fatUnsaturated.isNaN ? 0.0 : widget.ingredient.fatUnsaturated) * ratio
-      ..cholesterol = (widget.ingredient.cholesterol.isNaN ? 0.0 : widget.ingredient.cholesterol) * ratio
-      ..sodium = (widget.ingredient.sodium.isNaN ? 0.0 : widget.ingredient.sodium) * ratio
+      ..calories = _totalCalories
+      ..protein = _totalProtein
+      ..carbs = _totalCarbs
+      ..fat = _totalFat
+      ..fiber = (widget.ingredient.fiber.isNaN ? 0.0 : widget.ingredient.fiber) * _ratio
+      ..sugar = (widget.ingredient.sugar.isNaN ? 0.0 : widget.ingredient.sugar) * _ratio
+      ..fastCarbs = (widget.ingredient.fastCarbs.isNaN ? 0.0 : widget.ingredient.fastCarbs) * _ratio
+      ..slowCarbs = (widget.ingredient.slowCarbs.isNaN ? 0.0 : widget.ingredient.slowCarbs) * _ratio
+      ..fatSaturated = (widget.ingredient.fatSaturated.isNaN ? 0.0 : widget.ingredient.fatSaturated) * _ratio
+      ..fatUnsaturated = (widget.ingredient.fatUnsaturated.isNaN ? 0.0 : widget.ingredient.fatUnsaturated) * _ratio
+      ..cholesterol = (widget.ingredient.cholesterol.isNaN ? 0.0 : widget.ingredient.cholesterol) * _ratio
+      ..sodium = (widget.ingredient.sodium.isNaN ? 0.0 : widget.ingredient.sodium) * _ratio
       ..glycemicIndex = widget.ingredient.glycemicIndex.isNaN ? 0.0 : widget.ingredient.glycemicIndex
       ..timestamp = time
       ..mealType = type;
