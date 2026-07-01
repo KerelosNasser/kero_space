@@ -24,6 +24,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBindingObserver {
   late final List<PermissionItem> _permissions;
   final Map<String, bool> _status = {};
+  bool _isRequesting = false;
   
   bool _isFastingMode = false;
   double _weight = 70.0;
@@ -83,7 +84,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
         title: 'Health Connect',
         description: 'Allows fetching steps, heart rate, and sleep automatically.',
         icon: Icons.favorite_outline,
-        check: () => getIt<kero_health_repo.HealthConnectRepository>().requestPermissions().then((v) => v),
+        check: () => getIt<kero_health_repo.HealthConnectRepository>().hasPermissions(),
         request: () => getIt<kero_health_repo.HealthConnectRepository>().requestPermissions().then((_) {}),
       ),
     ];
@@ -118,8 +119,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> with WidgetsBinding
   }
 
   Future<void> _requestPermission(PermissionItem item) async {
-    await item.request();
-    await _checkPermissions();
+    if (_isRequesting) return;
+    _isRequesting = true;
+    try {
+      await item.request();
+      await _checkPermissions();
+    } finally {
+      _isRequesting = false;
+    }
   }
 
   Future<void> _finishOnboarding() async {

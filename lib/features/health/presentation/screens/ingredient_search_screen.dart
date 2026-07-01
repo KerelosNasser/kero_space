@@ -20,6 +20,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
   @override
   void initState() {
     super.initState();
+    _repo.seedIngredientsIfNeeded();
     _search('');
   }
 

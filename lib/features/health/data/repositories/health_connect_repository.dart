@@ -17,21 +17,25 @@ class HealthConnectRepository {
     HealthDataType.SLEEP_SESSION,
   ];
 
+  Future<bool> hasPermissions() async {
+    if (kIsWeb || !Platform.isAndroid) return false;
+    final permissions = [HealthDataAccess.READ, HealthDataAccess.READ, HealthDataAccess.READ];
+    try {
+      return await _health.hasPermissions(_types, permissions: permissions) ?? false;
+    } catch (e) {
+      debugPrint("Error checking health permissions: $e");
+      return false;
+    }
+  }
+
   Future<bool> requestPermissions() async {
     if (kIsWeb || !Platform.isAndroid) return false;
+    final granted = await hasPermissions();
+    if (granted) return true;
 
-    final permissions = [
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-    ];
-    
+    final permissions = [HealthDataAccess.READ, HealthDataAccess.READ, HealthDataAccess.READ];
     try {
-      bool hasPermissions = await _health.hasPermissions(_types, permissions: permissions) ?? false;
-      if (!hasPermissions) {
-        hasPermissions = await _health.requestAuthorization(_types, permissions: permissions);
-      }
-      return hasPermissions;
+      return await _health.requestAuthorization(_types, permissions: permissions);
     } catch (e) {
       debugPrint("Error requesting health permissions: $e");
       return false;
