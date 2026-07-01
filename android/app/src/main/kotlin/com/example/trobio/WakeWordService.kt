@@ -1,4 +1,4 @@
-package com.example.kero_space
+package com.example.trobio
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -48,7 +48,7 @@ class WakeWordService : Service() {
     /**
      * ADB mock trigger for dev/test only.
      * Not exported — ADB can still reach it via:
-     *   adb shell am broadcast --user 0 -a com.example.kero_space.WAKE_WORD_TRIGGER
+     *   adb shell am broadcast --user 0 -a com.example.trobio.WAKE_WORD_TRIGGER
      */
     private val mockTriggerReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -68,7 +68,7 @@ class WakeWordService : Service() {
 
         val isDebuggable = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
         if (isDebuggable) {
-            val filter = IntentFilter("com.example.kero_space.WAKE_WORD_TRIGGER")
+            val filter = IntentFilter("com.example.trobio.WAKE_WORD_TRIGGER")
             ContextCompat.registerReceiver(this, mockTriggerReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
             mockReceiverRegistered = true
         }
@@ -83,7 +83,7 @@ class WakeWordService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Kero Space Wake Word",
+                "Trobio Wake Word",
                 NotificationManager.IMPORTANCE_LOW,
             ).apply { description = "Listening for wake word" }
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
@@ -93,7 +93,7 @@ class WakeWordService : Service() {
 
     private fun startForegroundWithNotification() {
         val notification: Notification = androidx.core.app.NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Kero Space Listening")
+            .setContentTitle("Trobio Listening")
             .setContentText("Wake word detection active")
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setOngoing(true)
@@ -256,3 +256,4 @@ class WakeWordService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 }
+

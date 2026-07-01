@@ -1,4 +1,4 @@
-package com.example.kero_space
+package com.example.trobio
 
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -65,7 +65,7 @@ class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
 
         Log.d(TAG, "Queried ${jsonArray.length()} apps with foreground time. Broadcasting.")
 
-        val intent = Intent("com.example.kero_space.USAGE_STATS_READY").apply {
+        val intent = Intent("com.example.trobio.USAGE_STATS_READY").apply {
             putExtra("payload", jsonArray.toString())
             setPackage(applicationContext.packageName)
         }
@@ -74,3 +74,4 @@ class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
         return Result.success()
     }
 }
+

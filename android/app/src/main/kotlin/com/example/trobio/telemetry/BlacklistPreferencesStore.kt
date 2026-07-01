@@ -1,4 +1,4 @@
-package com.example.kero_space.telemetry
+package com.example.trobio.telemetry
 
 import android.content.Context
 import android.util.Log
@@ -90,3 +90,4 @@ object BlacklistPreferencesStore {
         }
     }
 }
+

@@ -1,4 +1,4 @@
-package com.example.kero_space
+package com.example.trobio
 
 import android.app.AlarmManager
 import android.app.Notification
@@ -149,7 +149,7 @@ class KeroSpaceForegroundService : Service() {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_USER_PRESENT)
         }
-        val usageFilter = IntentFilter("com.example.kero_space.USAGE_STATS_READY")
+        val usageFilter = IntentFilter("com.example.trobio.USAGE_STATS_READY")
 
         ContextCompat.registerReceiver(this, screenReceiver, screenFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(this, usageStatsReceiver, usageFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
@@ -159,7 +159,7 @@ class KeroSpaceForegroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Kero Space Omniscient Layer",
+                "Trobio Omniscient Layer",
                 NotificationManager.IMPORTANCE_LOW,
             ).apply { description = "Keeps background agents running" }
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
@@ -169,7 +169,7 @@ class KeroSpaceForegroundService : Service() {
 
     private fun startForegroundWithNotification() {
         val notification: Notification = androidx.core.app.NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Kero Space Active")
+            .setContentTitle("Trobio Active")
             .setContentText("Omniscient layer is monitoring...")
             .setSmallIcon(android.R.drawable.ic_menu_view)
             .setOngoing(true)
@@ -338,7 +338,7 @@ class KeroSpaceForegroundService : Service() {
                 }
                 "setBlacklistRules" -> {
                     val rulesJson = call.argument<String>("rulesJson") ?: "[]"
-                    com.example.kero_space.telemetry.BlacklistPreferencesStore
+                    com.example.trobio.telemetry.BlacklistPreferencesStore
                         .saveRulesJson(applicationContext, rulesJson)
                     result.success(null)
                 }
@@ -367,3 +367,4 @@ class KeroSpaceForegroundService : Service() {
         }
     }
 }
+

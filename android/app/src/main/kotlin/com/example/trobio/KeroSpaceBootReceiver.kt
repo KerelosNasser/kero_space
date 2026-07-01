@@ -1,4 +1,4 @@
-package com.example.kero_space
+package com.example.trobio
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -21,3 +21,4 @@ class KeroSpaceBootReceiver : BroadcastReceiver() {
         }
     }
 }
+

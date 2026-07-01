@@ -1,4 +1,4 @@
-package com.example.kero_space
+package com.example.trobio
 
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -55,3 +55,4 @@ object SubAppDetector {
         return false
     }
 }
+

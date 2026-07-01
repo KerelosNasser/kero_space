@@ -1,4 +1,4 @@
-package com.example.kero_space
+package com.example.trobio
 
 import android.content.Context
 import android.content.Intent
@@ -156,7 +156,7 @@ class MainActivity : FlutterFragmentActivity() {
                         val rulesJson = call.argument<String>("rulesJson") ?: "[]"
                         try {
                             org.json.JSONArray(rulesJson)
-                            com.example.kero_space.telemetry.BlacklistPreferencesStore
+                            com.example.trobio.telemetry.BlacklistPreferencesStore
                                 .saveRulesJson(applicationContext, rulesJson)
                             result.success(null)
                         } catch (e: Exception) {
@@ -232,3 +232,4 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 }
+

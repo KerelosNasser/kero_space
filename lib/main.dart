@@ -82,7 +82,7 @@ class KeroSpaceApp extends StatelessWidget {
           BlocProvider.value(value: getIt<ProcessWatcherBloc>()),
       ],
       child: MaterialApp.router(
-        title: 'Kero Space',
+        title: 'Trobio',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         routerConfig: router,
@@ -92,9 +92,7 @@ class KeroSpaceApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
           quill.FlutterQuillLocalizations.delegate,
         ],
-        supportedLocales: const [
-          Locale('en', 'US'),
-        ],
+        supportedLocales: const [Locale('en', 'US')],
         shortcuts: {
           ...WidgetsApp.defaultShortcuts,
           const SingleActivator(LogicalKeyboardKey.keyN, control: true):

@@ -1,4 +1,4 @@
-package com.example.kero_space
+package com.example.trobio
 
 import android.accessibilityservice.AccessibilityService
 import android.graphics.Rect
@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import com.example.kero_space.telemetry.BlacklistPreferencesStore
+import com.example.trobio.telemetry.BlacklistPreferencesStore
 
 class KeroSpaceAccessibilityService : AccessibilityService() {
 
@@ -254,3 +254,4 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
         KeroSpaceForegroundService.bgAccessibilityEventSink?.success(json)
     }
 }
+

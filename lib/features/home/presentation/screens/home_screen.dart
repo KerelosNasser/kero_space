@@ -27,12 +27,21 @@ class HomeScreen extends StatelessWidget {
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              title: const Text('KERO SPACE', style: TextStyle(fontWeight: FontWeight.w700)),
+              titlePadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+              title: const Text(
+                'Trobio',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
               background: Container(
                 alignment: Alignment.bottomRight,
                 padding: const EdgeInsets.all(16),
-                child: Text(dateStr, style: const TextStyle(color: AppTheme.textSecondary)),
+                child: Text(
+                  dateStr,
+                  style: const TextStyle(color: AppTheme.textSecondary),
+                ),
               ),
             ),
             actions: [
@@ -46,12 +55,26 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                const Text('TODAY\'S FOCUS', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1.2)),
+                const Text(
+                  'TODAY\'S FOCUS',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    letterSpacing: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 _buildProductivityCard(context),
                 const SizedBox(height: 24),
-                
-                const Text('HEALTH & TELEMETRY', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1.2)),
+
+                const Text(
+                  'HEALTH & TELEMETRY',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    letterSpacing: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -61,8 +84,15 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
-                
-                const Text('WEALTH & SPIRITUALITY', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1.2)),
+
+                const Text(
+                  'WEALTH & SPIRITUALITY',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    letterSpacing: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -85,12 +115,19 @@ class HomeScreen extends StatelessWidget {
       builder: (context, state) {
         String subtitle = 'Loading tasks...';
         String metric = '--';
-        
+
         state.maybeWhen(
           loaded: (allTasks, dailyChecklist, allNotes) {
             final pending = dailyChecklist.where((t) => !t.isCompleted).length;
             subtitle = '$pending tasks pending';
-            metric = pending > 0 ? dailyChecklist.firstWhere((t) => !t.isCompleted, orElse: () => dailyChecklist.first).title : 'All Done!';
+            metric = pending > 0
+                ? dailyChecklist
+                      .firstWhere(
+                        (t) => !t.isCompleted,
+                        orElse: () => dailyChecklist.first,
+                      )
+                      .title
+                : 'All Done!';
           },
           orElse: () {},
         );
@@ -161,9 +198,10 @@ class HomeScreen extends StatelessWidget {
     return BlocBuilder<ChurchBloc, ChurchState>(
       builder: (context, state) {
         int streak = 0;
-        if (state.status == ChurchStatus.success && state.attendances.isNotEmpty) {
-           // Basic streak calculation for display
-           streak = 1; // Simplified for snapshot
+        if (state.status == ChurchStatus.success &&
+            state.attendances.isNotEmpty) {
+          // Basic streak calculation for display
+          streak = 1; // Simplified for snapshot
         }
         return _buildSnapshotCard(
           context: context,
@@ -200,9 +238,24 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(domainLabel, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+              Text(
+                domainLabel,
+                style: const TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 11,
+                ),
+              ),
               const SizedBox(height: 8),
-              Text(heroMetric, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(
+                heroMetric,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
