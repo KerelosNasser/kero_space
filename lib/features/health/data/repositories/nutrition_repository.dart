@@ -9,32 +9,56 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 @lazySingleton
 class NutritionRepository {
+  @visibleForTesting
+  static Ingredient ingredientFromSeedMap(Map<String, dynamic> json) {
+    double number(String key) => (json[key] as num?)?.toDouble() ?? 0.0;
+
+    return Ingredient()
+      ..deviceId = 'local'
+      ..platform = 'seed'
+      ..name = (json['name'] as String?)?.trim().isNotEmpty == true
+          ? json['name'] as String
+          : 'Unknown ingredient'
+      ..calories = number('calories')
+      ..protein = number('protein')
+      ..carbs = number('carbs')
+      ..fat = number('fat')
+      ..fiber = number('fiber')
+      ..sugar = number('sugar')
+      ..fastCarbs = number('fastCarbs')
+      ..slowCarbs = number('slowCarbs')
+      ..fatSaturated = number('fatSaturated')
+      ..fatUnsaturated = number('fatUnsaturated')
+      ..cholesterol = number('cholesterol')
+      ..sodium = number('sodium')
+      ..glycemicIndex = number('glycemicIndex')
+      ..isFastingCompliant = json['isFastingCompliant'] == true;
+  }
+
   Future<void> seedIngredientsIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
     final isSeeded = prefs.getBool('ingredients_seeded_v2') ?? false;
-
-    if (isSeeded) return;
-
     final isar = IsarService.instance;
+    final hasSeededRows =
+        await isar.ingredients.where().limit(1).findFirst() != null;
+
+    if (isSeeded && hasSeededRows) {
+      return;
+    }
 
     try {
       await isar.writeTxn(() async {
         await isar.ingredients.clear();
       });
-      final jsonString = await rootBundle.loadString('assets/ingredients_seed.json');
+      final jsonString = await rootBundle.loadString(
+        'assets/ingredients_seed.json',
+      );
       final List<dynamic> jsonList = jsonDecode(jsonString);
 
-      List<Ingredient> ingredients = jsonList.map((json) {
-        return Ingredient()
-          ..deviceId = 'local'
-          ..platform = 'seed'
-          ..name = json['name']
-          ..calories = (json['calories'] as num).toDouble()
-          ..protein = (json['protein'] as num).toDouble()
-          ..carbs = (json['carbs'] as num).toDouble()
-          ..fat = (json['fat'] as num).toDouble()
-          ..isFastingCompliant = json['isFastingCompliant'] ?? false;
-      }).toList();
+      final ingredients = jsonList
+          .whereType<Map<String, dynamic>>()
+          .map(ingredientFromSeedMap)
+          .toList();
 
       await isar.writeTxn(() async {
         await isar.ingredients.putAll(ingredients);
@@ -90,10 +114,7 @@ class NutritionRepository {
 
   Future<List<MealEntry>> getMealsInRange(DateTime start, DateTime end) async {
     final isar = IsarService.instance;
-    return await isar.mealEntrys
-        .where()
-        .timestampBetween(start, end)
-        .findAll();
+    return await isar.mealEntrys.where().timestampBetween(start, end).findAll();
   }
 
   Future<UserProfile?> getUserProfile() async {

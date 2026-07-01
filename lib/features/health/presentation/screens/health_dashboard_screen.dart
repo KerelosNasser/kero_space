@@ -1,319 +1,371 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
-import 'package:kero_space/features/health/data/models/health_collections.dart';
-import 'package:kero_space/core/app_theme.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kero_space/shared/widgets/shimmer/health_skeleton.dart';
-import 'package:kero_space/shared/widgets/inline_error_widget.dart';
+import 'package:intl/intl.dart';
+import 'package:kero_space/core/app_theme.dart';
+import 'package:kero_space/features/exercises/presentation/widgets/exercises_tab.dart';
+import 'package:kero_space/features/health/data/models/health_collections.dart';
+import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
 import 'package:kero_space/features/health/presentation/widgets/radial_progress_painter.dart';
+import 'package:kero_space/shared/widgets/inline_error_widget.dart';
+import 'package:kero_space/shared/widgets/shimmer/health_skeleton.dart';
 
-class HealthDashboardScreen extends StatelessWidget {
+class HealthDashboardScreen extends StatefulWidget {
   const HealthDashboardScreen({super.key});
 
   @override
+  State<HealthDashboardScreen> createState() => _HealthDashboardScreenState();
+}
+
+class _HealthDashboardScreenState extends State<HealthDashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this)
+      ..addListener(() {
+        if (!_tabController.indexIsChanging) {
+          setState(() {});
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isNutritionTab = _tabController.index == 0;
+
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        title: const Text('Health & Nutrition'),
+        title: const Text('Health'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => context.push('/health/config'),
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Nutrition'),
+            Tab(text: 'Exercises'),
+          ],
+        ),
       ),
-      body: BlocBuilder<HealthBloc, HealthState>(
-        builder: (context, state) {
-          if (state.status == HealthStatus.initial || state.status == HealthStatus.loading) {
-            return const HealthSkeleton();
-          }
-          if (state.status == HealthStatus.failure) {
-            return InlineErrorWidget(
-              message: state.errorMessage ?? 'An error occurred',
-              onRetry: () => context.read<HealthBloc>().add(LoadDashboard()),
-            );
-          }
+      body: TabBarView(
+        controller: _tabController,
+        children: const [_NutritionDashboardTab(), ExercisesTab()],
+      ),
+      floatingActionButton: isNutritionTab
+          ? FloatingActionButton(
+              onPressed: () => context.push('/health/search'),
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
+}
 
-          // Sanitize NaN values from the BLoC state to prevent layout/display crashes
-          final double dailyCalories = state.dailyCalories.isNaN ? 0.0 : state.dailyCalories;
-          final double targetBmr = state.bmrTarget > 0 ? (state.bmrTarget.isNaN ? 2000.0 : state.bmrTarget) : 2000.0;
-          final double caloriesRatio = dailyCalories / targetBmr;
+class _NutritionDashboardTab extends StatelessWidget {
+  const _NutritionDashboardTab();
 
-          final double dailyProtein = state.dailyProtein.isNaN ? 0.0 : state.dailyProtein;
-          final double dailyCarbs = state.dailyCarbs.isNaN ? 0.0 : state.dailyCarbs;
-          final double dailyFat = state.dailyFat.isNaN ? 0.0 : state.dailyFat;
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HealthBloc, HealthState>(
+      builder: (context, state) {
+        if (state.status == HealthStatus.initial ||
+            state.status == HealthStatus.loading) {
+          return const HealthSkeleton();
+        }
+        if (state.status == HealthStatus.failure) {
+          return InlineErrorWidget(
+            message: state.errorMessage ?? 'An error occurred',
+            onRetry: () => context.read<HealthBloc>().add(LoadDashboard()),
+          );
+        }
 
-          final double proteinTarget = (targetBmr * 0.30) / 4;
-          final double carbsTarget = (targetBmr * 0.40) / 4;
-          final double fatTarget = (targetBmr * 0.30) / 9;
+        final dailyCalories = state.dailyCalories.isNaN
+            ? 0.0
+            : state.dailyCalories;
+        final targetBmr = state.bmrTarget > 0
+            ? (state.bmrTarget.isNaN ? 2000.0 : state.bmrTarget)
+            : 2000.0;
+        final caloriesRatio = dailyCalories / targetBmr;
+        final dailyProtein = state.dailyProtein.isNaN
+            ? 0.0
+            : state.dailyProtein;
+        final dailyCarbs = state.dailyCarbs.isNaN ? 0.0 : state.dailyCarbs;
+        final dailyFat = state.dailyFat.isNaN ? 0.0 : state.dailyFat;
+        final proteinTarget = (targetBmr * 0.30) / 4;
+        final carbsTarget = (targetBmr * 0.40) / 4;
+        final fatTarget = (targetBmr * 0.30) / 9;
 
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Nutrition Dashboard Hub (Overview)
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                sliver: SliverToBoxAdapter(
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppTheme.bgSurface,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Nutrition Overview',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            PremiumCalorieRing(
-                              value: caloriesRatio,
-                              current: dailyCalories.toInt(),
-                              target: targetBmr.toInt(),
-                            ),
-                            const SizedBox(width: 20),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildMacroProgressBar(
-                                    label: 'Protein',
-                                    current: dailyProtein,
-                                    target: proteinTarget,
-                                    color: AppTheme.accentCyan,
-                                  ),
-                                  _buildMacroProgressBar(
-                                    label: 'Carbs',
-                                    current: dailyCarbs,
-                                    target: carbsTarget,
-                                    color: AppTheme.accentRose,
-                                  ),
-                                  _buildMacroProgressBar(
-                                    label: 'Fats',
-                                    current: dailyFat,
-                                    target: fatTarget,
-                                    color: AppTheme.accentGold,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppTheme.bgSurface,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.05),
                     ),
                   ),
-                ),
-              ),
-
-              // Deep Nutrition Segmented Details Card
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                sliver: SliverToBoxAdapter(
-                  child: DeepNutritionSegmentedCard(state: state),
-                ),
-              ),
-
-              // Biometrics Row (Steps, HR, Sleep)
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                sliver: SliverToBoxAdapter(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildSquareCard(
-                        Icons.directions_walk,
-                        '${state.steps.toInt()}',
-                        'Steps',
-                        AppTheme.accentCyan,
-                      ),
-                      _buildSquareCard(
-                        Icons.favorite,
-                        '${state.heartRate.toInt()}',
-                        'HR (bpm)',
-                        AppTheme.accentRose,
-                      ),
-                      _buildSquareCard(
-                        Icons.bedtime,
-                        (state.sleepMinutes / 60).toStringAsFixed(1),
-                        'Sleep (h)',
-                        AppTheme.accentGold,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Meals Header
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                sliver: SliverToBoxAdapter(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "Today's Meals",
+                        'Nutrition Overview',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.textPrimary,
                         ),
                       ),
-                      if (state.todayMeals.isNotEmpty)
-                        Text(
-                          '${state.todayMeals.length} logged',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.textSecondary,
-                            fontWeight: FontWeight.w500,
+                      const SizedBox(height: 20),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          PremiumCalorieRing(
+                            value: caloriesRatio,
+                            current: dailyCalories.toInt(),
+                            target: targetBmr.toInt(),
                           ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Meals List or Empty State
-              if (state.todayMeals.isEmpty)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40.0),
-                    child: Center(
-                      child: Text(
-                        "No meals logged yet today.",
-                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                      ),
-                    ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final meal = state.todayMeals[index];
-                        final mealProtein = meal.protein.isNaN ? 0.0 : meal.protein;
-                        final mealCarbs = meal.carbs.isNaN ? 0.0 : meal.carbs;
-                        final mealFat = meal.fat.isNaN ? 0.0 : meal.fat;
-                        final mealCalories = meal.calories.isNaN ? 0.0 : meal.calories;
-                        final mealGrams = meal.grams.isNaN ? 0.0 : meal.grams;
-
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppTheme.bgSurface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
-                            ),
-                            child: Row(
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.bgElevated,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    _getMealIcon(meal.mealType),
-                                    color: AppTheme.accentViolet,
-                                    size: 20,
-                                  ),
+                                _buildMacroProgressBar(
+                                  label: 'Protein',
+                                  current: dailyProtein,
+                                  target: proteinTarget,
+                                  color: AppTheme.accentCyan,
                                 ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        meal.name,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.textPrimary,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'P: ${mealProtein.toStringAsFixed(0)}g  C: ${mealCarbs.toStringAsFixed(0)}g  F: ${mealFat.toStringAsFixed(0)}g',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: AppTheme.textSecondary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        '${DateFormat.jm().format(meal.timestamp)} • ${meal.mealType.name.toUpperCase()} • ${mealGrams.toInt()}g',
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          color: AppTheme.textDisabled,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                _buildMacroProgressBar(
+                                  label: 'Carbs',
+                                  current: dailyCarbs,
+                                  target: carbsTarget,
+                                  color: AppTheme.accentRose,
                                 ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      '${mealCalories.toInt()}',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppTheme.textPrimary,
-                                      ),
-                                    ),
-                                    const Text(
-                                      'kcal',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: AppTheme.textSecondary,
-                                      ),
-                                    ),
-                                  ],
+                                _buildMacroProgressBar(
+                                  label: 'Fats',
+                                  current: dailyFat,
+                                  target: fatTarget,
+                                  color: AppTheme.accentGold,
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
-                      childCount: state.todayMeals.length,
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverToBoxAdapter(
+                child: DeepNutritionSegmentedCard(state: state),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSquareCard(
+                      Icons.directions_walk,
+                      '${state.steps.toInt()}',
+                      'Steps',
+                      AppTheme.accentCyan,
+                    ),
+                    _buildSquareCard(
+                      Icons.favorite,
+                      '${state.heartRate.toInt()}',
+                      'HR (bpm)',
+                      AppTheme.accentRose,
+                    ),
+                    _buildSquareCard(
+                      Icons.bedtime,
+                      (state.sleepMinutes / 60).toStringAsFixed(1),
+                      'Sleep (h)',
+                      AppTheme.accentGold,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Today's Meals",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    if (state.todayMeals.isNotEmpty)
+                      Text(
+                        '${state.todayMeals.length} logged',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            if (state.todayMeals.isEmpty)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: Text(
+                      'No meals logged yet today.',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final meal = state.todayMeals[index];
+                    final mealProtein = meal.protein.isNaN ? 0.0 : meal.protein;
+                    final mealCarbs = meal.carbs.isNaN ? 0.0 : meal.carbs;
+                    final mealFat = meal.fat.isNaN ? 0.0 : meal.fat;
+                    final mealCalories = meal.calories.isNaN
+                        ? 0.0
+                        : meal.calories;
+                    final mealGrams = meal.grams.isNaN ? 0.0 : meal.grams;
 
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.bgSurface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.04),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppTheme.bgElevated,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                _getMealIcon(meal.mealType),
+                                color: AppTheme.accentViolet,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    meal.name,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'P: ${mealProtein.toStringAsFixed(0)}g  C: ${mealCarbs.toStringAsFixed(0)}g  F: ${mealFat.toStringAsFixed(0)}g',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppTheme.textSecondary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${DateFormat.jm().format(meal.timestamp)} - ${meal.mealType.name.toUpperCase()} - ${mealGrams.toInt()}g',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      color: AppTheme.textDisabled,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${mealCalories.toInt()}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                const Text(
+                                  'kcal',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }, childCount: state.todayMeals.length),
+                ),
               ),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/health/search'),
-        child: const Icon(Icons.add),
-      ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildSquareCard(IconData icon, String value, String label, Color iconColor) {
+  Widget _buildSquareCard(
+    IconData icon,
+    String value,
+    String label,
+    Color iconColor,
+  ) {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -368,11 +420,11 @@ class HealthDashboardScreen extends StatelessWidget {
     required double target,
     required Color color,
   }) {
-    final double ratio = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
-    final int percentage = (ratio * 100).toInt();
+    final ratio = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
+    final percentage = (ratio * 100).toInt();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -426,37 +478,58 @@ class HealthDashboardScreen extends StatelessWidget {
 }
 
 class DeepNutritionSegmentedCard extends StatefulWidget {
-  final HealthState state;
-
   const DeepNutritionSegmentedCard({super.key, required this.state});
 
+  final HealthState state;
+
   @override
-  State<DeepNutritionSegmentedCard> createState() => _DeepNutritionSegmentedCardState();
+  State<DeepNutritionSegmentedCard> createState() =>
+      _DeepNutritionSegmentedCardState();
 }
 
-class _DeepNutritionSegmentedCardState extends State<DeepNutritionSegmentedCard> {
-  int _selectedTab = 0; // 0: Protein, 1: Carbs, 2: Fats, 3: Micros
+class _DeepNutritionSegmentedCardState
+    extends State<DeepNutritionSegmentedCard> {
+  int _selectedTab = 0;
 
   @override
   Widget build(BuildContext context) {
-    final double targetBmr = widget.state.bmrTarget > 0 ? (widget.state.bmrTarget.isNaN ? 2000.0 : widget.state.bmrTarget) : 2000.0;
-
-    final double dailyProtein = widget.state.dailyProtein.isNaN ? 0.0 : widget.state.dailyProtein;
-    final double dailyCarbs = widget.state.dailyCarbs.isNaN ? 0.0 : widget.state.dailyCarbs;
-    final double dailyFat = widget.state.dailyFat.isNaN ? 0.0 : widget.state.dailyFat;
-
-    final double dailyFiber = widget.state.dailyFiber.isNaN ? 0.0 : widget.state.dailyFiber;
-    final double dailySugar = widget.state.dailySugar.isNaN ? 0.0 : widget.state.dailySugar;
-    final double dailyFastCarbs = widget.state.dailyFastCarbs.isNaN ? 0.0 : widget.state.dailyFastCarbs;
-    final double dailySlowCarbs = widget.state.dailySlowCarbs.isNaN ? 0.0 : widget.state.dailySlowCarbs;
-    final double dailyFatSaturated = widget.state.dailyFatSaturated.isNaN ? 0.0 : widget.state.dailyFatSaturated;
-    final double dailyFatUnsaturated = widget.state.dailyFatUnsaturated.isNaN ? 0.0 : widget.state.dailyFatUnsaturated;
-    final double dailyCholesterol = widget.state.dailyCholesterol.isNaN ? 0.0 : widget.state.dailyCholesterol;
-    final double dailySodium = widget.state.dailySodium.isNaN ? 0.0 : widget.state.dailySodium;
-
-    final double proteinTarget = (targetBmr * 0.30) / 4;
-    final double carbsTarget = (targetBmr * 0.40) / 4;
-    final double fatTarget = (targetBmr * 0.30) / 9;
+    final targetBmr = widget.state.bmrTarget > 0
+        ? (widget.state.bmrTarget.isNaN ? 2000.0 : widget.state.bmrTarget)
+        : 2000.0;
+    final dailyProtein = widget.state.dailyProtein.isNaN
+        ? 0.0
+        : widget.state.dailyProtein;
+    final dailyCarbs = widget.state.dailyCarbs.isNaN
+        ? 0.0
+        : widget.state.dailyCarbs;
+    final dailyFat = widget.state.dailyFat.isNaN ? 0.0 : widget.state.dailyFat;
+    final dailyFiber = widget.state.dailyFiber.isNaN
+        ? 0.0
+        : widget.state.dailyFiber;
+    final dailySugar = widget.state.dailySugar.isNaN
+        ? 0.0
+        : widget.state.dailySugar;
+    final dailyFastCarbs = widget.state.dailyFastCarbs.isNaN
+        ? 0.0
+        : widget.state.dailyFastCarbs;
+    final dailySlowCarbs = widget.state.dailySlowCarbs.isNaN
+        ? 0.0
+        : widget.state.dailySlowCarbs;
+    final dailyFatSaturated = widget.state.dailyFatSaturated.isNaN
+        ? 0.0
+        : widget.state.dailyFatSaturated;
+    final dailyFatUnsaturated = widget.state.dailyFatUnsaturated.isNaN
+        ? 0.0
+        : widget.state.dailyFatUnsaturated;
+    final dailyCholesterol = widget.state.dailyCholesterol.isNaN
+        ? 0.0
+        : widget.state.dailyCholesterol;
+    final dailySodium = widget.state.dailySodium.isNaN
+        ? 0.0
+        : widget.state.dailySodium;
+    final proteinTarget = (targetBmr * 0.30) / 4;
+    final carbsTarget = (targetBmr * 0.40) / 4;
+    final fatTarget = (targetBmr * 0.30) / 9;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -477,7 +550,6 @@ class _DeepNutritionSegmentedCardState extends State<DeepNutritionSegmentedCard>
             ),
           ),
           const SizedBox(height: 16),
-          // Tab bar containing 4 categories
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
@@ -519,18 +591,21 @@ class _DeepNutritionSegmentedCardState extends State<DeepNutritionSegmentedCard>
   }
 
   Widget _buildTabButton(int index, String title, Color activeColor) {
-    final bool isSelected = _selectedTab == index;
+    final isSelected = _selectedTab == index;
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedTab = index),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? activeColor.withValues(alpha: 0.12) : Colors.transparent,
+            color: isSelected
+                ? activeColor.withValues(alpha: 0.12)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? activeColor.withValues(alpha: 0.25) : Colors.transparent,
-              width: 1,
+              color: isSelected
+                  ? activeColor.withValues(alpha: 0.25)
+                  : Colors.transparent,
             ),
           ),
           child: Text(
@@ -601,7 +676,9 @@ class _DeepNutritionSegmentedCardState extends State<DeepNutritionSegmentedCard>
           ),
         ],
       );
-    } else if (_selectedTab == 1) {
+    }
+
+    if (_selectedTab == 1) {
       return Column(
         key: const ValueKey(1),
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -645,7 +722,7 @@ class _DeepNutritionSegmentedCardState extends State<DeepNutritionSegmentedCard>
               _buildDetailGridCard(
                 label: 'Sugars',
                 value: '${dailySugar.toStringAsFixed(1)}g',
-                color: Colors.orange,
+                color: AppTheme.accentGold,
                 icon: Icons.icecream,
                 subtitle: 'Limit: <36g / day',
               ),
@@ -653,7 +730,9 @@ class _DeepNutritionSegmentedCardState extends State<DeepNutritionSegmentedCard>
           ),
         ],
       );
-    } else if (_selectedTab == 2) {
+    }
+
+    if (_selectedTab == 2) {
       return Column(
         key: const ValueKey(2),
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -691,43 +770,43 @@ class _DeepNutritionSegmentedCardState extends State<DeepNutritionSegmentedCard>
           ),
         ],
       );
-    } else {
-      return Column(
-        key: const ValueKey(3),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            'Micro-nutrients & Cardiovascular Markers',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-          ),
-          const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            shrinkWrap: true,
-            childAspectRatio: 1.5,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _buildDetailGridCard(
-                label: 'Cholesterol',
-                value: '${dailyCholesterol.toStringAsFixed(0)} mg',
-                color: AppTheme.accentGold,
-                icon: Icons.donut_large,
-                subtitle: 'Limit: 300 mg / day',
-              ),
-              _buildDetailGridCard(
-                label: 'Sodium',
-                value: '${dailySodium.toStringAsFixed(0)} mg',
-                color: Colors.blueGrey,
-                icon: Icons.science,
-                subtitle: 'Limit: 2300 mg / day',
-              ),
-            ],
-          ),
-        ],
-      );
     }
+
+    return Column(
+      key: const ValueKey(3),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Micro-nutrients & cardiovascular markers',
+          style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+        ),
+        const SizedBox(height: 16),
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          shrinkWrap: true,
+          childAspectRatio: 1.5,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            _buildDetailGridCard(
+              label: 'Cholesterol',
+              value: '${dailyCholesterol.toStringAsFixed(0)} mg',
+              color: AppTheme.accentGold,
+              icon: Icons.donut_large,
+              subtitle: 'Limit: 300 mg / day',
+            ),
+            _buildDetailGridCard(
+              label: 'Sodium',
+              value: '${dailySodium.toStringAsFixed(0)} mg',
+              color: AppTheme.accentCyan,
+              icon: Icons.science,
+              subtitle: 'Limit: 2300 mg / day',
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Widget _buildTabHeaderProgressBar({
@@ -736,8 +815,8 @@ class _DeepNutritionSegmentedCardState extends State<DeepNutritionSegmentedCard>
     required double target,
     required Color color,
   }) {
-    final double ratio = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
-    final int percentage = (ratio * 100).toInt();
+    final ratio = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
+    final percentage = (ratio * 100).toInt();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
