@@ -412,10 +412,10 @@ class _MealLogScreenState extends State<MealLogScreen> {
       ..platform = 'Android'
       ..name = widget.ingredient.name
       ..grams = grams
-      ..calories = _totalCalories
-      ..protein = _totalProtein
-      ..carbs = _totalCarbs
-      ..fat = _totalFat
+      ..calories = _totalCalories.isNaN ? 0.0 : _totalCalories
+      ..protein = _totalProtein.isNaN ? 0.0 : _totalProtein
+      ..carbs = _totalCarbs.isNaN ? 0.0 : _totalCarbs
+      ..fat = _totalFat.isNaN ? 0.0 : _totalFat
       ..fiber = (widget.ingredient.fiber.isNaN ? 0.0 : widget.ingredient.fiber) * _ratio
       ..sugar = (widget.ingredient.sugar.isNaN ? 0.0 : widget.ingredient.sugar) * _ratio
       ..fastCarbs = (widget.ingredient.fastCarbs.isNaN ? 0.0 : widget.ingredient.fastCarbs) * _ratio

@@ -116,8 +116,8 @@ class HealthState extends Equatable {
     double? bmrTarget,
     bool? isFastingMode,
     List<MealEntry>? todayMeals,
-    bool clearError = false,
-    String? errorMessage,
+    // ponytail: use sentinel so null clears error
+    String? errorMessage = _sentinel,
   }) {
     return HealthState(
       status: status ?? this.status,
@@ -139,9 +139,11 @@ class HealthState extends Equatable {
       bmrTarget: bmrTarget ?? this.bmrTarget,
       isFastingMode: isFastingMode ?? this.isFastingMode,
       todayMeals: todayMeals ?? this.todayMeals,
-      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      errorMessage: errorMessage == _sentinel ? this.errorMessage : errorMessage,
     );
   }
+  // ponytail: sentinel to distinguish "not passed" from "clear to null"
+  static const String _sentinel = '_sentinel_';
 
   @override
   List<Object?> get props => [
@@ -150,6 +152,15 @@ class HealthState extends Equatable {
         dailyFatSaturated, dailyFatUnsaturated, dailyCholesterol, dailySodium,
         bmrTarget, isFastingMode, todayMeals, errorMessage
       ];
+}
+
+// ponytail: lightweight aggregation bag, no over-engineering
+class _MealTotals {
+  final double calories, protein, carbs, fat, fiber, sugar;
+  final double fastCarbs, slowCarbs, fatSat, fatUnsat, chol, sod;
+  const _MealTotals(this.calories, this.protein, this.carbs, this.fat,
+    this.fiber, this.sugar, this.fastCarbs, this.slowCarbs,
+    this.fatSat, this.fatUnsat, this.chol, this.sod);
 }
 
 // --- BLOC ---
@@ -176,43 +187,26 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
       await _nutritionRepo.seedIngredientsIfNeeded();
 
       final isar = IsarService.instance;
-      // Load latest biometrics for today
       final now = DateTime.now();
-      // Sync biometrics non-blocking
+      final startOfDay = DateTime(now.year, now.month, now.day);
+
+      // Sync biometrics non-blocking (fire-and-forget OK)
       try {
         _healthRepo.syncBiometrics(now.subtract(const Duration(days: 1)), now);
       } catch (_) {}
-      
-      final startOfDay = DateTime(now.year, now.month, now.day);
-      
-      final stepsRecords = await isar.healthRecords.filter().typeEqualTo('STEPS').timestampGreaterThan(startOfDay).findAll();
+
+      // Biometric queries — using .where() for indexed path
+      final stepsRecords = await isar.healthRecords.where().typeEqualTo('STEPS').filter().timestampGreaterThan(startOfDay).findAll();
       final hrRecords = await isar.healthRecords.filter().typeEqualTo('HEART_RATE').sortByTimestampDesc().findFirst();
       final sleepRecords = await isar.healthRecords.filter().typeEqualTo('SLEEP').sortByTimestampDesc().findFirst();
-      
+
       double totalSteps = stepsRecords.fold(0.0, (sum, item) => sum + item.value);
       double latestHr = hrRecords?.value ?? 0.0;
       double latestSleep = sleepRecords?.value ?? 0.0;
 
-      // Load nutrition
+      // Load + aggregate nutrition
       final meals = await _nutritionRepo.getDailyMeals(now);
-      double cals = 0, pro = 0, carbs = 0, fat = 0;
-      double fiber = 0, sugar = 0, fastCarbs = 0, slowCarbs = 0;
-      double fatSat = 0, fatUnsat = 0, chol = 0, sod = 0;
-      
-      for (var m in meals) {
-        cals += m.calories.isNaN ? 0.0 : m.calories;
-        pro += m.protein.isNaN ? 0.0 : m.protein;
-        carbs += m.carbs.isNaN ? 0.0 : m.carbs;
-        fat += m.fat.isNaN ? 0.0 : m.fat;
-        fiber += m.fiber.isNaN ? 0.0 : m.fiber;
-        sugar += m.sugar.isNaN ? 0.0 : m.sugar;
-        fastCarbs += m.fastCarbs.isNaN ? 0.0 : m.fastCarbs;
-        slowCarbs += m.slowCarbs.isNaN ? 0.0 : m.slowCarbs;
-        fatSat += m.fatSaturated.isNaN ? 0.0 : m.fatSaturated;
-        fatUnsat += m.fatUnsaturated.isNaN ? 0.0 : m.fatUnsaturated;
-        chol += m.cholesterol.isNaN ? 0.0 : m.cholesterol;
-        sod += m.sodium.isNaN ? 0.0 : m.sodium;
-      }
+      final mealTotals = _aggregateMeals(meals);
 
       // Load BMR
       final profile = await isar.userProfiles.where().sortByTimestampDesc().findFirst();
@@ -223,22 +217,22 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
         steps: totalSteps,
         heartRate: latestHr,
         sleepMinutes: latestSleep,
-        dailyCalories: cals,
-        dailyProtein: pro,
-        dailyCarbs: carbs,
-        dailyFat: fat,
-        dailyFiber: fiber,
-        dailySugar: sugar,
-        dailyFastCarbs: fastCarbs,
-        dailySlowCarbs: slowCarbs,
-        dailyFatSaturated: fatSat,
-        dailyFatUnsaturated: fatUnsat,
-        dailyCholesterol: chol,
-        dailySodium: sod,
+        dailyCalories: mealTotals.calories,
+        dailyProtein: mealTotals.protein,
+        dailyCarbs: mealTotals.carbs,
+        dailyFat: mealTotals.fat,
+        dailyFiber: mealTotals.fiber,
+        dailySugar: mealTotals.sugar,
+        dailyFastCarbs: mealTotals.fastCarbs,
+        dailySlowCarbs: mealTotals.slowCarbs,
+        dailyFatSaturated: mealTotals.fatSat,
+        dailyFatUnsaturated: mealTotals.fatUnsat,
+        dailyCholesterol: mealTotals.chol,
+        dailySodium: mealTotals.sod,
         bmrTarget: bmr,
         isFastingMode: isFasting,
         todayMeals: meals,
-        clearError: true,
+        errorMessage: null,
       ));
     } catch (e) {
       emit(state.copyWith(status: HealthStatus.failure, errorMessage: e.toString()));
@@ -248,7 +242,14 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
   Future<void> _onLogMeal(LogMeal event, Emitter<HealthState> emit) async {
     try {
       await _nutritionRepo.logMeal(event.entry);
-      add(LoadDashboard());
+      // Refresh meals without reloading all biometrics
+      final meals = await _nutritionRepo.getDailyMeals(DateTime.now());
+      final t = _aggregateMeals(meals);
+      emit(state.copyWith(todayMeals: meals, dailyCalories: t.calories,
+        dailyProtein: t.protein, dailyCarbs: t.carbs, dailyFat: t.fat,
+        dailyFiber: t.fiber, dailySugar: t.sugar, dailyFastCarbs: t.fastCarbs,
+        dailySlowCarbs: t.slowCarbs, dailyFatSaturated: t.fatSat,
+        dailyFatUnsaturated: t.fatUnsat, dailyCholesterol: t.chol, dailySodium: t.sod));
     } catch (e) {
       emit(state.copyWith(status: HealthStatus.failure, errorMessage: 'Failed to log meal.'));
     }
@@ -282,5 +283,26 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     } catch (e) {
       emit(state.copyWith(status: HealthStatus.failure, errorMessage: 'Failed to add ingredient.'));
     }
+  }
+
+  // ponytail: inline NaN guard avoids spreading sanitizeMeal across callers
+  static _MealTotals _aggregateMeals(List<MealEntry> meals) {
+    double c = 0, p = 0, cb = 0, f = 0, fi = 0, s = 0;
+    double fc = 0, sc = 0, fs = 0, fu = 0, ch = 0, sd = 0;
+    for (var m in meals) {
+      c += m.calories.isNaN ? 0.0 : m.calories;
+      p += m.protein.isNaN ? 0.0 : m.protein;
+      cb += m.carbs.isNaN ? 0.0 : m.carbs;
+      f += m.fat.isNaN ? 0.0 : m.fat;
+      fi += m.fiber.isNaN ? 0.0 : m.fiber;
+      s += m.sugar.isNaN ? 0.0 : m.sugar;
+      fc += m.fastCarbs.isNaN ? 0.0 : m.fastCarbs;
+      sc += m.slowCarbs.isNaN ? 0.0 : m.slowCarbs;
+      fs += m.fatSaturated.isNaN ? 0.0 : m.fatSaturated;
+      fu += m.fatUnsaturated.isNaN ? 0.0 : m.fatUnsaturated;
+      ch += m.cholesterol.isNaN ? 0.0 : m.cholesterol;
+      sd += m.sodium.isNaN ? 0.0 : m.sodium;
+    }
+    return _MealTotals(c, p, cb, f, fi, s, fc, sc, fs, fu, ch, sd);
   }
 }

@@ -59,8 +59,10 @@ object AgentManager {
                         ExistingPeriodicWorkPolicy.KEEP,
                         workRequest,
                     )
+                    _usageGuardScheduled = true
                 } else {
                     WorkManager.getInstance(context).cancelUniqueWork(USAGE_WORK_NAME)
+                    _usageGuardScheduled = false
                 }
             }
             "screen_event" -> {
@@ -99,20 +101,28 @@ object AgentManager {
         ) ?: "").contains(svc)
     }
 
-    private fun isUsageGuardScheduled(context: Context): Boolean {
-        return try {
-            WorkManager.getInstance(context)
-                .getWorkInfosForUniqueWork(USAGE_WORK_NAME)
-                .get(2, java.util.concurrent.TimeUnit.SECONDS)
-                .any { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING }
-        } catch (e: java.util.concurrent.TimeoutException) {
-            Log.w(TAG, "isUsageGuardScheduled timed out — returning false")
-            false
-        } catch (e: Exception) {
-            Log.e(TAG, "isUsageGuardScheduled error", e)
-            false
-        }
+    // ponytail: cached, avoids blocking main thread on WorkManager query
+    private var _usageGuardScheduled = false
+
+    fun refreshUsageGuardCachedState(context: Context) {
+        // Non-blocking async refresh — called once at service start
+        val future = WorkManager.getInstance(context)
+            .getWorkInfosForUniqueWork(USAGE_WORK_NAME)
+        future.addListener(
+            {
+                _usageGuardScheduled = try {
+                    future.get().any {
+                        it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING
+                    }
+                } catch (_: Exception) {
+                    false
+                }
+            },
+            java.util.concurrent.Executors.newSingleThreadExecutor(),
+        )
     }
+
+    private fun isUsageGuardScheduled(context: Context): Boolean = _usageGuardScheduled
 
     // --- Productivity Tab Enhancements ---
     var isTaskGatedModeEnabled = false

@@ -43,7 +43,39 @@ const ScreenEventSchema = CollectionSchema(
   deserialize: _screenEventDeserialize,
   deserializeProp: _screenEventDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'eventType_timestamp': IndexSchema(
+      id: -4981031614537100508,
+      name: r'eventType_timestamp',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'eventType',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+        IndexPropertySchema(
+          name: r'timestamp',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'timestamp': IndexSchema(
+      id: 1852253767416892198,
+      name: r'timestamp',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'timestamp',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _screenEventGetId,
@@ -131,6 +163,14 @@ extension ScreenEventQueryWhereSort
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhere> anyTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'timestamp'),
+      );
+    });
+  }
 }
 
 extension ScreenEventQueryWhere
@@ -196,6 +236,239 @@ extension ScreenEventQueryWhere
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause>
+      eventTypeEqualToAnyTimestamp(String eventType) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'eventType_timestamp',
+        value: [eventType],
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause>
+      eventTypeNotEqualToAnyTimestamp(String eventType) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'eventType_timestamp',
+              lower: [],
+              upper: [eventType],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'eventType_timestamp',
+              lower: [eventType],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'eventType_timestamp',
+              lower: [eventType],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'eventType_timestamp',
+              lower: [],
+              upper: [eventType],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause>
+      eventTypeTimestampEqualTo(String eventType, DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'eventType_timestamp',
+        value: [eventType, timestamp],
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause>
+      eventTypeEqualToTimestampNotEqualTo(
+          String eventType, DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'eventType_timestamp',
+              lower: [eventType],
+              upper: [eventType, timestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'eventType_timestamp',
+              lower: [eventType, timestamp],
+              includeLower: false,
+              upper: [eventType],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'eventType_timestamp',
+              lower: [eventType, timestamp],
+              includeLower: false,
+              upper: [eventType],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'eventType_timestamp',
+              lower: [eventType],
+              upper: [eventType, timestamp],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause>
+      eventTypeEqualToTimestampGreaterThan(
+    String eventType,
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'eventType_timestamp',
+        lower: [eventType, timestamp],
+        includeLower: include,
+        upper: [eventType],
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause>
+      eventTypeEqualToTimestampLessThan(
+    String eventType,
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'eventType_timestamp',
+        lower: [eventType],
+        upper: [eventType, timestamp],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause>
+      eventTypeEqualToTimestampBetween(
+    String eventType,
+    DateTime lowerTimestamp,
+    DateTime upperTimestamp, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'eventType_timestamp',
+        lower: [eventType, lowerTimestamp],
+        includeLower: includeLower,
+        upper: [eventType, upperTimestamp],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause> timestampEqualTo(
+      DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'timestamp',
+        value: [timestamp],
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause> timestampNotEqualTo(
+      DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause>
+      timestampGreaterThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [timestamp],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause> timestampLessThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [],
+        upper: [timestamp],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<ScreenEvent, ScreenEvent, QAfterWhereClause> timestampBetween(
+    DateTime lowerTimestamp,
+    DateTime upperTimestamp, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [lowerTimestamp],
+        includeLower: includeLower,
+        upper: [upperTimestamp],
         includeUpper: includeUpper,
       ));
     });
@@ -945,7 +1218,39 @@ const AppUsageRecordSchema = CollectionSchema(
   deserialize: _appUsageRecordDeserialize,
   deserializeProp: _appUsageRecordDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'packageName_date': IndexSchema(
+      id: -709335917564033374,
+      name: r'packageName_date',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'packageName',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+        IndexPropertySchema(
+          name: r'date',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'date': IndexSchema(
+      id: -7552997827385218417,
+      name: r'date',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'date',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _appUsageRecordGetId,
@@ -1037,6 +1342,14 @@ extension AppUsageRecordQueryWhereSort
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhere> anyDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'date'),
+      );
+    });
+  }
 }
 
 extension AppUsageRecordQueryWhere
@@ -1105,6 +1418,238 @@ extension AppUsageRecordQueryWhere
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      packageNameEqualToAnyDate(String packageName) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'packageName_date',
+        value: [packageName],
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      packageNameNotEqualToAnyDate(String packageName) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'packageName_date',
+              lower: [],
+              upper: [packageName],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'packageName_date',
+              lower: [packageName],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'packageName_date',
+              lower: [packageName],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'packageName_date',
+              lower: [],
+              upper: [packageName],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      packageNameDateEqualTo(String packageName, DateTime date) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'packageName_date',
+        value: [packageName, date],
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      packageNameEqualToDateNotEqualTo(String packageName, DateTime date) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'packageName_date',
+              lower: [packageName],
+              upper: [packageName, date],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'packageName_date',
+              lower: [packageName, date],
+              includeLower: false,
+              upper: [packageName],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'packageName_date',
+              lower: [packageName, date],
+              includeLower: false,
+              upper: [packageName],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'packageName_date',
+              lower: [packageName],
+              upper: [packageName, date],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      packageNameEqualToDateGreaterThan(
+    String packageName,
+    DateTime date, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'packageName_date',
+        lower: [packageName, date],
+        includeLower: include,
+        upper: [packageName],
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      packageNameEqualToDateLessThan(
+    String packageName,
+    DateTime date, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'packageName_date',
+        lower: [packageName],
+        upper: [packageName, date],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      packageNameEqualToDateBetween(
+    String packageName,
+    DateTime lowerDate,
+    DateTime upperDate, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'packageName_date',
+        lower: [packageName, lowerDate],
+        includeLower: includeLower,
+        upper: [packageName, upperDate],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause> dateEqualTo(
+      DateTime date) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'date',
+        value: [date],
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      dateNotEqualTo(DateTime date) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'date',
+              lower: [],
+              upper: [date],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'date',
+              lower: [date],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'date',
+              lower: [date],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'date',
+              lower: [],
+              upper: [date],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause>
+      dateGreaterThan(
+    DateTime date, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'date',
+        lower: [date],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause> dateLessThan(
+    DateTime date, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'date',
+        lower: [],
+        upper: [date],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<AppUsageRecord, AppUsageRecord, QAfterWhereClause> dateBetween(
+    DateTime lowerDate,
+    DateTime upperDate, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'date',
+        lower: [lowerDate],
+        includeLower: includeLower,
+        upper: [upperDate],
         includeUpper: includeUpper,
       ));
     });
@@ -1963,7 +2508,39 @@ const TelemetryEventSchema = CollectionSchema(
   deserialize: _telemetryEventDeserialize,
   deserializeProp: _telemetryEventDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'name_timestamp': IndexSchema(
+      id: 5611225251476570217,
+      name: r'name_timestamp',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'name',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+        IndexPropertySchema(
+          name: r'timestamp',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'timestamp': IndexSchema(
+      id: 1852253767416892198,
+      name: r'timestamp',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'timestamp',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _telemetryEventGetId,
@@ -2056,6 +2633,14 @@ extension TelemetryEventQueryWhereSort
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhere> anyTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'timestamp'),
+      );
+    });
+  }
 }
 
 extension TelemetryEventQueryWhere
@@ -2124,6 +2709,240 @@ extension TelemetryEventQueryWhere
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      nameEqualToAnyTimestamp(String name) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'name_timestamp',
+        value: [name],
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      nameNotEqualToAnyTimestamp(String name) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name_timestamp',
+              lower: [],
+              upper: [name],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name_timestamp',
+              lower: [name],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name_timestamp',
+              lower: [name],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name_timestamp',
+              lower: [],
+              upper: [name],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      nameTimestampEqualTo(String name, DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'name_timestamp',
+        value: [name, timestamp],
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      nameEqualToTimestampNotEqualTo(String name, DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name_timestamp',
+              lower: [name],
+              upper: [name, timestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name_timestamp',
+              lower: [name, timestamp],
+              includeLower: false,
+              upper: [name],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name_timestamp',
+              lower: [name, timestamp],
+              includeLower: false,
+              upper: [name],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name_timestamp',
+              lower: [name],
+              upper: [name, timestamp],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      nameEqualToTimestampGreaterThan(
+    String name,
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'name_timestamp',
+        lower: [name, timestamp],
+        includeLower: include,
+        upper: [name],
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      nameEqualToTimestampLessThan(
+    String name,
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'name_timestamp',
+        lower: [name],
+        upper: [name, timestamp],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      nameEqualToTimestampBetween(
+    String name,
+    DateTime lowerTimestamp,
+    DateTime upperTimestamp, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'name_timestamp',
+        lower: [name, lowerTimestamp],
+        includeLower: includeLower,
+        upper: [name, upperTimestamp],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      timestampEqualTo(DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'timestamp',
+        value: [timestamp],
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      timestampNotEqualTo(DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      timestampGreaterThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [timestamp],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      timestampLessThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [],
+        upper: [timestamp],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<TelemetryEvent, TelemetryEvent, QAfterWhereClause>
+      timestampBetween(
+    DateTime lowerTimestamp,
+    DateTime upperTimestamp, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [lowerTimestamp],
+        includeLower: includeLower,
+        upper: [upperTimestamp],
         includeUpper: includeUpper,
       ));
     });

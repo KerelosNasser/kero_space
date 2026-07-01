@@ -141,7 +141,6 @@ class TelemetryBloc extends Bloc<bloc_event.TelemetryEvent, TelemetryState> {
       bloc_event.LoadClickLogs event, Emitter<TelemetryState> emit) async {
     try {
       final logs = await _clickRepo.getClickLogs(
-        packageName: event.packageFilter,
         from: event.from,
         to: event.to,
         page: event.page,

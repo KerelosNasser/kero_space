@@ -83,7 +83,7 @@ class NutritionRepository {
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
     return await isar.mealEntrys
-        .filter()
+        .where()
         .timestampBetween(startOfDay, endOfDay)
         .findAll();
   }
@@ -91,7 +91,7 @@ class NutritionRepository {
   Future<List<MealEntry>> getMealsInRange(DateTime start, DateTime end) async {
     final isar = IsarService.instance;
     return await isar.mealEntrys
-        .filter()
+        .where()
         .timestampBetween(start, end)
         .findAll();
   }

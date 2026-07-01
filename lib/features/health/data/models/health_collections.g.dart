@@ -48,7 +48,34 @@ const HealthRecordSchema = CollectionSchema(
   deserialize: _healthRecordDeserialize,
   deserializeProp: _healthRecordDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'type': IndexSchema(
+      id: 5117122708147080838,
+      name: r'type',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'type',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'timestamp': IndexSchema(
+      id: 1852253767416892198,
+      name: r'timestamp',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'timestamp',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _healthRecordGetId,
@@ -140,6 +167,14 @@ extension HealthRecordQueryWhereSort
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<HealthRecord, HealthRecord, QAfterWhere> anyTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'timestamp'),
+      );
+    });
+  }
 }
 
 extension HealthRecordQueryWhere
@@ -206,6 +241,142 @@ extension HealthRecordQueryWhere
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<HealthRecord, HealthRecord, QAfterWhereClause> typeEqualTo(
+      String type) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'type',
+        value: [type],
+      ));
+    });
+  }
+
+  QueryBuilder<HealthRecord, HealthRecord, QAfterWhereClause> typeNotEqualTo(
+      String type) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'type',
+              lower: [],
+              upper: [type],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'type',
+              lower: [type],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'type',
+              lower: [type],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'type',
+              lower: [],
+              upper: [type],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<HealthRecord, HealthRecord, QAfterWhereClause> timestampEqualTo(
+      DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'timestamp',
+        value: [timestamp],
+      ));
+    });
+  }
+
+  QueryBuilder<HealthRecord, HealthRecord, QAfterWhereClause>
+      timestampNotEqualTo(DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<HealthRecord, HealthRecord, QAfterWhereClause>
+      timestampGreaterThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [timestamp],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<HealthRecord, HealthRecord, QAfterWhereClause> timestampLessThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [],
+        upper: [timestamp],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<HealthRecord, HealthRecord, QAfterWhereClause> timestampBetween(
+    DateTime lowerTimestamp,
+    DateTime upperTimestamp, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [lowerTimestamp],
+        includeLower: includeLower,
+        upper: [upperTimestamp],
         includeUpper: includeUpper,
       ));
     });
@@ -1125,7 +1296,21 @@ const MealEntrySchema = CollectionSchema(
   deserialize: _mealEntryDeserialize,
   deserializeProp: _mealEntryDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'timestamp': IndexSchema(
+      id: 1852253767416892198,
+      name: r'timestamp',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'timestamp',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _mealEntryGetId,
@@ -1288,6 +1473,14 @@ extension MealEntryQueryWhereSort
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterWhere> anyTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'timestamp'),
+      );
+    });
+  }
 }
 
 extension MealEntryQueryWhere
@@ -1352,6 +1545,96 @@ extension MealEntryQueryWhere
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterWhereClause> timestampEqualTo(
+      DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'timestamp',
+        value: [timestamp],
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterWhereClause> timestampNotEqualTo(
+      DateTime timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterWhereClause> timestampGreaterThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [timestamp],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterWhereClause> timestampLessThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [],
+        upper: [timestamp],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<MealEntry, MealEntry, QAfterWhereClause> timestampBetween(
+    DateTime lowerTimestamp,
+    DateTime upperTimestamp, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [lowerTimestamp],
+        includeLower: includeLower,
+        upper: [upperTimestamp],
         includeUpper: includeUpper,
       ));
     });
@@ -3618,7 +3901,21 @@ const IngredientSchema = CollectionSchema(
   deserialize: _ingredientDeserialize,
   deserializeProp: _ingredientDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'name': IndexSchema(
+      id: 879695947855722453,
+      name: r'name',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'name',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _ingredientGetId,
@@ -3823,6 +4120,51 @@ extension IngredientQueryWhere
         upper: upperId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterWhereClause> nameEqualTo(
+      String name) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'name',
+        value: [name],
+      ));
+    });
+  }
+
+  QueryBuilder<Ingredient, Ingredient, QAfterWhereClause> nameNotEqualTo(
+      String name) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [],
+              upper: [name],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [name],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [name],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [],
+              upper: [name],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }

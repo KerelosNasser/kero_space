@@ -8,7 +8,6 @@ class ClickLogRepository {
   ClickLogRepository(this._isar);
 
   Future<List<TelemetryEvent>> getClickLogs({
-    String? packageName,
     DateTime? from,
     DateTime? to,
     int page = 0,
@@ -16,7 +15,7 @@ class ClickLogRepository {
     final rangeFrom = from ?? DateTime.now().subtract(const Duration(days: 7));
     final rangeTo = to ?? DateTime.now();
 
-    var query = _isar.telemetryEvents
+    final query = _isar.telemetryEvents
         .filter()
         .nameEqualTo('click')
         .timestampBetween(rangeFrom, rangeTo);

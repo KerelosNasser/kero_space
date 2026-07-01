@@ -112,8 +112,9 @@ class HealthConnectRepository {
           // Prevent duplication by deleting overlapping records of the synced types
           for (var type in stringTypesToDelete) {
             await isar.healthRecords
-                .filter()
+                .where()
                 .typeEqualTo(type)
+                .filter()
                 .timestampBetween(startTime, endTime)
                 .deleteAll();
           }

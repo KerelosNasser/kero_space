@@ -7,8 +7,10 @@ class HealthRecord {
   Id id = Isar.autoIncrement;
   late String deviceId;
   late String platform;
+  @Index()
   late String type; // 'STEPS', 'HEART_RATE', 'SLEEP'
   late double value;
+  @Index()
   late DateTime timestamp;
 }
 
@@ -34,6 +36,7 @@ class MealEntry {
   late double cholesterol;
   late double sodium;
   late double glycemicIndex;
+  @Index()
   late DateTime timestamp;
   @enumerated
   MealType mealType = MealType.snack;
@@ -44,6 +47,7 @@ class Ingredient {
   Id id = Isar.autoIncrement;
   late String deviceId;
   late String platform;
+  @Index()
   late String name;
   late double calories;
   late double protein;
