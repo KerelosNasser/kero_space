@@ -82,6 +82,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         request: () => repo.openUsageStatsSettings(),
       ),
       PermissionItem(
+        title: 'Display Over Other Apps',
+        description:
+            'Required so blocker overlays and cooldown timers can appear on top of distracting apps.',
+        icon: Icons.picture_in_picture_alt_outlined,
+        check: () => repo.hasOverlayPermission(),
+        request: () => repo.openOverlaySettings(),
+      ),
+      PermissionItem(
         title: 'Notification Listener',
         description:
             'Allows parsing transaction notifications to track expenses automatically.',

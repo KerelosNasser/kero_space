@@ -1,9 +1,13 @@
 package com.example.trobio
 
+import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
+import androidx.core.app.NotificationManagerCompat
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -35,8 +39,6 @@ class MainActivity : FlutterFragmentActivity() {
     }
 
     override fun onDestroy() {
-        // Teardown main-engine event sinks to prevent memory leaks when the
-        // FlutterActivity is destroyed without a clean onCancel cycle.
         KeroSpaceForegroundService.wakeWordEventSink = null
         KeroSpaceForegroundService.screenEventSink = null
         KeroSpaceForegroundService.accessibilityEventSink = null
@@ -53,8 +55,6 @@ class MainActivity : FlutterFragmentActivity() {
             .setMethodCallHandler(CalendarChannelHandler(this))
     }
 
-    // ─── kero_space/main_methods ────────────────────────────────────────────
-
     private fun setupMainMethodsChannel(flutterEngine: FlutterEngine) {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, MAIN_METHODS_CHANNEL)
             .setMethodCallHandler { call, result ->
@@ -68,35 +68,49 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                         result.success("Started")
                     }
+
                     "checkAccessibility" -> {
                         result.success(AgentManager.isAccessibilityEnabled(this))
                     }
+
                     "checkUsageStats" -> {
-                        val appOps = getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+                        val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
                         val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             appOps.unsafeCheckOpNoThrow(
-                                android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                                AppOpsManager.OPSTR_GET_USAGE_STATS,
                                 android.os.Process.myUid(),
                                 packageName,
                             )
                         } else {
                             @Suppress("DEPRECATION")
                             appOps.checkOpNoThrow(
-                                android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                                AppOpsManager.OPSTR_GET_USAGE_STATS,
                                 android.os.Process.myUid(),
                                 packageName,
                             )
                         }
-                        result.success(mode == android.app.AppOpsManager.MODE_ALLOWED)
+                        result.success(mode == AppOpsManager.MODE_ALLOWED)
                     }
+
+                    "checkOverlayPermission" -> {
+                        result.success(
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                Settings.canDrawOverlays(this)
+                            } else {
+                                true
+                            },
+                        )
+                    }
+
                     "checkNotificationListener" -> {
-                        val enabled = androidx.core.app.NotificationManagerCompat
+                        val enabled = NotificationManagerCompat
                             .getEnabledListenerPackages(applicationContext)
                         result.success(enabled.contains(packageName))
                     }
+
                     "openAccessibilitySettings" -> {
                         try {
-                            startActivity(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             })
                             result.success(null)
@@ -105,9 +119,10 @@ class MainActivity : FlutterFragmentActivity() {
                             result.error("SETTINGS_ERROR", e.message, null)
                         }
                     }
+
                     "openUsageStatsSettings" -> {
                         try {
-                            startActivity(Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             })
                             result.success(null)
@@ -116,13 +131,39 @@ class MainActivity : FlutterFragmentActivity() {
                             result.error("SETTINGS_ERROR", e.message, null)
                         }
                     }
+
+                    "openOverlaySettings" -> {
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                startActivity(
+                                    Intent(
+                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        Uri.parse("package:$packageName"),
+                                    ).apply {
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    },
+                                )
+                            } else {
+                                startActivity(Intent(Settings.ACTION_SETTINGS).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                })
+                            }
+                            result.success(null)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to open overlay settings", e)
+                            result.error("SETTINGS_ERROR", e.message, null)
+                        }
+                    }
+
                     "openNotificationListenerSettings" -> {
                         try {
                             val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                                Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                             } else {
                                 Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-                            }.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+                            }.apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
                             startActivity(intent)
                             result.success(null)
                         } catch (e: Exception) {
@@ -130,12 +171,11 @@ class MainActivity : FlutterFragmentActivity() {
                             result.error("SETTINGS_ERROR", e.message, null)
                         }
                     }
+
                     else -> result.notImplemented()
                 }
             }
     }
-
-    // ─── kero_space/methods ─────────────────────────────────────────────────
 
     private fun setupMethodsChannel(flutterEngine: FlutterEngine) {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHODS_CHANNEL)
@@ -148,10 +188,12 @@ class MainActivity : FlutterFragmentActivity() {
                         OverlayManager.showOverlay(applicationContext, pkg, dur)
                         result.success(null)
                     }
+
                     "dismissOverlay" -> {
                         OverlayManager.dismissOverlay()
                         result.success(null)
                     }
+
                     "setBlacklistRules" -> {
                         val rulesJson = call.argument<String>("rulesJson") ?: "[]"
                         try {
@@ -159,58 +201,62 @@ class MainActivity : FlutterFragmentActivity() {
                             com.example.trobio.telemetry.BlacklistPreferencesStore
                                 .saveRulesJson(applicationContext, rulesJson)
                             result.success(null)
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             result.error("INVALID_JSON", "Rules must be a valid JSON array", null)
                         }
                     }
+
                     "toggleAgent" -> {
                         val agentId = call.argument<String>("agentId") ?: ""
                         val enabled = call.argument<Boolean>("enabled") ?: false
                         AgentManager.handleAgentToggle(this, agentId, enabled)
                         result.success(null)
                     }
+
                     "getAgentStatuses" -> {
                         result.success(AgentManager.buildAgentStatusMap(this))
                     }
+
                     "setTaskGatedMode" -> {
                         val enabled = call.argument<Boolean>("enabled") ?: false
                         AgentManager.setTaskGatedMode(applicationContext, enabled)
                         result.success(null)
                     }
+
                     "setPendingHighPriorityTask" -> {
                         val hasTask = call.argument<Boolean>("hasTask") ?: false
                         AgentManager.setPendingHighPriorityTask(applicationContext, hasTask)
                         result.success(null)
                     }
+
                     "startDeepWork" -> {
                         val durationMinutes = call.argument<Int>("durationMinutes") ?: 25
                         AgentManager.startDeepWork(applicationContext, durationMinutes)
                         result.success(null)
                     }
+
                     else -> result.notImplemented()
                 }
             }
     }
 
-    // ─── EventChannels (main engine ↔ Dart UI) ───────────────────────────────
-
-    @Suppress("UNUSED_ANONYMOUS_PARAMETER")
     private fun setupEventChannels(flutterEngine: FlutterEngine) {
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         val mainChannels = mapOf(
-            "kero_space/wake_word" to { s: EventChannel.EventSink? ->
-                KeroSpaceForegroundService.wakeWordEventSink = s
+            "kero_space/wake_word" to { sink: EventChannel.EventSink? ->
+                KeroSpaceForegroundService.wakeWordEventSink = sink
             },
-            "kero_space/screen_events" to { s: EventChannel.EventSink? ->
-                KeroSpaceForegroundService.screenEventSink = s
+            "kero_space/screen_events" to { sink: EventChannel.EventSink? ->
+                KeroSpaceForegroundService.screenEventSink = sink
             },
-            "kero_space/accessibility" to { s: EventChannel.EventSink? ->
-                KeroSpaceForegroundService.accessibilityEventSink = s
+            "kero_space/accessibility" to { sink: EventChannel.EventSink? ->
+                KeroSpaceForegroundService.accessibilityEventSink = sink
             },
-            "kero_space/usage_stats" to { s: EventChannel.EventSink? ->
-                KeroSpaceForegroundService.usageStatsEventSink = s
+            "kero_space/usage_stats" to { sink: EventChannel.EventSink? ->
+                KeroSpaceForegroundService.usageStatsEventSink = sink
             },
         )
+
         mainChannels.forEach { (channelName, assign) ->
             EventChannel(messenger, channelName).setStreamHandler(
                 object : EventChannel.StreamHandler {
@@ -224,7 +270,7 @@ class MainActivity : FlutterFragmentActivity() {
                         try {
                             assign(null)
                         } catch (e: Exception) {
-                            Log.e(TAG, "stream onCancel error — $channelName", e)
+                            Log.e(TAG, "stream onCancel err — $channelName", e)
                         }
                     }
                 },
@@ -232,4 +278,3 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 }
-

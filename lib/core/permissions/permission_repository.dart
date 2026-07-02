@@ -6,10 +6,12 @@ class PermissionRepository {
 
   Future<bool> hasAccessibilityService() async {
     try {
-      final bool? isEnabled = await _platform.invokeMethod('checkAccessibility');
+      final bool? isEnabled = await _platform.invokeMethod(
+        'checkAccessibility',
+      );
       return isEnabled ?? false;
     } catch (_) {
-      return true; // Assume true if not implemented natively yet
+      return true;
     }
   }
 
@@ -18,16 +20,29 @@ class PermissionRepository {
       final bool? isEnabled = await _platform.invokeMethod('checkUsageStats');
       return isEnabled ?? false;
     } catch (_) {
-      return true;
+      return false;
+    }
+  }
+
+  Future<bool> hasOverlayPermission() async {
+    try {
+      final bool? isEnabled = await _platform.invokeMethod(
+        'checkOverlayPermission',
+      );
+      return isEnabled ?? false;
+    } catch (_) {
+      return false;
     }
   }
 
   Future<bool> hasNotificationListener() async {
     try {
-      final bool? isEnabled = await _platform.invokeMethod('checkNotificationListener');
+      final bool? isEnabled = await _platform.invokeMethod(
+        'checkNotificationListener',
+      );
       return isEnabled ?? false;
     } catch (_) {
-      return true;
+      return false;
     }
   }
 
@@ -54,6 +69,14 @@ class PermissionRepository {
   Future<void> openUsageStatsSettings() async {
     try {
       await _platform.invokeMethod('openUsageStatsSettings');
+    } catch (_) {
+      await openAppSettings();
+    }
+  }
+
+  Future<void> openOverlaySettings() async {
+    try {
+      await _platform.invokeMethod('openOverlaySettings');
     } catch (_) {
       await openAppSettings();
     }
