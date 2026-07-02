@@ -17,39 +17,49 @@ const MinistryTaskSchema = CollectionSchema(
   name: r'MinistryTask',
   id: -7556847336565980335,
   properties: {
-    r'deadline': PropertySchema(
+    r'assignedTo': PropertySchema(
       id: 0,
+      name: r'assignedTo',
+      type: IsarType.string,
+    ),
+    r'deadline': PropertySchema(
+      id: 1,
       name: r'deadline',
       type: IsarType.dateTime,
     ),
     r'description': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'description',
       type: IsarType.string,
     ),
     r'locallyModifiedAt': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'locallyModifiedAt',
       type: IsarType.dateTime,
     ),
+    r'priority': PropertySchema(
+      id: 4,
+      name: r'priority',
+      type: IsarType.long,
+    ),
     r'serverId': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'serverId',
       type: IsarType.string,
     ),
     r'status': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'status',
       type: IsarType.byte,
       enumMap: _MinistryTaskstatusEnumValueMap,
     ),
     r'syncedAt': PropertySchema(
-      id: 5,
+      id: 7,
       name: r'syncedAt',
       type: IsarType.dateTime,
     ),
     r'title': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'title',
       type: IsarType.string,
     )
@@ -75,6 +85,12 @@ int _ministryTaskEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
+    final value = object.assignedTo;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.description;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -96,13 +112,15 @@ void _ministryTaskSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.deadline);
-  writer.writeString(offsets[1], object.description);
-  writer.writeDateTime(offsets[2], object.locallyModifiedAt);
-  writer.writeString(offsets[3], object.serverId);
-  writer.writeByte(offsets[4], object.status.index);
-  writer.writeDateTime(offsets[5], object.syncedAt);
-  writer.writeString(offsets[6], object.title);
+  writer.writeString(offsets[0], object.assignedTo);
+  writer.writeDateTime(offsets[1], object.deadline);
+  writer.writeString(offsets[2], object.description);
+  writer.writeDateTime(offsets[3], object.locallyModifiedAt);
+  writer.writeLong(offsets[4], object.priority);
+  writer.writeString(offsets[5], object.serverId);
+  writer.writeByte(offsets[6], object.status.index);
+  writer.writeDateTime(offsets[7], object.syncedAt);
+  writer.writeString(offsets[8], object.title);
 }
 
 MinistryTask _ministryTaskDeserialize(
@@ -112,16 +130,18 @@ MinistryTask _ministryTaskDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = MinistryTask();
-  object.deadline = reader.readDateTimeOrNull(offsets[0]);
-  object.description = reader.readStringOrNull(offsets[1]);
+  object.assignedTo = reader.readStringOrNull(offsets[0]);
+  object.deadline = reader.readDateTimeOrNull(offsets[1]);
+  object.description = reader.readStringOrNull(offsets[2]);
   object.id = id;
-  object.locallyModifiedAt = reader.readDateTime(offsets[2]);
-  object.serverId = reader.readStringOrNull(offsets[3]);
+  object.locallyModifiedAt = reader.readDateTime(offsets[3]);
+  object.priority = reader.readLong(offsets[4]);
+  object.serverId = reader.readStringOrNull(offsets[5]);
   object.status =
-      _MinistryTaskstatusValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+      _MinistryTaskstatusValueEnumMap[reader.readByteOrNull(offsets[6])] ??
           MinistryTaskStatus.todo;
-  object.syncedAt = reader.readDateTimeOrNull(offsets[5]);
-  object.title = reader.readString(offsets[6]);
+  object.syncedAt = reader.readDateTimeOrNull(offsets[7]);
+  object.title = reader.readString(offsets[8]);
   return object;
 }
 
@@ -133,19 +153,23 @@ P _ministryTaskDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
-    case 3:
       return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader.readDateTime(offset)) as P;
     case 4:
+      return (reader.readLong(offset)) as P;
+    case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
       return (_MinistryTaskstatusValueEnumMap[reader.readByteOrNull(offset)] ??
           MinistryTaskStatus.todo) as P;
-    case 5:
+    case 7:
       return (reader.readDateTimeOrNull(offset)) as P;
-    case 6:
+    case 8:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -257,6 +281,160 @@ extension MinistryTaskQueryWhere
 
 extension MinistryTaskQueryFilter
     on QueryBuilder<MinistryTask, MinistryTask, QFilterCondition> {
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'assignedTo',
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'assignedTo',
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'assignedTo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'assignedTo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'assignedTo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'assignedTo',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'assignedTo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'assignedTo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'assignedTo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'assignedTo',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'assignedTo',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      assignedToIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'assignedTo',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
       deadlineIsNull() {
     return QueryBuilder.apply(this, (query) {
@@ -586,6 +764,62 @@ extension MinistryTaskQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'locallyModifiedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      priorityEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'priority',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      priorityGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'priority',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      priorityLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'priority',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterFilterCondition>
+      priorityBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'priority',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1020,6 +1254,19 @@ extension MinistryTaskQueryLinks
 
 extension MinistryTaskQuerySortBy
     on QueryBuilder<MinistryTask, MinistryTask, QSortBy> {
+  QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy> sortByAssignedTo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'assignedTo', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy>
+      sortByAssignedToDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'assignedTo', Sort.desc);
+    });
+  }
+
   QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy> sortByDeadline() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deadline', Sort.asc);
@@ -1056,6 +1303,18 @@ extension MinistryTaskQuerySortBy
       sortByLocallyModifiedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'locallyModifiedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy> sortByPriority() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'priority', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy> sortByPriorityDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'priority', Sort.desc);
     });
   }
 
@@ -1110,6 +1369,19 @@ extension MinistryTaskQuerySortBy
 
 extension MinistryTaskQuerySortThenBy
     on QueryBuilder<MinistryTask, MinistryTask, QSortThenBy> {
+  QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy> thenByAssignedTo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'assignedTo', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy>
+      thenByAssignedToDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'assignedTo', Sort.desc);
+    });
+  }
+
   QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy> thenByDeadline() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deadline', Sort.asc);
@@ -1158,6 +1430,18 @@ extension MinistryTaskQuerySortThenBy
       thenByLocallyModifiedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'locallyModifiedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy> thenByPriority() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'priority', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QAfterSortBy> thenByPriorityDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'priority', Sort.desc);
     });
   }
 
@@ -1212,6 +1496,13 @@ extension MinistryTaskQuerySortThenBy
 
 extension MinistryTaskQueryWhereDistinct
     on QueryBuilder<MinistryTask, MinistryTask, QDistinct> {
+  QueryBuilder<MinistryTask, MinistryTask, QDistinct> distinctByAssignedTo(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'assignedTo', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<MinistryTask, MinistryTask, QDistinct> distinctByDeadline() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'deadline');
@@ -1229,6 +1520,12 @@ extension MinistryTaskQueryWhereDistinct
       distinctByLocallyModifiedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'locallyModifiedAt');
+    });
+  }
+
+  QueryBuilder<MinistryTask, MinistryTask, QDistinct> distinctByPriority() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'priority');
     });
   }
 
@@ -1267,6 +1564,12 @@ extension MinistryTaskQueryProperty
     });
   }
 
+  QueryBuilder<MinistryTask, String?, QQueryOperations> assignedToProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'assignedTo');
+    });
+  }
+
   QueryBuilder<MinistryTask, DateTime?, QQueryOperations> deadlineProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'deadline');
@@ -1283,6 +1586,12 @@ extension MinistryTaskQueryProperty
       locallyModifiedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'locallyModifiedAt');
+    });
+  }
+
+  QueryBuilder<MinistryTask, int, QQueryOperations> priorityProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'priority');
     });
   }
 

@@ -89,8 +89,17 @@ class CommandParser {
     }
 
     // 5. Church — Attendance
-    if (text.contains('mark attendance') || text.contains('went to mass') || text.contains('attended church')) {
+    if (text.contains('mark') &&
+        (text.contains('mass') || text.contains('liturgy'))) {
       return MarkAttendanceIntent(date: DateTime.now());
+    }
+    if (text.contains('mark attendance') ||
+        text.contains('went to mass') ||
+        text.contains('attended church')) {
+      return MarkAttendanceIntent(date: DateTime.now());
+    }
+    if (text.contains('streak') || text.contains('church streak')) {
+      return NavigateIntent(destination: 'church');
     }
 
     // 6. Navigation

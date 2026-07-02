@@ -21,27 +21,26 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.bgPrimary, // --bg-primary
-      appBar: AppBar(
-        title: const Text('Mass Attendance', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.bgPrimary,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
-      ),
-      body: BlocConsumer<ChurchBloc, ChurchState>(
+    return BlocConsumer<ChurchBloc, ChurchState>(
         listener: (context, state) {
-          if (state.status == ChurchStatus.failure && state.errorMessage != null) {
+          if (state.status == ChurchStatus.failure &&
+              state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage!), backgroundColor: AppTheme.accentRose),
+              SnackBar(
+                  content: Text(state.errorMessage!),
+                  backgroundColor: AppTheme.accentRose),
             );
           }
         },
         builder: (context, state) {
-          if (state.status == ChurchStatus.loading && state.attendances.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: AppTheme.accentViolet));
+          if (state.status == ChurchStatus.loading &&
+              state.attendances.isEmpty) {
+            return const Center(
+                child: CircularProgressIndicator(
+                    color: AppTheme.accentViolet));
           }
 
-          int currentStreak = _calculateStreak(state.attendances);
+          final currentStreak = state.currentStreak;
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -54,9 +53,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('CURRENT STREAK', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                        const Text('CURRENT STREAK',
+                            style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 11)),
                         const SizedBox(height: 4),
-                        Text('$currentStreak days', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 34, fontWeight: FontWeight.bold)),
+                        Text('$currentStreak days',
+                            style: const TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 34,
+                                fontWeight: FontWeight.bold)),
                       ],
                     ),
                     ElevatedButton(
@@ -64,20 +70,29 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         backgroundColor: AppTheme.accentViolet,
                       ),
                       onPressed: () {
-                        context.read<ChurchBloc>().add(MarkAttendanceEvent(DateTime.now(), AttendanceType.liturgy));
+                        context.read<ChurchBloc>().add(MarkAttendanceEvent(
+                            DateTime.now(), ServiceType.liturgy));
                       },
-                      child: const Text('Mark Today', style: TextStyle(color: AppTheme.textPrimary)),
+                      child: const Text('Mark Today',
+                          style:
+                              TextStyle(color: AppTheme.textPrimary)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 32),
-                const Text('ATTENDANCE GRID', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                const Text('ATTENDANCE GRID',
+                    style: TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 11)),
                 const SizedBox(height: 8),
-                AttendanceContributionGrid(attendances: state.attendances),
+                AttendanceContributionGrid(
+                    attendances: state.attendances),
                 const SizedBox(height: 32),
                 ListTile(
-                  title: const Text('Retroactive Log', style: TextStyle(color: AppTheme.textPrimary)),
-                  trailing: const Icon(Icons.calendar_today, color: AppTheme.accentPrimary),
+                  title: const Text('Retroactive Log',
+                      style:
+                          TextStyle(color: AppTheme.textPrimary)),
+                  trailing: const Icon(Icons.calendar_today,
+                      color: AppTheme.accentPrimary),
                   onTap: () async {
                     final bloc = context.read<ChurchBloc>();
                     final date = await showDatePicker(
@@ -87,7 +102,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       lastDate: DateTime.now(),
                     );
                     if (date != null) {
-                      bloc.add(MarkAttendanceEvent(date, AttendanceType.liturgy));
+                      bloc.add(MarkAttendanceEvent(
+                          date, ServiceType.liturgy));
                     }
                   },
                 ),
@@ -95,8 +111,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
           );
         },
-      ),
-    );
+      );
+
   }
 
   int _calculateStreak(List<MassAttendance> attendances) {

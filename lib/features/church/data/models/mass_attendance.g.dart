@@ -17,26 +17,26 @@ const MassAttendanceSchema = CollectionSchema(
   name: r'MassAttendance',
   id: -3653200524295455350,
   properties: {
-    r'attendanceType': PropertySchema(
-      id: 0,
-      name: r'attendanceType',
-      type: IsarType.byte,
-      enumMap: _MassAttendanceattendanceTypeEnumValueMap,
-    ),
     r'date': PropertySchema(
-      id: 1,
+      id: 0,
       name: r'date',
       type: IsarType.dateTime,
     ),
     r'locallyModifiedAt': PropertySchema(
-      id: 2,
+      id: 1,
       name: r'locallyModifiedAt',
       type: IsarType.dateTime,
     ),
     r'serverId': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'serverId',
       type: IsarType.string,
+    ),
+    r'services': PropertySchema(
+      id: 3,
+      name: r'services',
+      type: IsarType.byteList,
+      enumMap: _MassAttendanceservicesEnumValueMap,
     ),
     r'syncedAt': PropertySchema(
       id: 4,
@@ -84,6 +84,7 @@ int _massAttendanceEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.services.length;
   return bytesCount;
 }
 
@@ -93,10 +94,11 @@ void _massAttendanceSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeByte(offsets[0], object.attendanceType.index);
-  writer.writeDateTime(offsets[1], object.date);
-  writer.writeDateTime(offsets[2], object.locallyModifiedAt);
-  writer.writeString(offsets[3], object.serverId);
+  writer.writeDateTime(offsets[0], object.date);
+  writer.writeDateTime(offsets[1], object.locallyModifiedAt);
+  writer.writeString(offsets[2], object.serverId);
+  writer.writeByteList(
+      offsets[3], object.services.map((e) => e.index).toList());
   writer.writeDateTime(offsets[4], object.syncedAt);
 }
 
@@ -107,13 +109,16 @@ MassAttendance _massAttendanceDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = MassAttendance();
-  object.attendanceType = _MassAttendanceattendanceTypeValueEnumMap[
-          reader.readByteOrNull(offsets[0])] ??
-      AttendanceType.liturgy;
-  object.date = reader.readDateTime(offsets[1]);
+  object.date = reader.readDateTime(offsets[0]);
   object.id = id;
-  object.locallyModifiedAt = reader.readDateTime(offsets[2]);
-  object.serverId = reader.readStringOrNull(offsets[3]);
+  object.locallyModifiedAt = reader.readDateTime(offsets[1]);
+  object.serverId = reader.readStringOrNull(offsets[2]);
+  object.services = reader
+          .readByteList(offsets[3])
+          ?.map((e) =>
+              _MassAttendanceservicesValueEnumMap[e] ?? ServiceType.liturgy)
+          .toList() ??
+      [];
   object.syncedAt = reader.readDateTimeOrNull(offsets[4]);
   return object;
 }
@@ -126,15 +131,18 @@ P _massAttendanceDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (_MassAttendanceattendanceTypeValueEnumMap[
-              reader.readByteOrNull(offset)] ??
-          AttendanceType.liturgy) as P;
+      return (reader.readDateTime(offset)) as P;
     case 1:
       return (reader.readDateTime(offset)) as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
-    case 3:
       return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader
+              .readByteList(offset)
+              ?.map((e) =>
+                  _MassAttendanceservicesValueEnumMap[e] ?? ServiceType.liturgy)
+              .toList() ??
+          []) as P;
     case 4:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
@@ -142,13 +150,19 @@ P _massAttendanceDeserializeProp<P>(
   }
 }
 
-const _MassAttendanceattendanceTypeEnumValueMap = {
+const _MassAttendanceservicesEnumValueMap = {
   'liturgy': 0,
   'vespers': 1,
+  'midnightPraise': 2,
+  'divineLiturgy': 3,
+  'other': 4,
 };
-const _MassAttendanceattendanceTypeValueEnumMap = {
-  0: AttendanceType.liturgy,
-  1: AttendanceType.vespers,
+const _MassAttendanceservicesValueEnumMap = {
+  0: ServiceType.liturgy,
+  1: ServiceType.vespers,
+  2: ServiceType.midnightPraise,
+  3: ServiceType.divineLiturgy,
+  4: ServiceType.other,
 };
 
 Id _massAttendanceGetId(MassAttendance object) {
@@ -401,62 +415,6 @@ extension MassAttendanceQueryWhere
 
 extension MassAttendanceQueryFilter
     on QueryBuilder<MassAttendance, MassAttendance, QFilterCondition> {
-  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
-      attendanceTypeEqualTo(AttendanceType value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'attendanceType',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
-      attendanceTypeGreaterThan(
-    AttendanceType value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'attendanceType',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
-      attendanceTypeLessThan(
-    AttendanceType value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'attendanceType',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
-      attendanceTypeBetween(
-    AttendanceType lower,
-    AttendanceType upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'attendanceType',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
       dateEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -779,6 +737,151 @@ extension MassAttendanceQueryFilter
   }
 
   QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesElementEqualTo(ServiceType value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'services',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesElementGreaterThan(
+    ServiceType value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'services',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesElementLessThan(
+    ServiceType value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'services',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesElementBetween(
+    ServiceType lower,
+    ServiceType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'services',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'services',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'services',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'services',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'services',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'services',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
+      servicesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'services',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<MassAttendance, MassAttendance, QAfterFilterCondition>
       syncedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -861,20 +964,6 @@ extension MassAttendanceQueryLinks
 
 extension MassAttendanceQuerySortBy
     on QueryBuilder<MassAttendance, MassAttendance, QSortBy> {
-  QueryBuilder<MassAttendance, MassAttendance, QAfterSortBy>
-      sortByAttendanceType() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'attendanceType', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MassAttendance, MassAttendance, QAfterSortBy>
-      sortByAttendanceTypeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'attendanceType', Sort.desc);
-    });
-  }
-
   QueryBuilder<MassAttendance, MassAttendance, QAfterSortBy> sortByDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.asc);
@@ -930,20 +1019,6 @@ extension MassAttendanceQuerySortBy
 
 extension MassAttendanceQuerySortThenBy
     on QueryBuilder<MassAttendance, MassAttendance, QSortThenBy> {
-  QueryBuilder<MassAttendance, MassAttendance, QAfterSortBy>
-      thenByAttendanceType() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'attendanceType', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MassAttendance, MassAttendance, QAfterSortBy>
-      thenByAttendanceTypeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'attendanceType', Sort.desc);
-    });
-  }
-
   QueryBuilder<MassAttendance, MassAttendance, QAfterSortBy> thenByDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.asc);
@@ -1011,13 +1086,6 @@ extension MassAttendanceQuerySortThenBy
 
 extension MassAttendanceQueryWhereDistinct
     on QueryBuilder<MassAttendance, MassAttendance, QDistinct> {
-  QueryBuilder<MassAttendance, MassAttendance, QDistinct>
-      distinctByAttendanceType() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'attendanceType');
-    });
-  }
-
   QueryBuilder<MassAttendance, MassAttendance, QDistinct> distinctByDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'date');
@@ -1038,6 +1106,12 @@ extension MassAttendanceQueryWhereDistinct
     });
   }
 
+  QueryBuilder<MassAttendance, MassAttendance, QDistinct> distinctByServices() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'services');
+    });
+  }
+
   QueryBuilder<MassAttendance, MassAttendance, QDistinct> distinctBySyncedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'syncedAt');
@@ -1050,13 +1124,6 @@ extension MassAttendanceQueryProperty
   QueryBuilder<MassAttendance, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
-    });
-  }
-
-  QueryBuilder<MassAttendance, AttendanceType, QQueryOperations>
-      attendanceTypeProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'attendanceType');
     });
   }
 
@@ -1076,6 +1143,13 @@ extension MassAttendanceQueryProperty
   QueryBuilder<MassAttendance, String?, QQueryOperations> serverIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'serverId');
+    });
+  }
+
+  QueryBuilder<MassAttendance, List<ServiceType>, QQueryOperations>
+      servicesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'services');
     });
   }
 

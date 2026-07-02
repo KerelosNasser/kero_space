@@ -31,9 +31,7 @@ class _ConfessionAuthScreenState extends State<ConfessionAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.bgPrimary,
-      body: BlocConsumer<ConfessionBloc, ConfessionState>(
+    return BlocConsumer<ConfessionBloc, ConfessionState>(
         listener: (context, state) {
           if (state is ConfessionLocked) {
             if (state.isBiometricAvailable &&
@@ -259,7 +257,6 @@ class _ConfessionAuthScreenState extends State<ConfessionAuthScreen> {
             ),
           );
         },
-      ),
-    );
+      );
   }
 }

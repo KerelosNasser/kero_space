@@ -2,9 +2,12 @@ import 'package:isar/isar.dart';
 
 part 'mass_attendance.g.dart';
 
-enum AttendanceType {
+enum ServiceType {
   liturgy,
   vespers,
+  midnightPraise,
+  divineLiturgy,
+  other,
 }
 
 @Collection()
@@ -15,7 +18,7 @@ class MassAttendance {
   late DateTime date;
 
   @enumerated
-  late AttendanceType attendanceType;
+  List<ServiceType> services = [];
 
   String? serverId;
   DateTime? syncedAt;

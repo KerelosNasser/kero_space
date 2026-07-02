@@ -23,7 +23,7 @@ class WindowManagerService {
       await menu.buildFrom([
         MenuItemLabel(label: 'Open Kero Space', onClicked: (_) => windowManager.show()),
         MenuItemLabel(label: 'New Task (Ctrl+N)', onClicked: (_) => router.go('/productivity')),
-        MenuItemLabel(label: 'Mark Mass (Ctrl+Shift+M)', onClicked: (_) => getIt<ChurchBloc>().add(MarkAttendanceEvent(DateTime.now(), AttendanceType.liturgy))),
+        MenuItemLabel(label: 'Mark Mass (Ctrl+Shift+M)', onClicked: (_) => getIt<ChurchBloc>().add(MarkAttendanceEvent(DateTime.now(), ServiceType.liturgy))),
         MenuSeparator(),
         MenuItemLabel(label: 'Exit', onClicked: (_) => windowManager.destroy()),
       ]);

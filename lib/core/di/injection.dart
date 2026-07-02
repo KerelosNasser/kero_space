@@ -16,6 +16,10 @@ import 'package:kero_space/features/church/data/repositories/confession_crypto_s
 import 'package:kero_space/features/church/data/repositories/encrypted_confessions_repo.dart';
 import 'package:kero_space/features/church/presentation/bloc/church_bloc.dart';
 import 'package:kero_space/features/church/presentation/bloc/confession_bloc.dart';
+import 'package:kero_space/features/church/presentation/bloc/coptic_bloc.dart';
+import 'package:kero_space/features/church/data/services/youversion_service.dart';
+import 'package:kero_space/features/church/data/services/church_notification_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Health module
 import 'package:kero_space/features/health/data/repositories/health_connect_repository.dart';
@@ -136,6 +140,19 @@ void setupLocator() {
   );
   getIt.registerLazySingleton<ConfessionBloc>(
     () => ConfessionBloc(getIt<ConfessionCryptoService>()),
+  );
+  getIt.registerLazySingleton<YouVersionService>(
+    () => YouVersionService(
+      dio: getIt<Dio>(),
+      apiKey: dotenv.env['YOUVERSION_API_KEY'],
+    ),
+  );
+  getIt.registerLazySingleton<CopticBloc>(
+    () => CopticBloc(youVersion: getIt<YouVersionService>()),
+  );
+
+  getIt.registerLazySingleton<ChurchNotificationService>(
+    () => ChurchNotificationService(),
   );
 
   // Voice

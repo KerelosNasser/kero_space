@@ -22,6 +22,8 @@ import 'core/platform/windows/process_watcher_bloc.dart';
 import 'core/platform/windows/process_watcher_event.dart';
 import 'features/church/presentation/bloc/church_bloc.dart';
 import 'features/church/data/models/mass_attendance.dart';
+import 'features/church/data/services/church_notification_service.dart';
+import 'features/church/presentation/bloc/coptic_bloc.dart';
 import 'features/voice/presentation/bloc/voice_event.dart';
 
 class NavigateToIntent extends Intent {
@@ -53,6 +55,11 @@ void main() async {
 
   // Initialize background notification parser
   await getIt<NotificationParserService>().initialize(IsarService.instance);
+
+  // Initialize church notifications
+  await getIt<ChurchNotificationService>().init();
+  await getIt<ChurchNotificationService>().scheduleSundayReminder();
+  await getIt<ChurchNotificationService>().scheduleFastingReminder();
 
   if (Platform.isWindows) {
     await WindowManagerService.init();
@@ -116,7 +123,7 @@ class KeroSpaceApp extends StatelessWidget {
               CallbackAction<MarkAttendanceGlobalIntent>(
                 onInvoke: (intent) {
                   getIt<ChurchBloc>().add(
-                    MarkAttendanceEvent(DateTime.now(), AttendanceType.liturgy),
+                    MarkAttendanceEvent(DateTime.now(), ServiceType.liturgy),
                   );
                   return null;
                 },

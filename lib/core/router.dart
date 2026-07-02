@@ -28,6 +28,7 @@ import '../features/church/presentation/screens/church_screen.dart';
 import '../features/church/presentation/screens/confession_log_screen.dart';
 import '../features/church/presentation/bloc/church_bloc.dart';
 import '../features/church/presentation/bloc/confession_bloc.dart';
+import '../features/church/presentation/bloc/coptic_bloc.dart';
 import '../features/church/data/repositories/encrypted_confessions_repo.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 
@@ -184,6 +185,7 @@ final router = GoRouter(
                 providers: [
                   BlocProvider.value(value: GetIt.I<ChurchBloc>()..add(LoadChurchData())),
                   BlocProvider.value(value: GetIt.I<ConfessionBloc>()),
+                  BlocProvider.value(value: GetIt.I<CopticBloc>()),
                 ],
                 child: const ChurchScreen(),
               ),

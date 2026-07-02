@@ -197,16 +197,18 @@ class HomeScreen extends StatelessWidget {
   Widget _buildChurchCard(BuildContext context) {
     return BlocBuilder<ChurchBloc, ChurchState>(
       builder: (context, state) {
-        int streak = 0;
-        if (state.status == ChurchStatus.success &&
-            state.attendances.isNotEmpty) {
-          // Basic streak calculation for display
-          streak = 1; // Simplified for snapshot
-        }
+        final streak = state.currentStreak;
+        final today = DateTime.now();
+        final todayMarked = state.attendances.any(
+          (a) =>
+              a.date.year == today.year &&
+              a.date.month == today.month &&
+              a.date.day == today.day,
+        );
         return _buildSnapshotCard(
           context: context,
-          domainLabel: 'MASS STREAK',
-          heroMetric: '${streak}d',
+          domainLabel: todayMarked ? 'MASS TODAY ✓' : 'MASS STREAK',
+          heroMetric: '${streak}d streak',
           accentColor: AppTheme.accentViolet,
           route: '/church',
           heroTag: 'hero-church',
@@ -214,6 +216,7 @@ class HomeScreen extends StatelessWidget {
       },
     );
   }
+
 
   Widget _buildSnapshotCard({
     required BuildContext context,
