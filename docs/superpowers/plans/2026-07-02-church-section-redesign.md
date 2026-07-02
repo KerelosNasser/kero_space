@@ -20,7 +20,7 @@
 - Modify: `lib/features/church/data/repositories/church_repository.dart`
 - Modify: `lib/features/church/data/models/confession_entry.dart` (if needed)
 
-- [ ] **Step 1: Rewrite MassAttendance model**
+- [x] **Step 1: Rewrite MassAttendance model**
 
 ```dart
 // lib/features/church/data/models/mass_attendance.dart
@@ -43,6 +43,7 @@ class MassAttendance {
   @Index(unique: true, replace: true)
   late DateTime date;
 
+  @enumerated
   List<ServiceType> services = [];
 
   String? serverId;
@@ -51,7 +52,7 @@ class MassAttendance {
 }
 ```
 
-- [ ] **Step 2: Rewrite MinistryTask with copyWith**
+- [x] **Step 2: Rewrite MinistryTask with copyWith**
 
 ```dart
 // lib/features/church/data/models/ministry_task.dart
@@ -102,7 +103,7 @@ class MinistryTask {
 }
 ```
 
-- [ ] **Step 3: Update ChurchRepository with new methods**
+- [x] **Step 3: Update ChurchRepository with new methods**
 
 ```dart
 // lib/features/church/data/repositories/church_repository.dart
@@ -233,11 +234,11 @@ class ChurchRepository {
 }
 ```
 
-- [ ] **Step 4: Delete duplicate church_collections.dart**
+- [x] **Step 4: Delete duplicate church_collections.dart**
 
 Delete `lib/features/church/data/models/church_collections.dart` and `church_collections.g.dart`. These are superseded by `mass_attendance.dart`.
 
-- [ ] **Step 5: Run build to regenerate Isar .g files**
+- [x] **Step 5: Run build to regenerate Isar .g files**
 
 Run: `flutter packages pub run build_runner build --delete-conflicting-outputs`
 
@@ -249,7 +250,7 @@ Run: `flutter packages pub run build_runner build --delete-conflicting-outputs`
 - Create: `lib/features/church/data/services/coptic_calendar_service.dart`
 - Create: `lib/features/church/data/models/coptic_day_info.dart`
 
-- [ ] **Step 1: Create CopticDayInfo model**
+- [x] **Step 1: Create CopticDayInfo model**
 
 ```dart
 // lib/features/church/data/models/coptic_day_info.dart
@@ -310,7 +311,7 @@ class CopticDayInfo {
 }
 ```
 
-- [ ] **Step 2: Create CopticCalendarService**
+- [x] **Step 2: Create CopticCalendarService**
 
 ```dart
 // lib/features/church/data/services/coptic_calendar_service.dart
@@ -493,7 +494,7 @@ class _FeastInfo {
 **Files:**
 - Create: `lib/features/church/data/services/youversion_service.dart`
 
-- [ ] **Step 1: Create YouVersionService**
+- [x] **Step 1: Create YouVersionService**
 
 ```dart
 // lib/features/church/data/services/youversion_service.dart
@@ -546,7 +547,7 @@ class YouVersionService {
 **Files:**
 - Modify: `lib/features/church/presentation/bloc/church_bloc.dart`
 
-- [ ] **Step 1: Rewrite ChurchBloc with streak and stats**
+- [x] **Step 1: Rewrite ChurchBloc with streak and stats**
 
 ```dart
 // lib/features/church/presentation/bloc/church_bloc.dart
@@ -754,7 +755,7 @@ class ChurchBloc extends Bloc<ChurchEvent, ChurchState> {
 **Files:**
 - Create: `lib/features/church/presentation/bloc/coptic_bloc.dart`
 
-- [ ] **Step 1: Create CopticBloc**
+- [x] **Step 1: Create CopticBloc**
 
 ```dart
 // lib/features/church/presentation/bloc/coptic_bloc.dart
@@ -836,11 +837,11 @@ class CopticBloc extends Bloc<CopticEvent, CopticState> {
 - Check if exists: `lib/shared/widgets/inline_error_widget.dart`
 - If not, create it.
 
-- [ ] **Step 1: Check if InlineErrorWidget exists**
+- [x] **Step 1: Check if InlineErrorWidget exists**
 
 Run: `dir "lib\shared\widgets\inline_error_widget.dart"`
 
-- [ ] **Step 2: Create if missing**
+- [x] **Step 2: Create if missing**
 
 ```dart
 // lib/shared/widgets/inline_error_widget.dart
@@ -892,7 +893,7 @@ class InlineErrorWidget extends StatelessWidget {
 - Check if exists: `lib/shared/widgets/shimmer/` directory
 - Create: `lib/features/church/presentation/widgets/church_skeleton.dart`
 
-- [ ] **Step 1: Create ChurchSkeleton**
+- [x] **Step 1: Create ChurchSkeleton**
 
 ```dart
 // lib/features/church/presentation/widgets/church_skeleton.dart
@@ -948,7 +949,7 @@ class ChurchSkeleton extends StatelessWidget {
 - Modify: `lib/features/church/presentation/screens/ministry_kanban_screen.dart`
 - Modify: `lib/features/church/presentation/screens/confession_auth_screen.dart`
 
-- [ ] **Step 1: Rewrite ChurchScreen shell**
+- [x] **Step 1: Rewrite ChurchScreen shell**
 
 ```dart
 // lib/features/church/presentation/screens/church_screen.dart
@@ -1015,7 +1016,7 @@ class _ChurchScreenState extends State<ChurchScreen> with SingleTickerProviderSt
 }
 ```
 
-- [ ] **Step 2: Create CopticTab widget**
+- [x] **Step 2: Create CopticTab widget**
 
 ```dart
 // lib/features/church/presentation/screens/coptic_tab.dart
@@ -1387,7 +1388,7 @@ class _FastStatusCard extends StatelessWidget {
 }
 ```
 
-- [ ] **Step 3: Update AttendanceScreen to remove nested Scaffold**
+- [x] **Step 3: Update AttendanceScreen to remove nested Scaffold**
 
 Keep the existing file's content but remove the `Scaffold` wrapper and `AppBar` since `ChurchScreen` already provides those. Also use the new model types and add the mark attendance bottom sheet:
 
@@ -1401,11 +1402,11 @@ Keep the existing file's content but remove the `Scaffold` wrapper and `AppBar` 
 // 6. Use InlineErrorWidget for errors
 ```
 
-- [ ] **Step 4: Update MinistryKanbanScreen to remove nested Scaffold**
+- [x] **Step 4: Update MinistryKanbanScreen to remove nested Scaffold**
 
 Remove outer `Scaffold` and `AppBar`. Use `_buildKanbanColumn` with priority badges. Update task creation to use `MinistryTask` with `priority` field.
 
-- [ ] **Step 5: Update ConfessionAuthScreen to remove nested Scaffold**
+- [x] **Step 5: Update ConfessionAuthScreen to remove nested Scaffold**
 
 Remove outer `Scaffold`. Keep auth logic intact. Update route back to use proper navigation.
 
@@ -1416,7 +1417,7 @@ Remove outer `Scaffold`. Keep auth logic intact. Update route back to use proper
 **Files:**
 - Modify: `lib/features/home/presentation/screens/home_screen.dart`
 
-- [ ] **Step 1: Update _buildChurchCard with real data**
+- [x] **Step 1: Update _buildChurchCard with real data**
 
 ```dart
 Widget _buildChurchCard(BuildContext context) {
@@ -1450,7 +1451,7 @@ Widget _buildChurchCard(BuildContext context) {
 **Files:**
 - Modify: `lib/core/di/injection.dart`
 
-- [ ] **Step 1: Register new services**
+- [x] **Step 1: Register new services**
 
 ```dart
 // Add after church DI section:
@@ -1474,7 +1475,7 @@ getIt.registerLazySingleton<YouVersionService>(
 **Files:**
 - Modify: `lib/features/voice/domain/command_parser.dart`
 
-- [ ] **Step 1: Add church voice commands**
+- [x] **Step 1: Add church voice commands**
 
 ```dart
 // In CommandParser.parse(String text):
@@ -1493,7 +1494,7 @@ if (text.contains('streak') || text.contains('church streak')) {
 **Files:**
 - Modify: `lib/features/church/data/services/church_notification_service.dart`
 
-- [ ] **Step 1: Enable notification scheduling**
+- [x] **Step 1: Enable notification scheduling**
 
 ```dart
 // church_notification_service.dart — add scheduleSundayReminder()
@@ -1505,15 +1506,15 @@ if (text.contains('streak') || text.contains('church streak')) {
 
 ### Task 13: Run Build & Analysis
 
-- [ ] **Step 1: Regenerate Isar .g files**
+- [x] **Step 1: Regenerate Isar .g files**
 
 Run: `flutter packages pub run build_runner build --delete-conflicting-outputs`
 
-- [ ] **Step 2: Run static analysis**
+- [x] **Step 2: Run static analysis**
 
 Run: `flutter analyze`
 
-- [ ] **Step 3: Fix any analysis issues**
+- [x] **Step 3: Fix any analysis issues**
 
 - [ ] **Step 4: Run debug build**
 

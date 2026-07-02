@@ -25,10 +25,12 @@ class _ContributionGridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Map<DateTime, AttendanceType> attendanceMap = {};
+    final Map<DateTime, ServiceType> attendanceMap = {};
     for (var att in attendances) {
       final normalizedDate = DateTime(att.date.year, att.date.month, att.date.day);
-      attendanceMap[normalizedDate] = att.attendanceType;
+      if (att.services.isNotEmpty) {
+        attendanceMap[normalizedDate] = att.services.first;
+      }
     }
 
     final double cellSpacing = 2.0;
@@ -49,14 +51,14 @@ class _ContributionGridPainter extends CustomPainter {
         final DateTime currentDate = startDate.add(Duration(days: daysOffset));
         final DateTime normalizedCurrent = DateTime(currentDate.year, currentDate.month, currentDate.day);
 
-        final AttendanceType? type = attendanceMap[normalizedCurrent];
+        final ServiceType? type = attendanceMap[normalizedCurrent];
         
         if (type == null) {
-          paint.color = const Color(0xFF2C2C2E); // --bg-elevated
-        } else if (type == AttendanceType.liturgy) {
-          paint.color = const Color(0xFFBF5AF2).withValues(alpha: 1.0); // --accent-violet 100%
-        } else if (type == AttendanceType.vespers) {
-          paint.color = const Color(0xFFBF5AF2).withValues(alpha: 0.7); // --accent-violet 70%
+          paint.color = const Color(0xFF2C2C2E);
+        } else if (type == ServiceType.liturgy || type == ServiceType.divineLiturgy) {
+          paint.color = const Color(0xFFBF5AF2).withValues(alpha: 1.0);
+        } else if (type == ServiceType.vespers) {
+          paint.color = const Color(0xFFBF5AF2).withValues(alpha: 0.7);
         }
 
         final double x = col * (cellWidth + cellSpacing);

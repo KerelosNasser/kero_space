@@ -195,7 +195,12 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
       } else if (intent is MarkAttendanceIntent) {
         msg = "Attendance marked";
         getIt<ChurchBloc>().add(
-          MarkAttendanceEvent(intent.date, AttendanceType.liturgy),
+          MarkAttendanceEvent(intent.date, ServiceType.liturgy),
+        );
+      } else if (intent is MarkAttendanceIntent) {
+        msg = "Attendance marked";
+        getIt<ChurchBloc>().add(
+          MarkAttendanceEvent(intent.date, ServiceType.liturgy),
         );
       } else if (intent is NavigateIntent) {
         // Navigation is handled by the UI layer listening to state changes

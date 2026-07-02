@@ -23,7 +23,7 @@ import 'core/platform/windows/process_watcher_event.dart';
 import 'features/church/presentation/bloc/church_bloc.dart';
 import 'features/church/data/models/mass_attendance.dart';
 import 'features/church/data/services/church_notification_service.dart';
-import 'features/church/presentation/bloc/coptic_bloc.dart';
+
 import 'features/voice/presentation/bloc/voice_event.dart';
 
 class NavigateToIntent extends Intent {

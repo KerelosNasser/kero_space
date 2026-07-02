@@ -113,32 +113,4 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         },
       );
 
-  }
-
-  int _calculateStreak(List<MassAttendance> attendances) {
-    if (attendances.isEmpty) return 0;
-    
-    // Sort descending
-    final sorted = List<MassAttendance>.from(attendances)
-      ..sort((a, b) => b.date.compareTo(a.date));
-      
-    int streak = 0;
-    DateTime current = DateTime.now();
-    current = DateTime(current.year, current.month, current.day);
-
-    for (var att in sorted) {
-      final attDate = DateTime(att.date.year, att.date.month, att.date.day);
-      final difference = current.difference(attDate).inDays;
-
-      if (difference == 0) {
-        if (streak == 0) streak = 1; // Count today if present
-      } else if (difference == 1) {
-        streak++;
-        current = attDate;
-      } else {
-        break; // Streak broken
-      }
-    }
-    return streak;
-  }
-}
+  }}

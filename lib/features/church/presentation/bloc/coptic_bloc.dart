@@ -41,19 +41,18 @@ class CopticError extends CopticState {
 
 // Bloc
 class CopticBloc extends Bloc<CopticEvent, CopticState> {
-  final YouVersionService? _youVersion;
+  final YouVersionService? youVersion;
 
-  CopticBloc({YouVersionService? youVersion})
-      : _youVersion = youVersion,
-        super(CopticInitial()) {
+  CopticBloc({this.youVersion})
+      : super(CopticInitial()) {
     on<LoadCopticData>((event, emit) async {
       emit(CopticLoading());
       try {
         final dayInfo = CopticCalendarService.computeToday();
         final texts = <String, String?>{};
-        if (_youVersion != null) {
+        if (youVersion != null) {
           for (final ref in dayInfo.readings) {
-            final text = await _youVersion!.getPassageText(ref);
+            final text = await youVersion!.getPassageText(ref);
             if (text != null) {
               texts[ref.displayName] = text;
             }
