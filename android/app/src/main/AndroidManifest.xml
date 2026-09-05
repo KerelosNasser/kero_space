@@ -68,7 +68,7 @@
         <!-- Phase 2: Omniscient Layer Agents -->
         <service
             android:name=".KeroSpaceForegroundService"
-            android:foregroundServiceType="microphone|dataSync"
+            android:foregroundServiceType="dataSync"
             android:exported="false" />
 
         <service

@@ -1,10 +1,12 @@
 package com.example.trobio
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import android.view.accessibility.AccessibilityManager
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
@@ -15,11 +17,6 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Centralised controller for the four Omniscient Layer agents.
- *
- * Previously, [handleAgentToggle], [buildAgentStatusMap], and the helper
- * [isServiceRunning] / [isAccessibilityEnabled] / [isUsageGuardScheduled]
- * functions were copy-pasted verbatim into both [MainActivity] and
- * [KeroSpaceForegroundService]. This object is the single source-of-truth.
  */
 object AgentManager {
 
@@ -31,18 +28,29 @@ object AgentManager {
             "wake_word" -> {
                 val intent = Intent(context, WakeWordService::class.java)
                 if (enabled) {
-                    val hasMic = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    val hasMic = androidx.core.content.ContextCompat.checkSelfPermission(
+                        context,
+                        android.Manifest.permission.RECORD_AUDIO,
+                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
                     if (hasMic) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            context.startForegroundService(intent)
-                        } else {
-                            context.startService(intent)
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                context.startForegroundService(intent)
+                            } else {
+                                context.startService(intent)
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to start WakeWordService: ${e.message}", e)
                         }
                     } else {
                         Log.w(TAG, "Cannot start WakeWordService: RECORD_AUDIO permission not granted")
                     }
                 } else {
-                    context.stopService(intent)
+                    try {
+                        context.stopService(intent)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Error stopping WakeWordService: ${e.message}")
+                    }
                 }
             }
             "usage_guard" -> {
@@ -66,13 +74,9 @@ object AgentManager {
                 }
             }
             "screen_event" -> {
-                // Screen receiver is lifecycle-managed by KeroSpaceForegroundService.
-                // Toggling is currently a no-op from Dart side — the receiver lives
-                // as long as the foreground service does.
                 Log.d(TAG, "screen_event toggle=$enabled (managed by foreground service lifecycle)")
             }
             "accessibility" -> {
-                // Cannot programmatically enable accessibility — open settings for user.
                 try {
                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -94,18 +98,34 @@ object AgentManager {
     )
 
     fun isAccessibilityEnabled(context: Context): Boolean {
-        val svc = "${context.packageName}/${KeroSpaceAccessibilityService::class.java.name}"
-        return (Settings.Secure.getString(
+        // Method 1: Check AccessibilityManager enabled service list
+        val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+        val enabledServices = am?.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+        if (enabledServices != null) {
+            for (service in enabledServices) {
+                val serviceInfo = service.resolveInfo?.serviceInfo
+                if (serviceInfo != null &&
+                    serviceInfo.packageName == context.packageName &&
+                    serviceInfo.name == KeroSpaceAccessibilityService::class.java.name) {
+                    return true
+                }
+            }
+        }
+
+        // Method 2: Fallback to Settings.Secure check for both full and short formats
+        val setting = Settings.Secure.getString(
             context.contentResolver,
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
-        ) ?: "").contains(svc)
+        ) ?: return false
+
+        val fullSvc = "${context.packageName}/${KeroSpaceAccessibilityService::class.java.name}"
+        val shortSvc = "${context.packageName}/.${KeroSpaceAccessibilityService::class.java.simpleName}"
+        return setting.contains(fullSvc) || setting.contains(shortSvc)
     }
 
-    // ponytail: cached, avoids blocking main thread on WorkManager query
     private var _usageGuardScheduled = false
 
     fun refreshUsageGuardCachedState(context: Context) {
-        // Non-blocking async refresh — called once at service start
         val future = WorkManager.getInstance(context)
             .getWorkInfosForUniqueWork(USAGE_WORK_NAME)
         future.addListener(
@@ -148,4 +168,3 @@ object AgentManager {
         return System.currentTimeMillis() < deepWorkEndTimeMs
     }
 }
-

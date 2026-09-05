@@ -80,5 +80,9 @@ class CalendarChannelHandler(private val context: Context) : MethodChannel.Metho
         }
         return jsonArray.toString()
     }
+
+    fun cleanup() {
+        handlerScope.cancel()
+    }
 }
 

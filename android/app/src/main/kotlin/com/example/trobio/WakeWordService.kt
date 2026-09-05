@@ -18,6 +18,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
 import ai.onnxruntime.OnnxTensor
@@ -47,8 +48,7 @@ class WakeWordService : Service() {
 
     /**
      * ADB mock trigger for dev/test only.
-     * Not exported — ADB can still reach it via:
-     *   adb shell am broadcast --user 0 -a com.example.trobio.WAKE_WORD_TRIGGER
+     * adb shell am broadcast --user 0 -a com.example.trobio.WAKE_WORD_TRIGGER
      */
     private val mockTriggerReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -103,15 +103,10 @@ class WakeWordService : Service() {
             val hasMic = ContextCompat.checkSelfPermission(
                 this, android.Manifest.permission.RECORD_AUDIO,
             ) == PackageManager.PERMISSION_GRANTED
-            val serviceTypes = if (hasMic) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            if (hasMic) {
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
             } else {
-                Log.w(TAG, "RECORD_AUDIO not granted — falling back to no FGS type")
-                0
-            }
-            if (serviceTypes != 0) {
-                startForeground(NOTIFICATION_ID, notification, serviceTypes)
-            } else {
+                Log.w(TAG, "RECORD_AUDIO not granted — falling back to standard foreground notification")
                 startForeground(NOTIFICATION_ID, notification)
             }
         } else {
@@ -121,6 +116,20 @@ class WakeWordService : Service() {
 
     private fun startListening() {
         handler.post {
+            // Check if model exists before initializing audio recording loop
+            val hasModel = try {
+                val input = applicationContext.assets.open("hey_kero.onnx")
+                input.close()
+                true
+            } catch (_: Exception) {
+                false
+            }
+
+            if (!hasModel) {
+                Log.w(TAG, "ONNX model 'hey_kero.onnx' not present in assets. Audio recording loop skipped to prevent 100% CPU drain.")
+                return@post
+            }
+
             try {
                 val sampleRate = 16000
                 val channelConfig = AudioFormat.CHANNEL_IN_MONO
@@ -136,7 +145,7 @@ class WakeWordService : Service() {
                 )
 
                 if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
-                    Log.e(TAG, "AudioRecord initialization failed — no microphone permission?")
+                    Log.e(TAG, "AudioRecord initialization failed — check microphone permission")
                     return@post
                 }
 
@@ -151,7 +160,8 @@ class WakeWordService : Service() {
                     session = env.createSession(modelBytes)
                     Log.d(TAG, "ONNX model loaded successfully.")
                 } catch (e: Exception) {
-                    Log.w(TAG, "ONNX model 'hey_kero.onnx' not found in assets or failed to load.", e)
+                    Log.w(TAG, "Failed to load ONNX session", e)
+                    return@post
                 }
 
                 val buffer = ShortArray(160) // ~10ms chunk at 16kHz
@@ -160,13 +170,11 @@ class WakeWordService : Service() {
                 while (isListening) {
                     val readResult = audioRecord?.read(buffer, 0, buffer.size) ?: 0
                     if (readResult > 0) {
-                        // Shift frameBuffer
                         System.arraycopy(frameBuffer, readResult, frameBuffer, 0, frameBuffer.size - readResult)
                         for (i in 0 until readResult) {
-                            frameBuffer[frameBuffer.size - readResult + i] = buffer[i] / 32768.0f // Normalize to [-1, 1]
+                            frameBuffer[frameBuffer.size - readResult + i] = buffer[i] / 32768.0f
                         }
 
-                        // Run inference if session exists
                         session?.let { ortSession ->
                             try {
                                 val inputName = ortSession.inputNames.iterator().next()
@@ -176,7 +184,6 @@ class WakeWordService : Service() {
                                 val result = ortSession.run(mapOf(inputName to tensor))
                                 val outputArray = result[0].value
                                 
-                                // Handling possible 1D or 2D output array
                                 val confidence = if (outputArray is Array<*> && outputArray.isNotEmpty() && outputArray[0] is FloatArray) {
                                     (outputArray as Array<FloatArray>)[0][0]
                                 } else if (outputArray is FloatArray && outputArray.isNotEmpty()) {
@@ -188,7 +195,6 @@ class WakeWordService : Service() {
                                 if (confidence > 0.85f) {
                                     Log.d(TAG, "Wake word detected by ONNX! Confidence: $confidence")
                                     emitWakeWordEvent("hey kero", confidence)
-                                    // Reset buffer to avoid duplicate triggers
                                     Arrays.fill(frameBuffer, 0f)
                                 }
                                 
@@ -200,6 +206,10 @@ class WakeWordService : Service() {
                         }
                     }
                 }
+
+                try {
+                    session?.close()
+                } catch (_: Exception) {}
 
                 Log.d(TAG, "Audio loop exited.")
             } catch (e: SecurityException) {
@@ -222,12 +232,18 @@ class WakeWordService : Service() {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             putExtra("VOICE_WAKE_TRIGGERED", true)
         }
-        startActivity(launchIntent)
 
-        // Post to main thread with a buffer to allow the Flutter engine to warm up
-        // if the screen was off when the wake word was detected.
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !Settings.canDrawOverlays(this)) {
+                Log.d(TAG, "Starting activity from background without overlay permission")
+            }
+            startActivity(launchIntent)
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not start activity from background: ${e.message}")
+        }
+
         Handler(Looper.getMainLooper()).postDelayed({
-            KeroSpaceForegroundService.wakeWordEventSink?.success(json)
+            KeroSpaceForegroundService.wakeWordEventSink.safeSuccess(json)
         }, 600)
     }
 
@@ -235,19 +251,25 @@ class WakeWordService : Service() {
         isRunning = false
         Log.d(TAG, "WakeWordService Destroyed")
         isListening = false
-        try {
-            audioRecord?.stop()
-            audioRecord?.release()
-        } catch (e: Exception) {
-            Log.w(TAG, "Error releasing AudioRecord", e)
+
+        handler.post {
+            try {
+                audioRecord?.stop()
+                audioRecord?.release()
+            } catch (e: Exception) {
+                Log.w(TAG, "Error releasing AudioRecord: ${e.message}")
+            } finally {
+                audioRecord = null
+            }
         }
-        audioRecord = null
+
         handlerThread.quitSafely()
+
         if (mockReceiverRegistered) {
             try {
                 unregisterReceiver(mockTriggerReceiver)
             } catch (e: Exception) {
-                Log.w(TAG, "Error unregistering mock trigger receiver", e)
+                Log.w(TAG, "Error unregistering mock trigger receiver: ${e.message}")
             }
             mockReceiverRegistered = false
         }
@@ -256,4 +278,3 @@ class WakeWordService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 }
-

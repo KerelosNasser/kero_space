@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
@@ -17,12 +18,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Manages the decision-break and cooldown overlay window.
+ *
+ * Enforces thread safety, overlay permission validation, and fixes timer reset loops.
  */
 object OverlayManager {
 
     private const val TAG = "OverlayManager"
 
-    private val mainHandler = Handler(Looper.getMainLooper())
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
     private var windowManager: WindowManager? = null
     private var overlayView: LinearLayout? = null
     private var titleTextView: TextView? = null
@@ -33,8 +36,8 @@ object OverlayManager {
     private val overlayShowing = AtomicBoolean(false)
     private val lastBreakTakenMap = ConcurrentHashMap<String, Long>()
 
-    private var activePackageName: String? = null
-    private var recordBreakOnDismiss = true
+    @Volatile private var activePackageName: String? = null
+    @Volatile private var recordBreakOnDismiss = true
 
     fun hasBreakBeenTakenRecently(packageName: String, cooldownMinutes: Int = 15): Boolean {
         val lastTime = lastBreakTakenMap[packageName] ?: 0L
@@ -44,6 +47,10 @@ object OverlayManager {
     private fun recordBreakTaken(packageName: String) {
         lastBreakTakenMap[packageName] = System.currentTimeMillis()
     }
+
+    fun isShowing(): Boolean = overlayShowing.get()
+
+    fun getActivePackage(): String? = activePackageName
 
     fun showOverlay(
         context: Context,
@@ -58,7 +65,20 @@ object OverlayManager {
             return
         }
 
+        val appContext = context.applicationContext
+
         mainHandler.post {
+            // 1. Permission check
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(appContext)) {
+                Log.w(TAG, "Overlay permission not granted. Cannot show overlay.")
+                return@post
+            }
+
+            // 2. CRITICAL BUG FIX: If overlay is already active for this package, DO NOT restart the timer!
+            if (overlayShowing.get() && activePackageName == packageName && countDownTimer != null) {
+                return@post
+            }
+
             if (overlayView == null) {
                 if (!overlayShowing.compareAndSet(false, true)) {
                     if (activePackageName != packageName) {
@@ -67,10 +87,14 @@ object OverlayManager {
                     return@post
                 }
 
-                windowManager = context.applicationContext
-                    .getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                windowManager = appContext.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
+                if (windowManager == null) {
+                    Log.e(TAG, "WindowManager not available")
+                    overlayShowing.set(false)
+                    return@post
+                }
 
-                val layout = LinearLayout(context.applicationContext).apply {
+                val layout = LinearLayout(appContext).apply {
                     orientation = LinearLayout.VERTICAL
                     setBackgroundColor(Color.parseColor("#E6000000"))
                     gravity = Gravity.CENTER
@@ -79,18 +103,18 @@ object OverlayManager {
                     isFocusable = true
                 }
 
-                titleTextView = TextView(context.applicationContext).apply {
+                titleTextView = TextView(appContext).apply {
                     setTextColor(Color.WHITE)
                     textSize = 28f
                     gravity = Gravity.CENTER
                     setTypeface(typeface, android.graphics.Typeface.BOLD)
                 }
-                subtitleTextView = TextView(context.applicationContext).apply {
+                subtitleTextView = TextView(appContext).apply {
                     setTextColor(Color.parseColor("#CCFFFFFF"))
                     textSize = 18f
                     gravity = Gravity.CENTER
                 }
-                countdownTextView = TextView(context.applicationContext).apply {
+                countdownTextView = TextView(appContext).apply {
                     setTextColor(Color.WHITE)
                     textSize = 42f
                     gravity = Gravity.CENTER
@@ -151,7 +175,7 @@ object OverlayManager {
         }.start()
     }
 
-    private fun formatDuration(durationMs: Long): String {
+    fun formatDuration(durationMs: Long): String {
         val totalSeconds = durationMs / 1000L
         val hours = totalSeconds / 3600L
         val minutes = (totalSeconds % 3600L) / 60L

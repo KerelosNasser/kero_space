@@ -38,11 +38,15 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
+    private var calendarHandler: CalendarChannelHandler? = null
+
     override fun onDestroy() {
         KeroSpaceForegroundService.wakeWordEventSink = null
         KeroSpaceForegroundService.screenEventSink = null
         KeroSpaceForegroundService.accessibilityEventSink = null
         KeroSpaceForegroundService.usageStatsEventSink = null
+        calendarHandler?.cleanup()
+        calendarHandler = null
         super.onDestroy()
     }
 
@@ -51,8 +55,10 @@ class MainActivity : FlutterFragmentActivity() {
         setupMainMethodsChannel(flutterEngine)
         setupMethodsChannel(flutterEngine)
         setupEventChannels(flutterEngine)
+        val handler = CalendarChannelHandler(this)
+        calendarHandler = handler
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CALENDAR_CHANNEL)
-            .setMethodCallHandler(CalendarChannelHandler(this))
+            .setMethodCallHandler(handler)
     }
 
     private fun setupMainMethodsChannel(flutterEngine: FlutterEngine) {

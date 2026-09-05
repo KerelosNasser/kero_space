@@ -41,9 +41,9 @@ class KeroSpaceScreenReceiver : BroadcastReceiver() {
         val json = "{\"type\":\"$type\",\"timestamp\":$timestamp,\"sessionDurationMs\":$sessionDurationMs}"
         
         // Push to both engines so both the UI (TelemetryBloc) and
-        // the background isolate (Isar writer) receive the event.
-        KeroSpaceForegroundService.screenEventSink?.success(json)
-        KeroSpaceForegroundService.bgScreenEventSink?.success(json)
+        // the background isolate (Isar writer) receive the event safely.
+        KeroSpaceForegroundService.screenEventSink.safeSuccess(json)
+        KeroSpaceForegroundService.bgScreenEventSink.safeSuccess(json)
     }
 }
 

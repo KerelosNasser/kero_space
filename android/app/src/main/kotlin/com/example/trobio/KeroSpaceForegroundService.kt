@@ -86,8 +86,8 @@ class KeroSpaceForegroundService : Service() {
             val payload = intent?.getStringExtra("payload") ?: return
             Log.d(TAG, "USAGE_STATS_READY — forwarding to Dart sinks")
             // Push to both engines so the UI TelemetryBloc and the Isar background writer both get it.
-            usageStatsEventSink?.success(payload)
-            bgUsageStatsEventSink?.success(payload)
+            usageStatsEventSink.safeSuccess(payload)
+            bgUsageStatsEventSink.safeSuccess(payload)
         }
     }
 
@@ -131,12 +131,32 @@ class KeroSpaceForegroundService : Service() {
 
     override fun onTimeout(startId: Int) {
         Log.w(TAG, "FGS onTimeout (Android 15+ dataSync limit). Scheduling restart.")
-        val restartIntent = Intent(this, KeroSpaceForegroundService::class.java)
-        val pendingIntent = PendingIntent.getService(
-            this, 0, restartIntent, PendingIntent.FLAG_IMMUTABLE
-        )
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
+        try {
+            val restartIntent = Intent(this, KeroSpaceForegroundService::class.java)
+            val pendingIntent = PendingIntent.getForegroundService(
+                this, 0, restartIntent, PendingIntent.FLAG_IMMUTABLE
+            )
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        System.currentTimeMillis() + 5000,
+                        pendingIntent
+                    )
+                } else {
+                    alarmManager.set(
+                        AlarmManager.RTC_WAKEUP,
+                        System.currentTimeMillis() + 5000,
+                        pendingIntent
+                    )
+                }
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not schedule alarm restart on timeout: ${e.message}")
+        }
         stopSelf(startId)
     }
 
@@ -176,18 +196,7 @@ class KeroSpaceForegroundService : Service() {
             .build()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            var serviceTypes = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val hasMic = ContextCompat.checkSelfPermission(
-                    this, android.Manifest.permission.RECORD_AUDIO,
-                ) == PackageManager.PERMISSION_GRANTED
-                if (hasMic) {
-                    serviceTypes = serviceTypes or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
-                } else {
-                    Log.w(TAG, "RECORD_AUDIO not granted — excluding microphone FGS type")
-                }
-            }
-            startForeground(FGS_NOTIFICATION_ID, notification, serviceTypes)
+            startForeground(FGS_NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         } else {
             startForeground(FGS_NOTIFICATION_ID, notification)
         }
@@ -241,14 +250,24 @@ class KeroSpaceForegroundService : Service() {
     }
 
     private fun startWakeWordServiceIfPermitted() {
+        // Android 14+ prohibits background services from launching a microphone FGS.
+        // WakeWordService is deferred to foreground activity or explicit user toggle.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            Log.d(TAG, "Android 14+: WakeWordService deferred to foreground UI to prevent background FGS crash")
+            return
+        }
         val hasMic = ContextCompat.checkSelfPermission(
             this, android.Manifest.permission.RECORD_AUDIO,
         ) == PackageManager.PERMISSION_GRANTED
         if (hasMic) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(Intent(this, WakeWordService::class.java))
-            } else {
-                startService(Intent(this, WakeWordService::class.java))
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(Intent(this, WakeWordService::class.java))
+                } else {
+                    startService(Intent(this, WakeWordService::class.java))
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not start WakeWordService: ${e.message}")
             }
         } else {
             Log.w(TAG, "RECORD_AUDIO not granted — skipping WakeWordService startup")
