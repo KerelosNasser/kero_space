@@ -53,7 +53,7 @@ class WakeWordService : Service() {
     private val mockTriggerReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, "Mock Wake Word Trigger received via ADB")
-            emitWakeWordEvent("hey kero", 0.99f)
+            emitWakeWordEvent("hey trobio", 0.99f)
         }
     }
 
@@ -116,17 +116,19 @@ class WakeWordService : Service() {
 
     private fun startListening() {
         handler.post {
-            // Check if model exists before initializing audio recording loop
-            val hasModel = try {
-                val input = applicationContext.assets.open("hey_kero.onnx")
-                input.close()
-                true
-            } catch (_: Exception) {
-                false
+            // Check if hey_trobio.onnx or hey_kero.onnx exists in assets
+            var modelFileName: String? = null
+            for (candidate in listOf("hey_trobio.onnx", "hey_kero.onnx")) {
+                try {
+                    val input = applicationContext.assets.open(candidate)
+                    input.close()
+                    modelFileName = candidate
+                    break
+                } catch (_: Exception) {}
             }
 
-            if (!hasModel) {
-                Log.w(TAG, "ONNX model 'hey_kero.onnx' not present in assets. Audio recording loop skipped to prevent 100% CPU drain.")
+            if (modelFileName == null) {
+                Log.w(TAG, "ONNX model 'hey_trobio.onnx' not present in assets. Audio recording loop skipped to prevent CPU drain.")
                 return@post
             }
 
@@ -151,16 +153,16 @@ class WakeWordService : Service() {
 
                 audioRecord?.startRecording()
                 isListening = true
-                Log.d(TAG, "Started listening on AudioRecord")
+                Log.d(TAG, "Started listening on AudioRecord for 'Hey Trobio' using $modelFileName")
 
                 val env = OrtEnvironment.getEnvironment()
                 var session: OrtSession? = null
                 try {
-                    val modelBytes = applicationContext.assets.open("hey_kero.onnx").readBytes()
+                    val modelBytes = applicationContext.assets.open(modelFileName).readBytes()
                     session = env.createSession(modelBytes)
-                    Log.d(TAG, "ONNX model loaded successfully.")
+                    Log.d(TAG, "ONNX model $modelFileName loaded successfully.")
                 } catch (e: Exception) {
-                    Log.w(TAG, "Failed to load ONNX session", e)
+                    Log.w(TAG, "Failed to load ONNX session from $modelFileName", e)
                     return@post
                 }
 
@@ -194,7 +196,7 @@ class WakeWordService : Service() {
 
                                 if (confidence > 0.85f) {
                                     Log.d(TAG, "Wake word detected by ONNX! Confidence: $confidence")
-                                    emitWakeWordEvent("hey kero", confidence)
+                                    emitWakeWordEvent("hey trobio", confidence)
                                     Arrays.fill(frameBuffer, 0f)
                                 }
                                 

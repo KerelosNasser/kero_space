@@ -178,6 +178,71 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                     }
 
+                    "openAssistantSettings" -> {
+                        try {
+                            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                            } else {
+                                Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)
+                            }.apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            startActivity(intent)
+                            result.success(null)
+                        } catch (e: Exception) {
+                            try {
+                                startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                })
+                                result.success(null)
+                            } catch (e2: Exception) {
+                                Log.e(TAG, "Failed to open assistant settings", e2)
+                                result.error("SETTINGS_ERROR", e2.message, null)
+                            }
+                        }
+                    }
+
+                    "checkDefaultAssistant" -> {
+                        val currentAssistant = Settings.Secure.getString(contentResolver, "voice_interaction_service")
+                        val isDefault = currentAssistant?.contains(packageName) == true || TrobioVoiceInteractionService.isServiceActive
+                        result.success(isDefault)
+                    }
+
+                    "testWakeWord" -> {
+                        val json = org.json.JSONObject().apply {
+                            put("type", "WAKE_WORD_DETECTED")
+                            put("text", "hey trobio")
+                            put("confidence", 0.99)
+                            put("timestamp", System.currentTimeMillis())
+                        }.toString()
+                        KeroSpaceForegroundService.wakeWordEventSink.safeSuccess(json)
+                        result.success(true)
+                    }
+
+                    "saveVoiceProfile" -> {
+                        val samplesCount = call.argument<Int>("samplesCount") ?: 3
+                        val prefs = getSharedPreferences("trobio_voice_profile", Context.MODE_PRIVATE)
+                        prefs.edit()
+                            .putBoolean("is_enrolled", true)
+                            .putInt("samples_count", samplesCount)
+                            .putLong("enrolled_at", System.currentTimeMillis())
+                            .apply()
+                        result.success(true)
+                    }
+
+                    "getVoiceProfileStatus" -> {
+                        val prefs = getSharedPreferences("trobio_voice_profile", Context.MODE_PRIVATE)
+                        val isEnrolled = prefs.getBoolean("is_enrolled", false)
+                        val count = prefs.getInt("samples_count", 0)
+                        val enrolledAt = prefs.getLong("enrolled_at", 0L)
+                        result.success(mapOf(
+                            "isEnrolled" to isEnrolled,
+                            "samplesCount" to count,
+                            "enrolledAt" to enrolledAt,
+                            "phrase" to "Hey Trobio",
+                        ))
+                    }
+
                     else -> result.notImplemented()
                 }
             }
