@@ -38,28 +38,29 @@ class CommandPaletteModal extends StatefulWidget {
 class _CommandPaletteModalState extends State<CommandPaletteModal> {
   late final TextEditingController _searchController;
   final FocusNode _inputFocusNode = FocusNode();
-  String _query = '';
-  CommandCategory _selectedCategory = CommandCategory.all;
+  final ValueNotifier<String> _queryNotifier = ValueNotifier('');
+  final ValueNotifier<CommandCategory> _categoryNotifier = ValueNotifier(CommandCategory.all);
 
   @override
   void initState() {
     super.initState();
-    _query = widget.initialQuery ?? '';
-    _searchController = TextEditingController(text: _query);
+    final initial = widget.initialQuery ?? '';
+    _queryNotifier.value = initial;
+    _searchController = TextEditingController(text: initial);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _inputFocusNode.dispose();
+    _queryNotifier.dispose();
+    _categoryNotifier.dispose();
     super.dispose();
   }
 
   void _onCategorySelected(CommandCategory category) {
     HapticFeedback.selectionClick();
-    setState(() {
-      _selectedCategory = category;
-    });
+    _categoryNotifier.value = category;
   }
 
   void _executeCommand(CommandItem item) {
@@ -72,27 +73,9 @@ class _CommandPaletteModalState extends State<CommandPaletteModal> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
-    final localResults = CommandRegistry.search(
-      query: _query,
-      selectedCategory: _selectedCategory,
-    );
-
-    final predictedCards = _query.trim().isNotEmpty &&
-            (_selectedCategory == CommandCategory.all ||
-                _selectedCategory == CommandCategory.aiWeb)
-        ? IntentPredictionEngine.predict(
-            context,
-            _query,
-            onDismissPalette: () => Navigator.of(context).pop(),
-          )
-        : <PredictedCard>[];
-
-    return AnimatedPadding(
-      padding: EdgeInsets.only(bottom: keyboardHeight),
-      duration: const Duration(milliseconds: 150),
-      curve: Curves.easeOutQuad,
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: DraggableScrollableSheet(
         initialChildSize: 0.82,
         minChildSize: 0.45,
@@ -108,161 +91,215 @@ class _CommandPaletteModalState extends State<CommandPaletteModal> {
                 border: Border.all(color: colors.borderSubtle, width: 1),
               ),
               child: Column(
-              children: [
-                // Top drag bar
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 10, bottom: 8),
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: colors.borderSubtle,
-                      borderRadius: BorderRadius.circular(2),
+                children: [
+                  // Top drag bar
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 10, bottom: 8),
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: colors.borderSubtle,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
 
-                // Search Bar
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: TextField(
-                    controller: _searchController,
-                    focusNode: _inputFocusNode,
-                    autofocus: true,
-                    textInputAction: TextInputAction.search,
-                    style: TextStyle(fontSize: 15, color: colors.textPrimary),
-                    onChanged: (val) => setState(() => _query = val),
-                    decoration: InputDecoration(
-                      hintText: 'Search commands, ask AI, or web...',
-                      prefixIcon: Icon(Icons.search_rounded, color: colors.accentPrimary),
-                      suffixIcon: _query.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 18),
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _searchController.clear();
-                                setState(() => _query = '');
-                              },
-                            )
-                          : Container(
-                              margin: const EdgeInsets.all(10),
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: colors.bgElevated,
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: colors.borderSubtle),
-                              ),
-                              child: Text(
-                                'ESC',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: colors.textSecondary,
-                                ),
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-
-                // Category Filter Chips
-                SizedBox(
-                  height: 36,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: CommandCategory.values.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (context, idx) {
-                      final cat = CommandCategory.values[idx];
-                      final isSelected = cat == _selectedCategory;
-                      return ChoiceChip(
-                        label: Text(cat.label),
-                        selected: isSelected,
-                        onSelected: (_) => _onCategorySelected(cat),
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected
-                              ? (context.isDarkMode ? Colors.black : Colors.white)
-                              : colors.textSecondary,
-                        ),
-                        selectedColor: colors.accentPrimary,
-                        backgroundColor: colors.bgSurface,
-                        side: BorderSide(
-                          color: isSelected ? colors.accentPrimary : colors.borderSubtle,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                      );
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-                const Divider(height: 1),
-
-                // Content List
-                Expanded(
-                  child: (localResults.isEmpty && predictedCards.isEmpty)
-                      ? _buildEmptyState(context, colors)
-                      : ListView(
-                          controller: scrollController,
-                          padding: const EdgeInsets.only(top: 8, bottom: 24),
-                          children: [
-                            // 1. Smart Intent Predictions (AI / Web / URL)
-                            if (predictedCards.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.auto_awesome_rounded,
-                                        size: 13, color: colors.accentPrimary),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'SMART PREDICTIONS',
+                  // Search Bar
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                    child: ValueListenableBuilder<String>(
+                      valueListenable: _queryNotifier,
+                      builder: (context, query, _) {
+                        return TextField(
+                          controller: _searchController,
+                          focusNode: _inputFocusNode,
+                          autofocus: true,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.search,
+                          style: TextStyle(fontSize: 15, color: colors.textPrimary),
+                          onChanged: (val) => _queryNotifier.value = val,
+                          decoration: InputDecoration(
+                            hintText: 'Search commands, ask AI, or web...',
+                            prefixIcon: Icon(Icons.search_rounded, color: colors.accentPrimary),
+                            suffixIcon: query.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear_rounded, size: 18),
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      _searchController.clear();
+                                      _queryNotifier.value = '';
+                                    },
+                                  )
+                                : Container(
+                                    margin: const EdgeInsets.all(10),
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: colors.bgElevated,
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: colors.borderSubtle),
+                                    ),
+                                    child: Text(
+                                      'ESC',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1.1,
-                                        color: colors.accentPrimary,
+                                        fontWeight: FontWeight.w700,
+                                        color: colors.textSecondary,
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                              ...predictedCards.map((card) => _buildPredictedTile(context, card, colors)),
-                              const Divider(height: 16),
-                            ],
-
-                            // 2. Local Commands & Actions
-                            if (localResults.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
-                                child: Text(
-                                  _selectedCategory == CommandCategory.all
-                                      ? 'COMMANDS & ACTIONS'
-                                      : _selectedCategory.label.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.1,
-                                    color: colors.textSecondary,
                                   ),
-                                ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Category Filter Chips
+                  SizedBox(
+                    height: 36,
+                    child: ValueListenableBuilder<CommandCategory>(
+                      valueListenable: _categoryNotifier,
+                      builder: (context, selectedCategory, _) {
+                        return ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: CommandCategory.values.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (context, idx) {
+                            final cat = CommandCategory.values[idx];
+                            final isSelected = cat == selectedCategory;
+                            return ChoiceChip(
+                              label: Text(cat.label),
+                              selected: isSelected,
+                              onSelected: (_) => _onCategorySelected(cat),
+                              labelStyle: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                color: isSelected
+                                    ? (context.isDarkMode ? Colors.black : Colors.white)
+                                    : colors.textSecondary,
                               ),
-                              ...localResults.map((item) => _buildCommandTile(context, item, colors)),
-                            ],
-                          ],
-                        ),
-                ),
-              ],
+                              selectedColor: colors.accentPrimary,
+                              backgroundColor: colors.bgSurface,
+                              side: BorderSide(
+                                color: isSelected ? colors.accentPrimary : colors.borderSubtle,
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+                  const Divider(height: 1),
+
+                  // Content List - Isolated via RepaintBoundary & ValueListenable
+                  Expanded(
+                    child: RepaintBoundary(
+                      child: ValueListenableBuilder<CommandCategory>(
+                        valueListenable: _categoryNotifier,
+                        builder: (context, category, _) {
+                          return ValueListenableBuilder<String>(
+                            valueListenable: _queryNotifier,
+                            builder: (context, query, _) {
+                              final localResults = CommandRegistry.search(
+                                query: query,
+                                selectedCategory: category,
+                              );
+
+                              final predictedCards = query.trim().isNotEmpty &&
+                                      (category == CommandCategory.all || category == CommandCategory.aiWeb)
+                                  ? IntentPredictionEngine.predict(
+                                      context,
+                                      query,
+                                      onDismissPalette: () => Navigator.of(context).pop(),
+                                    )
+                                  : <PredictedCard>[];
+
+                              if (localResults.isEmpty && predictedCards.isEmpty) {
+                                return _buildEmptyState(context, colors, query);
+                              }
+
+                              final hasPredictions = predictedCards.isNotEmpty;
+                              final hasLocal = localResults.isNotEmpty;
+
+                              final totalCount = (hasPredictions ? predictedCards.length + 1 : 0) +
+                                  (hasLocal ? localResults.length + 1 : 0);
+
+                              return ListView.builder(
+                                controller: scrollController,
+                                padding: const EdgeInsets.only(top: 8, bottom: 24),
+                                itemCount: totalCount,
+                                itemBuilder: (context, index) {
+                                  // Section 1: Predictions
+                                  if (hasPredictions) {
+                                    if (index == 0) {
+                                      return Padding(
+                                        padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.auto_awesome_rounded,
+                                                size: 13, color: colors.accentPrimary),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              'SMART PREDICTIONS',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 1.1,
+                                                color: colors.accentPrimary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else if (index <= predictedCards.length) {
+                                      return _buildPredictedTile(context, predictedCards[index - 1], colors);
+                                    }
+                                  }
+
+                                  // Section 2: Local results
+                                  final localOffset = hasPredictions ? predictedCards.length + 1 : 0;
+                                  final localIndex = index - localOffset;
+
+                                  if (localIndex == 0) {
+                                    return Padding(
+                                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                                      child: Text(
+                                        category == CommandCategory.all
+                                            ? 'COMMANDS & ACTIONS'
+                                            : category.label.toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 1.1,
+                                          color: colors.textSecondary,
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  return _buildCommandTile(context, localResults[localIndex - 1], colors);
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
-    ),
-  );
-}
+          );
+        },
+      ),
+    );
+  }
 
   Widget _buildPredictedTile(BuildContext context, PredictedCard card, AppThemeColors colors) {
     final isAi = card.intent == CommandIntent.aiPrompt;
@@ -387,7 +424,7 @@ class _CommandPaletteModalState extends State<CommandPaletteModal> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, AppThemeColors colors) {
+  Widget _buildEmptyState(BuildContext context, AppThemeColors colors, String query) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -397,7 +434,7 @@ class _CommandPaletteModalState extends State<CommandPaletteModal> {
             Icon(Icons.search_off_rounded, size: 40, color: colors.textDisabled),
             const SizedBox(height: 12),
             Text(
-              'No local commands matching "$_query"',
+              'No local commands matching "$query"',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.textPrimary),
               textAlign: TextAlign.center,
             ),
@@ -414,7 +451,7 @@ class _CommandPaletteModalState extends State<CommandPaletteModal> {
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     Navigator.of(context).pop();
-                    openWebSearch(_query);
+                    openWebSearch(query);
                   },
                   icon: const Icon(Icons.travel_explore_rounded, size: 16),
                   label: const Text('Search Web'),
@@ -424,7 +461,7 @@ class _CommandPaletteModalState extends State<CommandPaletteModal> {
                   onPressed: () {
                     HapticFeedback.mediumImpact();
                     Navigator.of(context).pop();
-                    AiQuickAnswerSheet.show(context, prompt: _query);
+                    AiQuickAnswerSheet.show(context, prompt: query);
                   },
                   icon: const Icon(Icons.auto_awesome_rounded, size: 16),
                   label: const Text('Ask AI'),

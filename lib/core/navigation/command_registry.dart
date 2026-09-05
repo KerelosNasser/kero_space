@@ -52,6 +52,7 @@ class CommandItem {
   final CommandCategory category;
   final IconData icon;
   final String badge;
+  final String titleLower;
   final List<String> keywords;
   final String normalizedTokens;
   final void Function(BuildContext context, {required ValueChanged<int> onSelectBranch}) onExecute;
@@ -65,7 +66,8 @@ class CommandItem {
     required this.badge,
     required this.keywords,
     required this.onExecute,
-  }) : normalizedTokens = '${title.toLowerCase()} ${subtitle.toLowerCase()} ${keywords.join(' ').toLowerCase()}';
+  })  : titleLower = title.toLowerCase(),
+        normalizedTokens = '${title.toLowerCase()} ${subtitle.toLowerCase()} ${keywords.join(' ').toLowerCase()}';
 }
 
 class PredictedCard {
@@ -462,31 +464,37 @@ class CommandRegistry {
     ),
   ];
 
+  static final Map<CommandCategory, List<CommandItem>> _categoryPools = {
+    CommandCategory.all: items,
+    CommandCategory.navigation: items.where((i) => i.category == CommandCategory.navigation).toList(growable: false),
+    CommandCategory.action: items.where((i) => i.category == CommandCategory.action).toList(growable: false),
+    CommandCategory.aiWeb: items.where((i) => i.category == CommandCategory.aiWeb).toList(growable: false),
+    CommandCategory.settings: items.where((i) => i.category == CommandCategory.settings).toList(growable: false),
+  };
+
+  static final Map<String, List<CommandItem>> _queryCache = {};
+
   static List<CommandItem> search({
     required String query,
     CommandCategory selectedCategory = CommandCategory.all,
   }) {
     final cleanQuery = query.trim().toLowerCase();
-
-    var pool = items;
-    if (selectedCategory != CommandCategory.all) {
-      pool = items.where((item) => item.category == selectedCategory).toList();
-    }
+    final pool = _categoryPools[selectedCategory] ?? items;
 
     if (cleanQuery.isEmpty) {
       return pool;
     }
 
-    // Scored ranking algorithm:
-    // Prefix in title: 100
-    // Word boundary in title: 80
-    // Substring in title: 60
-    // Keyword match: 40
-    // Substring in tokens: 20
-    final scored = <MapEntry<CommandItem, int>>[];
+    final cacheKey = '${selectedCategory.name}_$cleanQuery';
+    final cached = _queryCache[cacheKey];
+    if (cached != null) return cached;
 
-    for (final item in pool) {
-      final titleLower = item.title.toLowerCase();
+    // Fast scored ranking algorithm
+    final scored = <_ScoredItem>[];
+
+    for (var i = 0; i < pool.length; i++) {
+      final item = pool[i];
+      final titleLower = item.titleLower;
       int score = 0;
 
       if (titleLower == cleanQuery) {
@@ -506,11 +514,24 @@ class CommandRegistry {
       }
 
       if (score > 0) {
-        scored.add(MapEntry(item, score));
+        scored.add(_ScoredItem(item, score));
       }
     }
 
-    scored.sort((a, b) => b.value.compareTo(a.value));
-    return scored.map((e) => e.key).toList();
+    scored.sort((a, b) => b.score.compareTo(a.score));
+    final results = List<CommandItem>.generate(scored.length, (i) => scored[i].item, growable: false);
+
+    if (_queryCache.length > 80) {
+      _queryCache.clear();
+    }
+    _queryCache[cacheKey] = results;
+
+    return results;
   }
+}
+
+class _ScoredItem {
+  final CommandItem item;
+  final int score;
+  const _ScoredItem(this.item, this.score);
 }
