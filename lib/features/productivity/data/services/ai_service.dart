@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/foundation.dart';
+import 'package:isar/isar.dart';
+import '../../../../core/data/isar_service.dart';
+import '../models/productivity_collections.dart';
 
 class AIService {
   final Dio _dio;
@@ -92,20 +95,91 @@ energyLevel must be 1 (Low), 2 (Medium), or 3 (High).'''
     }
   }
 
-  /// Auto-schedules tasks by evaluating a list of tasks and finding suitable start/end times.
-  /// Note: In a real implementation, this would pass free calendar slots.
-  Future<Map<int, DateTime>> autoScheduleTasks(List<Map<String, dynamic>> tasks) async {
-    // For MVP, we simulate scheduling based on the current time + staggered hours
+  /// Auto-schedules tasks by finding real, non-conflicting time slots across
+  /// working hours (09:00 - 18:00), respecting existing calendar events and scheduled tasks.
+  Future<Map<int, DateTime>> autoScheduleTasks(
+    List<Map<String, dynamic>> tasks, {
+    DateTime? referenceDate,
+    List<DateTimeRange>? customBusySlots,
+  }) async {
     final Map<int, DateTime> schedule = {};
-    DateTime currentSlot = DateTime.now().add(const Duration(hours: 1));
-    
-    for (var task in tasks) {
-      final id = task['id'] as int;
-      schedule[id] = currentSlot;
-      // Add 1 hour per task
-      currentSlot = currentSlot.add(const Duration(hours: 1));
+    if (tasks.isEmpty) return schedule;
+
+    final List<DateTimeRange> busy = [];
+    if (customBusySlots != null) {
+      busy.addAll(customBusySlots);
     }
-    
+
+    // Query existing scheduled tasks & calendar events if Isar is available
+    if (IsarService.isInitialized) {
+      final isar = IsarService.instance;
+      final existingTasks = await isar.tasks.where().findAll();
+      for (final t in existingTasks) {
+        if (t.dueDate != null) {
+          busy.add(DateTimeRange(
+            start: t.dueDate!,
+            end: t.dueDate!.add(const Duration(minutes: 45)),
+          ));
+        }
+      }
+
+      final existingEvents = await isar.calendarEvents.where().findAll();
+      for (final ev in existingEvents) {
+        busy.add(DateTimeRange(start: ev.startTime, end: ev.endTime));
+      }
+    }
+
+    final base = referenceDate ?? DateTime.now();
+    DateTime cursor = DateTime(base.year, base.month, base.day, 9, 0);
+    if (cursor.isBefore(base)) {
+      cursor = DateTime(base.year, base.month, base.day, base.hour + 1, 0);
+    }
+
+    // Sort tasks so high energy (3) gets earlier slots
+    final sortedTasks = List<Map<String, dynamic>>.from(tasks)
+      ..sort((a, b) => ((b['energyLevel'] as int?) ?? 2)
+          .compareTo((a['energyLevel'] as int?) ?? 2));
+
+    for (final task in sortedTasks) {
+      final id = task['id'] as int;
+      final energy = (task['energyLevel'] as int?) ?? 2;
+      final durationMinutes = energy == 3 ? 60 : (energy == 2 ? 45 : 30);
+
+      // Find first slot between 09:00 and 18:00 without collision
+      DateTime candidate = cursor;
+      bool slotFound = false;
+
+      while (!slotFound) {
+        // Enforce daily work hours 9 AM to 6 PM
+        if (candidate.hour >= 18) {
+          // Move to next day at 9:00 AM
+          candidate =
+              DateTime(candidate.year, candidate.month, candidate.day + 1, 9, 0);
+        } else if (candidate.hour < 9) {
+          candidate =
+              DateTime(candidate.year, candidate.month, candidate.day, 9, 0);
+        }
+
+        final candidateEnd = candidate.add(Duration(minutes: durationMinutes));
+        final candidateRange = DateTimeRange(start: candidate, end: candidateEnd);
+
+        final hasConflict = busy.any((b) =>
+            candidateRange.start.isBefore(b.end) &&
+            candidateRange.end.isAfter(b.start));
+
+        if (!hasConflict) {
+          slotFound = true;
+          schedule[id] = candidate;
+          busy.add(candidateRange);
+          // Advance cursor for next task with 15 min buffer
+          cursor = candidateEnd.add(const Duration(minutes: 15));
+        } else {
+          // Conflict: advance candidate by 30 minutes and recheck
+          candidate = candidate.add(const Duration(minutes: 30));
+        }
+      }
+    }
+
     return schedule;
   }
   /// Generates a short title (2-4 words) for a note based on its content.

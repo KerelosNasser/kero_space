@@ -17,4 +17,11 @@ class SyncOutboxRepository {
         .limit(limit)
         .findAll();
   }
+
+  Future<int> getPendingCount() async {
+    return IsarService.instance.syncOutboxRecords
+        .filter()
+        .statusEqualTo('PENDING')
+        .count();
+  }
 }

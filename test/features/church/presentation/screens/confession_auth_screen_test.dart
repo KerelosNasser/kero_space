@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth_platform_interface/local_auth_platform_interface.dart';
 import 'package:kero_space/features/church/data/repositories/confession_crypto_service.dart';
 import 'package:kero_space/features/church/presentation/bloc/confession_bloc.dart';
 import 'package:kero_space/features/church/presentation/screens/confession_auth_screen.dart';
@@ -50,14 +49,6 @@ class StubLocalAuth extends Fake implements LocalAuthentication {
   Future<bool> get canCheckBiometrics async => true;
   @override
   Future<bool> isDeviceSupported() async => true;
-  @override
-  Future<bool> authenticate({
-    required String localizedReason,
-    Iterable<AuthMessages> authMessages = const <AuthMessages>[],
-    bool biometricOnly = false,
-    bool sensitiveTransaction = true,
-    bool persistAcrossBackgrounding = false,
-  }) async => false;
 }
 
 void main() {

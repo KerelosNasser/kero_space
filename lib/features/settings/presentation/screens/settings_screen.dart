@@ -9,6 +9,8 @@ import '../../../../core/theme/theme_state.dart';
 import '../../../../core/navigation/navigation_cubit.dart';
 import '../../../../core/navigation/navigation_state.dart';
 import '../../../../core/navigation/navigation_mode.dart';
+import '../../../../core/data/sync_worker.dart';
+import '../../../../core/data/sync_outbox_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -19,8 +21,12 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _isExporting = false;
+  bool _isSyncing = false;
+  int _pendingSyncCount = 0;
+  String? _lastSyncMessage;
   final DataExportService _exportService = DataExportService();
   final TextEditingController _dockerUrlController = TextEditingController();
+  final SyncOutboxRepository _syncRepo = SyncOutboxRepository();
 
   @override
   void initState() {
@@ -30,8 +36,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    final pendingCount = await _syncRepo.getPendingCount();
     setState(() {
       _dockerUrlController.text = prefs.getString('docker_url') ?? '';
+      _pendingSyncCount = pendingCount;
     });
   }
 
@@ -48,6 +56,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Docker URL saved')),
       );
+    }
+  }
+
+  Future<void> _triggerSyncNow() async {
+    setState(() => _isSyncing = true);
+    try {
+      final result = await SyncWorker.triggerSync(
+        dockerUrl: _dockerUrlController.text,
+      );
+
+      final updatedCount = await _syncRepo.getPendingCount();
+
+      if (!mounted) return;
+
+      setState(() {
+        _pendingSyncCount = updatedCount;
+        _lastSyncMessage = result.success
+            ? 'Synced ${result.syncedCount} records successfully'
+            : (result.errorMessage ?? 'Sync failed');
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_lastSyncMessage!),
+          backgroundColor: result.success
+              ? context.appColors.accentSuccess
+              : context.appColors.accentError,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _lastSyncMessage = 'Sync failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sync failed: $e'),
+          backgroundColor: context.appColors.accentError,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
     }
   }
 
@@ -249,7 +299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'BACKEND CONFIGURATION',
+                  'BACKEND CONFIGURATION & SYNC',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -257,12 +307,88 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: colors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: colors.bgSurface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: colors.borderSubtle),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.cloud_sync_rounded,
+                                color: colors.accentPrimary,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Sync Status',
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _pendingSyncCount > 0
+                                  ? colors.accentWarning.withValues(alpha: 0.15)
+                                  : colors.accentSuccess.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _pendingSyncCount > 0
+                                  ? '$_pendingSyncCount Pending'
+                                  : 'Up to date',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: _pendingSyncCount > 0
+                                    ? colors.accentWarning
+                                    : colors.accentSuccess,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_lastSyncMessage != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          _lastSyncMessage!,
+                          style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                        ),
+                      ],
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _isSyncing ? null : _triggerSyncNow,
+                          icon: _isSyncing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.sync, size: 18),
+                          label: Text(_isSyncing ? 'Syncing...' : 'Sync Now'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: _dockerUrlController,
                   decoration: const InputDecoration(
                     labelText: 'Docker Server URL',
-                    hintText: 'e.g. 192.168.1.100',
+                    hintText: 'e.g. 192.168.1.100 or localhost',
                   ),
                   onSubmitted: _saveDockerUrl,
                 ),

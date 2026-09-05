@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/features/exercises/data/repositories/exercises_repository.dart';
 import 'package:kero_space/features/exercises/presentation/bloc/exercise_bloc.dart';
+import '../screens/exercise_detail_screen.dart';
 
 class ExercisesTab extends StatelessWidget {
   const ExercisesTab({super.key});
@@ -342,17 +343,34 @@ class _ExerciseCard extends StatelessWidget {
   final WorkoutExerciseViewModel exercise;
   final TodayWorkoutViewModel workout;
 
+  void _openDetails(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<ExerciseBloc>(),
+          child: ExerciseDetailScreen(exercise: exercise),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.bgElevated.withValues(alpha: 0.75),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openDetails(context),
         borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.bgElevated.withValues(alpha: 0.75),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: context.appColors.borderSubtle),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -417,6 +435,8 @@ class _ExerciseCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
+    ),
     );
   }
 
@@ -552,7 +572,7 @@ class _EmptyHistoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.bgSurface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: context.appColors.borderSubtle),
       ),
       child: const Column(
         children: [

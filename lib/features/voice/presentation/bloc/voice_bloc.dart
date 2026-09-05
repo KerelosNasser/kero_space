@@ -18,6 +18,8 @@ import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart'
 import 'package:kero_space/features/church/presentation/bloc/church_bloc.dart';
 import 'package:kero_space/features/church/data/models/mass_attendance.dart';
 import 'package:kero_space/features/telemetry/data/models/blacklist_rule.dart';
+import 'package:kero_space/features/telemetry/data/repositories/blacklist_repository.dart';
+import 'package:kero_space/core/router.dart';
 
 class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
   final CommandParser _parser;
@@ -197,19 +199,35 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
         getIt<ChurchBloc>().add(
           MarkAttendanceEvent(intent.date, ServiceType.liturgy),
         );
-      } else if (intent is MarkAttendanceIntent) {
-        msg = "Attendance marked";
-        getIt<ChurchBloc>().add(
-          MarkAttendanceEvent(intent.date, ServiceType.liturgy),
-        );
       } else if (intent is NavigateIntent) {
-        // Navigation is handled by the UI layer listening to state changes
+        final dest = intent.destination.toLowerCase().trim();
+        String targetRoute = '/';
+        if (dest.contains('church')) {
+          targetRoute = '/church';
+        } else if (dest.contains('health') || dest.contains('workout') || dest.contains('gym')) {
+          targetRoute = '/health';
+        } else if (dest.contains('finance') || dest.contains('money') || dest.contains('budget')) {
+          targetRoute = '/finance';
+        } else if (dest.contains('productivity') || dest.contains('task') || dest.contains('todo')) {
+          targetRoute = '/productivity';
+        } else if (dest.contains('telemetry') || dest.contains('screen time') || dest.contains('usage')) {
+          targetRoute = '/telemetry';
+        } else if (dest.contains('setting')) {
+          targetRoute = '/settings';
+        } else if (dest.contains('confession')) {
+          targetRoute = '/church/confessions_log';
+        } else if (dest.contains('blacklist') || dest.contains('block')) {
+          targetRoute = '/telemetry/blacklist';
+        }
         msg = 'Opening ${intent.destination}';
+        router.go(targetRoute);
       } else if (intent is BlockAppIntent) {
         msg = 'App blocked';
+        final blacklistRepo = getIt<BlacklistRepository>();
         final rule = BlacklistRule(packageName: intent.appName);
-        final rulesJson = BlacklistRule.listToJson([rule]);
-        await getIt<KeroSpacePlatformService>().setBlacklistRules(rulesJson);
+        await blacklistRepo.addRule(rule);
+        final allRules = await blacklistRepo.getRules();
+        await getIt<KeroSpacePlatformService>().setBlacklistRules(BlacklistRule.listToJson(allRules));
       }
 
       emit(VoiceSuccess(msg));
