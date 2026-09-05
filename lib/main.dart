@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'core/app_theme.dart';
+import 'core/theme/theme_cubit.dart';
+import 'core/theme/theme_state.dart';
 import 'core/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/voice/presentation/bloc/voice_bloc.dart';
@@ -88,70 +89,81 @@ class KeroSpaceApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider.value(value: getIt<ThemeCubit>()),
         BlocProvider.value(value: getIt<VoiceBloc>()),
         if (Platform.isWindows)
           BlocProvider.value(value: getIt<ProcessWatcherBloc>()),
       ],
-      child: MaterialApp.router(
-        title: 'Trobio',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
-        routerConfig: router,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          quill.FlutterQuillLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('en', 'US')],
-        shortcuts: {
-          ...WidgetsApp.defaultShortcuts,
-          const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-              const NavigateToIntent('/productivity'),
-          const SingleActivator(
-            LogicalKeyboardKey.keyM,
-            control: true,
-            shift: true,
-          ): const MarkAttendanceGlobalIntent(),
-          const SingleActivator(LogicalKeyboardKey.keyL, control: true):
-              const NavigateToIntent('/health/search'),
-          const SingleActivator(LogicalKeyboardKey.slash, control: true):
-              const StartVoiceIntent(),
-        },
-        actions: {
-          ...WidgetsApp.defaultActions,
-          NavigateToIntent: CallbackAction<NavigateToIntent>(
-            onInvoke: (intent) => router.go(intent.route),
-          ),
-          MarkAttendanceGlobalIntent:
-              CallbackAction<MarkAttendanceGlobalIntent>(
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        buildWhen: (prev, curr) =>
+            prev.selectedThemeId != curr.selectedThemeId ||
+            prev.themeMode != curr.themeMode ||
+            prev.customConfig != curr.customConfig,
+        builder: (context, themeState) {
+          return MaterialApp.router(
+            title: 'Trobio',
+            debugShowCheckedModeBanner: false,
+            theme: themeState.lightThemeData,
+            darkTheme: themeState.darkThemeData,
+            themeMode: themeState.themeMode,
+            routerConfig: router,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+              quill.FlutterQuillLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en', 'US')],
+            shortcuts: {
+              ...WidgetsApp.defaultShortcuts,
+              const SingleActivator(LogicalKeyboardKey.keyN, control: true):
+                  const NavigateToIntent('/productivity'),
+              const SingleActivator(
+                LogicalKeyboardKey.keyM,
+                control: true,
+                shift: true,
+              ): const MarkAttendanceGlobalIntent(),
+              const SingleActivator(LogicalKeyboardKey.keyL, control: true):
+                  const NavigateToIntent('/health/search'),
+              const SingleActivator(LogicalKeyboardKey.slash, control: true):
+                  const StartVoiceIntent(),
+            },
+            actions: {
+              ...WidgetsApp.defaultActions,
+              NavigateToIntent: CallbackAction<NavigateToIntent>(
+                onInvoke: (intent) => router.go(intent.route),
+              ),
+              MarkAttendanceGlobalIntent:
+                  CallbackAction<MarkAttendanceGlobalIntent>(
+                    onInvoke: (intent) {
+                      getIt<ChurchBloc>().add(
+                        MarkAttendanceEvent(DateTime.now(), ServiceType.liturgy),
+                      );
+                      return null;
+                    },
+                  ),
+              StartVoiceIntent: CallbackAction<StartVoiceIntent>(
                 onInvoke: (intent) {
-                  getIt<ChurchBloc>().add(
-                    MarkAttendanceEvent(DateTime.now(), ServiceType.liturgy),
-                  );
+                  getIt<VoiceBloc>().add(StartListeningEvent());
                   return null;
                 },
               ),
-          StartVoiceIntent: CallbackAction<StartVoiceIntent>(
-            onInvoke: (intent) {
-              getIt<VoiceBloc>().add(StartListeningEvent());
-              return null;
             },
-          ),
-        },
-        builder: (context, child) {
-          return BlocListener<VoiceBloc, VoiceState>(
-            listener: (context, state) {
-              if (state is VoiceWakeDetected) {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => const VoiceBottomSheet(),
-                );
-              }
+            builder: (context, child) {
+              return BlocListener<VoiceBloc, VoiceState>(
+                listener: (context, state) {
+                  if (state is VoiceWakeDetected) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const VoiceBottomSheet(),
+                    );
+                  }
+                },
+                child: child ?? const SizedBox.shrink(),
+              );
             },
-            child: child ?? const SizedBox.shrink(),
           );
         },
       ),

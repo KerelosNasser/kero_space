@@ -11,26 +11,38 @@ class AdaptiveNavRail extends StatelessWidget {
     required this.onDestinationSelected,
   });
 
-  Color _getActiveColor(int index) {
+  Color _getActiveColor(BuildContext context, int index) {
+    final colors = context.appColors;
     switch (index) {
-      case 0: return AppTheme.accentPrimary;
-      case 1: return AppTheme.accentCyan;
-      case 2: return AppTheme.accentMint;
-      case 3: return AppTheme.accentGold;
-      case 4: return AppTheme.accentViolet;
-      case 5: return AppTheme.accentGold;
-      default: return AppTheme.accentPrimary;
+      case 0:
+        return colors.accentPrimary;
+      case 1:
+        return colors.domainProductivity;
+      case 2:
+        return colors.domainHealth;
+      case 3:
+        return colors.domainFinance;
+      case 4:
+        return colors.domainChurch;
+      case 5:
+        return colors.domainTelemetry;
+      default:
+        return colors.accentPrimary;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = _getActiveColor(context, currentIndex);
     return NavigationRail(
       selectedIndex: currentIndex,
       onDestinationSelected: onDestinationSelected,
+      backgroundColor: context.appColors.bgBase,
       labelType: NavigationRailLabelType.all,
-      selectedIconTheme: IconThemeData(color: _getActiveColor(currentIndex)),
-      selectedLabelTextStyle: TextStyle(color: _getActiveColor(currentIndex)),
+      selectedIconTheme: IconThemeData(color: activeColor),
+      selectedLabelTextStyle: TextStyle(color: activeColor, fontWeight: FontWeight.w600),
+      unselectedIconTheme: IconThemeData(color: context.appColors.textDisabled),
+      unselectedLabelTextStyle: TextStyle(color: context.appColors.textDisabled),
       destinations: const [
         NavigationRailDestination(
           icon: Icon(Icons.home_outlined),

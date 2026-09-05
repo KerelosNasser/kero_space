@@ -19,6 +19,8 @@ class HomeScreen extends StatelessWidget {
     final now = DateTime.now();
     final dateStr = DateFormat('EEEE, MMM d').format(now);
 
+    final colors = context.appColors;
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -40,7 +42,7 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   dateStr,
-                  style: const TextStyle(color: AppTheme.textSecondary),
+                  style: TextStyle(color: colors.textSecondary),
                 ),
               ),
             ),
@@ -55,11 +57,12 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                const Text(
+                Text(
                   'TODAY\'S FOCUS',
                   style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 13,
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -67,11 +70,12 @@ class HomeScreen extends StatelessWidget {
                 _buildProductivityCard(context),
                 const SizedBox(height: 24),
 
-                const Text(
+                Text(
                   'HEALTH & TELEMETRY',
                   style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 13,
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -85,11 +89,12 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                const Text(
+                Text(
                   'WEALTH & SPIRITUALITY',
                   style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 13,
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -101,7 +106,7 @@ class HomeScreen extends StatelessWidget {
                     Expanded(child: _buildChurchCard(context)),
                   ],
                 ),
-                const SizedBox(height: 32), // Bottom padding
+                const SizedBox(height: 32),
               ]),
             ),
           ),
@@ -136,7 +141,7 @@ class HomeScreen extends StatelessWidget {
           context: context,
           domainLabel: subtitle,
           heroMetric: metric,
-          accentColor: AppTheme.accentCyan,
+          accentColor: context.appColors.domainProductivity,
           route: '/productivity',
           heroTag: 'hero-productivity',
         );
@@ -151,7 +156,7 @@ class HomeScreen extends StatelessWidget {
           context: context,
           domainLabel: 'HEALTH RING',
           heroMetric: '${state.steps.toInt()} steps',
-          accentColor: AppTheme.accentMint,
+          accentColor: context.appColors.domainHealth,
           route: '/health',
           heroTag: 'hero-health',
         );
@@ -167,7 +172,7 @@ class HomeScreen extends StatelessWidget {
           context: context,
           domainLabel: 'SCREEN TIME',
           heroMetric: '${hours.toStringAsFixed(1)} h',
-          accentColor: AppTheme.accentGold,
+          accentColor: context.appColors.domainTelemetry,
           route: '/telemetry',
           heroTag: 'hero-telemetry',
         );
@@ -186,7 +191,7 @@ class HomeScreen extends StatelessWidget {
           context: context,
           domainLabel: 'EARNINGS THIS MONTH',
           heroMetric: metric,
-          accentColor: AppTheme.accentGold,
+          accentColor: context.appColors.domainFinance,
           route: '/finance',
           heroTag: 'hero-finance',
         );
@@ -209,14 +214,13 @@ class HomeScreen extends StatelessWidget {
           context: context,
           domainLabel: todayMarked ? 'MASS TODAY ✓' : 'MASS STREAK',
           heroMetric: '${streak}d streak',
-          accentColor: AppTheme.accentViolet,
+          accentColor: context.appColors.domainChurch,
           route: '/church',
           heroTag: 'hero-church',
         );
       },
     );
   }
-
 
   Widget _buildSnapshotCard({
     required BuildContext context,
@@ -226,35 +230,44 @@ class HomeScreen extends StatelessWidget {
     required String route,
     required String heroTag,
   }) {
+    final colors = context.appColors;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => context.go(route),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.bgSurface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border(left: BorderSide(color: accentColor, width: 3)),
+            color: colors.bgSurface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border(
+              left: BorderSide(color: accentColor, width: 3.5),
+              top: BorderSide(color: colors.borderSubtle, width: 1),
+              right: BorderSide(color: colors.borderSubtle, width: 1),
+              bottom: BorderSide(color: colors.borderSubtle, width: 1),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 domainLabel,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
+                style: TextStyle(
+                  color: colors.textSecondary,
                   fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 heroMetric,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                  letterSpacing: -0.2,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/data_export_service.dart';
 import '../../../../core/app_theme.dart';
+import '../../../../core/theme/theme_cubit.dart';
+import '../../../../core/theme/theme_state.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -55,7 +59,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export failed: $e'), backgroundColor: AppTheme.accentRose),
+        SnackBar(
+          content: Text('Export failed: $e'),
+          backgroundColor: context.appColors.accentError,
+        ),
       );
     } finally {
       if (mounted) {
@@ -66,37 +73,107 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
       body: ListView(
         children: [
+          // Appearance & Themes
+          BlocBuilder<ThemeCubit, ThemeState>(
+            builder: (context, themeState) {
+              final activeTheme = themeState.selectedThemeId;
+              final modeName = themeState.themeMode == ThemeMode.dark
+                  ? 'Dark'
+                  : (themeState.themeMode == ThemeMode.light ? 'Light' : 'System');
+
+              return ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colors.accentPrimary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.palette_rounded, color: colors.accentPrimary, size: 20),
+                ),
+                title: const Text(
+                  'Appearance & Developer Themes',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text('${activeTheme.displayName} • $modeName Mode'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: colors.bgElevated,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: colors.borderSubtle),
+                      ),
+                      child: Text(
+                        activeTheme.tag,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: colors.accentPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right, size: 20),
+                  ],
+                ),
+                onTap: () => context.push('/settings/theme'),
+              );
+            },
+          ),
+          const Divider(),
+
+          // Data Export
           ListTile(
-            leading: const Icon(Icons.download),
-            title: const Text('Export My Data'),
-            subtitle: const Text('Download a JSON copy of all non-encrypted data'),
-            trailing: _isExporting ? const CircularProgressIndicator() : null,
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colors.accentSecondary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.download_rounded, color: colors.accentSecondary, size: 20),
+            ),
+            title: const Text('Export My Data', style: TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: const Text('Download a JSON copy of non-encrypted data'),
+            trailing: _isExporting ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.chevron_right, size: 20),
             onTap: _isExporting ? null : _exportData,
           ),
           const Divider(),
+
+          // Backend Configuration
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Backend Configuration', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                Text(
+                  'BACKEND CONFIGURATION',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.1,
+                    color: colors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 10),
                 TextField(
                   controller: _dockerUrlController,
                   decoration: const InputDecoration(
                     labelText: 'Docker Server URL',
                     hintText: 'e.g. 192.168.1.100',
-                    border: OutlineInputBorder(),
                   ),
                   onSubmitted: _saveDockerUrl,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () => _saveDockerUrl(_dockerUrlController.text),
                   child: const Text('Save URL'),
@@ -109,3 +186,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
+
