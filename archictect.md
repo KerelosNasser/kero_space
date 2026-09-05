@@ -2,11 +2,11 @@
 
 ## 1. High-Level Architecture Overview
 
-Kero Space is structured around three concentric layers:
+Trobio is structured around three concentric layers enforcing strict **Dependency Inversion**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  PRESENTATION LAYER  (Flutter UI + BLoC State Machines)         │
+│  PRESENTATION LAYER  (Flutter UI + BLoC / Cubit State Machines) │
 ├─────────────────────────────────────────────────────────────────┤
 │  DOMAIN LAYER        (Use Cases, Repositories, Entities)        │
 ├─────────────────────────────────────────────────────────────────┤
@@ -14,202 +14,135 @@ Kero Space is structured around three concentric layers:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-The architecture strictly enforces **Dependency Inversion** — the domain layer knows nothing about Flutter, Isar, HTTP, or platform channels. Every external capability is injected via abstract repository interfaces.
+The domain layer remains completely decoupled from Flutter UI, Isar, HTTP, or platform channels. All external dependencies are injected via abstract repository interfaces registered in `lib/core/di/injection.dart`.
 
-### Theme & Component Organization Policies
-- **Single-File Theming:** To simplify editing and maintenance, all design tokens, HSL values, visual theme configurations, and font alignments are defined strictly inside `lib/core/app_theme.dart`. No other file in the application is permitted to construct or hardcode `Color` objects.
-- **Shared Component Repository:** All refactored, reusable UI components (custom cards, inputs, buttons, loading state shimmers) must reside in a single directory: `lib/shared/widgets/`. Local feature presentation folders (`lib/features/[name]/presentation/widgets/`) should contain only feature-specific layouts that cannot be abstracted.
+### Theming & Navigation Architecture Policies
+- **Dynamic Theming System:** Defined in `lib/core/app_theme.dart` using a custom `ThemeExtension` (`AppColorsExtension` / `context.appColors`). Supports 11 curated theme presets plus user-configured palettes via `CustomThemeStudioScreen`.
+- **Modular Navigation Systems:** Managed by `NavigationCubit` in `lib/core/navigation/`. The UI renders one of 5 distinct navigation layouts dynamically wrapped around `AppShell`:
+  1. `CommandCapsuleNav` (with center Raycast-style `CommandPaletteModal`)
+  2. `ThreePillarsNav` (Hierarchical domain switcher)
+  3. `FloatingIslandDock`
+  4. `BentoHubNav`
+  5. `ClassicBar`
+- **Shared Component Repository:** Reusable UI components (buttons, shimmers, cards, error displays) reside in `lib/shared/widgets/`. Local feature widgets live in `lib/features/[name]/presentation/widgets/`.
 
 ---
 
-## 2. BLoC Architecture — Event-Driven State Flow
+## 2. BLoC & Cubit State Flow
 
-### Core Pattern
-Each feature domain owns exactly one BLoC (or a tree of BLoCs for complex domains). The pattern is strictly:
-
+### Core Architecture Pattern
 ```
-UI Widget
-  │  dispatches Event
+UI Widget / Command Palette
+  │  dispatches Event / Action
   ▼
-BLoC (Business Logic Component)
-  │  calls Repository (abstract interface)
+BLoC / Cubit
+  │  calls Repository / Service (abstract interface)
   ▼
 Repository Implementation
-  │  reads/writes Isar (local) OR HTTP (Docker)
+  │  reads/writes Isar (local) OR HTTP (Docker) / Platform Service
   ▼
-Isar / Docker API
-  │  emits result
+Isar Database / OS Daemon
+  │  emits result or stream update
   ▼
 BLoC emits State
   │
   ▼
-UI Widget rebuilds via BlocBuilder
+UI Widget rebuilds via BlocBuilder / BlocListener
 ```
 
-### BLoC Domain Registry
+### Complete BLoC & Cubit Registry
 
-| BLoC | Events | Key States |
+| Component | Scope / Lifetime | Events / Methods | Key States |
+|---|---|---|---|
+| `TelemetryBloc` | Singleton (Boot) | `LoadTelemetryDashboard`, `LoadBlacklist`, `UpdateBlacklistRule` | `TelemetryState` (todayScreenTimeMs, topApps, unlockCount, blockerStats) |
+| `ProductivityBloc` | Singleton | `createTask`, `completeTask`, `createNote`, `deleteNote` | `ProductivityState` (tasks, notes, projectCards, deepWorkTimer) |
+| `CalendarBloc` | Singleton | `LoadCalendarEvents`, `SyncDeviceCalendar` | `CalendarState` (events, copticFastingPeriods) |
+| `HealthBloc` | Singleton | `LoadDashboard`, `LogMeal`, `UpdateCalorieConfig`, `ToggleFastingMode` | `HealthState` (steps, hr, calories, macros, isFastingMode) |
+| `ExerciseBloc` | Factory | `LoadExercisesDashboard`, `SelectExerciseSplit`, `LogExerciseSet` | `ExerciseState` (availableSplits, selectedSplit, todayWorkout) |
+| `FinanceBloc` | Singleton | `LoadFinanceData`, `AddTransactionEvent`, `RefreshEGXQuotes` | `FinanceState` (transactions, budgets, subscriptions, egxHoldings) |
+| `ChurchBloc` | Singleton | `LoadChurchData`, `MarkAttendanceEvent`, `UpdateMinistryTask` | `ChurchState` (attendanceGrid, ministryMembers, serviceTasks) |
+| `ConfessionBloc` | Singleton | `UnlockConfessions`, `LockConfessions`, `AddConfessionEntry` | `ConfessionState` (isUnlocked, entries, error) |
+| `CopticBloc` | Singleton | `LoadCopticData` | `CopticState` (copticDayInfo, passageTexts, upcomingFeasts) |
+| `VoiceBloc` | Singleton | `WakeWordTriggered`, `SpeechFinalResultEvent`, `ConfirmIntentEvent` | `VoiceIdle`, `VoiceListening`, `VoiceConfirmPending`, `VoiceSuccess` |
+| `ThemeCubit` | Singleton | `setTheme(AppThemeId)`, `updateCustomConfig(CustomThemeConfig)` | `ThemeState` (activeThemeId, customConfig) |
+| `NavigationCubit`| Singleton | `setNavigationMode(AppNavStyle)` | `NavigationState` (mode) |
+
+---
+
+## 3. Data & External Services Layer
+
+External capabilities and integrations are encapsulated in dedicated service classes:
+
+| Service | Location | Purpose |
 |---|---|---|
-| `TelemetryBloc` | `AppLaunchDetected`, `ScreenUnlockLogged`, `ClickEventRecorded` | `TelemetryDashboardState(sessions, topApps, unlockTimeline)` |
-| `ProductivityBloc` | `TaskCreated`, `TaskCompleted`, `NoteUpdated`, `CalendarSynced`, `FastingCalendarRefreshed` | `TaskListState`, `CalendarViewState(fastingPeriods)` |
-| `HealthBloc` | `HealthDataPolled`, `MealLogged`, `CalorieTargetUpdated`, `FastingToggleSwitched` | `HealthDashboardState(steps, hr, sleep, macros, isFastingMode)` |
-| `FinanceBloc` | `InvoiceCreated`, `PaymentReceived`, `EGXPriceRefreshed` | `LedgerState`, `PortfolioState` |
-| `ChurchBloc` | `AttendanceMarked`, `ConfessionEntryCreated`, `ServiceTaskUpdated` | `AttendanceStreakState`, `MinistryBoardState` |
-| `VoiceBloc` | `WakeWordDetected`, `CommandTranscribed`, `CommandExecuted` | `VoiceIdleState`, `VoiceListeningState`, `CommandResultState` |
-| `OverlayBloc` | `BlacklistedAppDetected`, `DecisionBreakExpired`, `AppAccessGranted`, `BlockerRuleUpdated`, `AgentToggleSwitched` | `OverlayInactiveState`, `DecisionBreakState(secondsRemaining)`, `OmniscientControlState(agentStates, blacklist)` |
-
-### BLoC Composition Strategy
-- `AppBloc` — root navigator + authentication state
-- Feature BLoCs are **lazy-initialized** when their route is first accessed
-- `TelemetryBloc` and `OverlayBloc` are **always-alive** singletons (initialized at app boot, never disposed)
-- Inter-BLoC communication happens via **shared Repository streams**, never direct BLoC-to-BLoC calls
+| `IsarService` | `lib/core/data/isar_service.dart` | Thread-safe, multi-isolate initialization of local Isar database |
+| `KeroSpacePlatformService` | `lib/core/data/kero_space_platform_service.dart` | Bridge for Android background isolate, rules, and overlay control |
+| `BarcodeService` | `lib/features/health/data/services/barcode_service.dart` | OpenFoodFacts product nutrition lookup via barcode |
+| `AiScannerService` | `lib/features/health/data/services/ai_scanner_service.dart` | Vision-based food nutrient estimation via OpenRouter API |
+| `YouVersionService` | `lib/features/church/data/services/youversion_service.dart` | Liturgical daily scripture verse retrieval |
+| `NotificationParserService` | `lib/features/finance/data/repositories/notification_parser_service.dart` | Bank SMS & push notification transaction auto-extraction |
+| `EGXScraperService` | `lib/features/finance/data/repositories/egx_scraper_service.dart` | Egyptian Exchange ticker quotes & price scraper |
+| `ConfessionCryptoService` | `lib/features/church/data/repositories/confession_crypto_service.dart` | Argon2id salt generation & AES-256-GCM encryption engine |
+| `CommandRegistry` | `lib/core/navigation/command_registry.dart` | Action registry for Raycast-style ⌘ command palette modal |
 
 ---
 
-## 3. Repository Architecture
+## 4. Headless Background Isolate Architecture
 
-### Abstract Interface Pattern
+Android background telemetry (screen cycles, clicks, app blockers) bypasses the main UI isolate to ensure zero UI frame drops and 100% telemetry capture when the app is minimized or suspended.
+
 ```
-abstract class HealthRepository {
-  Stream<List<HealthRecord>> watchTodayMetrics();
-  Future<void> syncFromHealthConnect();
-  Future<void> logMeal(MealEntry meal);
-  Future<NutritionalSummary> getDailySummary(DateTime date);
-}
+┌────────────────────────────────────────────────────────────────────────┐
+│                        DUAL-ISOLATE ARCHITECTURE                       │
+│                                                                        │
+│   [Android OS: Accessibility / ScreenReceiver / ForegroundSvc]         │
+│             │                                           │              │
+│   kero_space/* channels                       kero_space/bg/* channels │
+│             │                                           │              │
+│             ▼                                           ▼              │
+│   ┌───────────────────────────┐               ┌──────────────────────┐ │
+│   │     Main UI Isolate       │               │ Headless BG Isolate  │ │
+│   │     (main.dart)           │               │ (backgroundMain())   │ │
+│   │  • Flutter Widget Tree    │               │  • IsarService.init()│ │
+│   │  • BLoCs & Cubits         │               │  • PII Sanitization  │ │
+│   │  • Interactive Dashboard  │               │  • Direct Isar Write │ │
+│   └─────────────┬─────────────┘               └──────────┬───────────┘ │
+│                 │                                        │             │
+│                 ▼                                        ▼             │
+│   ┌──────────────────────────────────────────────────────────────────┐ │
+│   │                    Shared Isar Database                          │ │
+│   │       (ACID / Zero-Copy multi-isolate instance)                  │ │
+│   └──────────────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Concrete Implementations
-Each repository has two implementations, selected by dependency injection:
-
-| Repository | Local Implementation | Remote Implementation |
-|---|---|---|
-| `HealthRepository` | `IsarHealthRepository` | `DockerHealthRepository` |
-| `FinanceRepository` | `IsarFinanceRepository` | `DockerFinanceRepository` |
-| `TelemetryRepository` | `IsarTelemetryRepository` | `DockerTelemetryRepository` |
-| `ConfessionsRepository` | `EncryptedIsarConfessionsRepo` | *(none — local only)* |
-| `CalendarRepository` | `SamsungCalendarChannelRepo` | `GoogleCalendarOAuthRepo` |
-
-The `CompositeRepository` pattern combines local and remote: **writes go to Isar immediately** (optimistic update), then sync to Docker asynchronously. Reads come from Isar first, with a background refresh from Docker.
+The headless entrypoint is declared with `@pragma('vm:entry-point')` in [kero_space_platform_service.dart](file:///c:/projects/Flutter/kero_space/lib/core/data/kero_space_platform_service.dart#L50).
 
 ---
 
-## 4. Isar ↔ Docker Sync Pipeline
+## 5. Native Android Daemons & Platform Channels
 
-### Sync Strategy: Event Sourcing + Conflict Resolution
-
-```
-┌────────────────────────────────────────────────────┐
-│                  SYNC PIPELINE                     │
-│                                                    │
-│  User Action                                       │
-│      │                                             │
-│      ▼                                             │
-│  Isar Write (immediate)                            │
-│  + Outbox Record {entityId, entityType, operation, │
-│                   timestamp, syncStatus: PENDING}  │
-│      │                                             │
-│      ▼                                             │
-│  SyncWorker (background isolate)                   │
-│  - Polls outbox every 30s (when network available) │
-│  - Batches PENDING records into HTTP PATCH payload │
-│  - On success: marks syncStatus = SYNCED           │
-│  - On conflict: Last-Write-Wins by default,        │
-│                 User-Arbitration for finance data  │
-│      │                                             │
-│      ▼                                             │
-│  Docker Backend                                    │
-│  - PostgreSQL primary store                        │
-│  - Returns server-side canonical state             │
-│      │                                             │
-│      ▼                                             │
-│  Isar updated with server canonical state          │
-└────────────────────────────────────────────────────┘
-```
-
-### Isar Schema Design Principles
-- Every entity has: `id` (Isar auto-id), `serverId` (UUID from Docker), `syncedAt` (nullable DateTime), `locallyModifiedAt` (DateTime)
-- **No foreign keys** — Isar is a document store; relations are modeled as embedded objects or ID references with lazy-loaded queries
-- Indexes on: `syncedAt`, `locallyModifiedAt`, `entityType` for efficient outbox queries
-- Sensitive collections (`ConfessionEntry`) use `@Collection(accessor: 'confessions')` with a custom encrypted codec
+| Channel | Type | Daemon Component | Purpose |
+|---|---|---|---|
+| `kero_space/bg/screen_events` | EventChannel | `KeroSpaceScreenReceiver.kt` | Background screen on/off and unlock events |
+| `kero_space/bg/accessibility` | EventChannel | `KeroSpaceAccessibilityService.kt` | Real-time click stream & blocker decision audit |
+| `kero_space/wake_word` | EventChannel | `WakeWordService.kt` | Neural wake-word trigger & command transcription |
+| `kero_space/overlay` | MethodChannel | `OverlayManager.kt` / `CounterOverlayManager.kt` | Fullscreen / floating blocker overlay windows |
+| `kero_space/sub_app` | MethodChannel | `SubAppDetector.kt` | Detects in-app reels/shorts activities |
+| `kero_space/usage_stats` | MethodChannel | `UsageStatsWorker.kt` | Foreground app usage time queries |
+| `kero_space/calendar` | MethodChannel | `CalendarChannelHandler.kt` | Local Android Calendar Provider access |
 
 ---
 
-## 5. Native Platform Channel Architecture
+## 6. Docker Backend Specification
 
-Flutter communicates with Android/Windows OS capabilities through **MethodChannel** and **EventChannel** bridges. Each bridge is declared as an abstract Dart service interface, with the platform-specific implementation registered on startup.
+### Architecture
+- **API Runtime**: Dart Shelf container (`backend/bin/server.dart`)
+- **Primary Store**: PostgreSQL 16 (Relational ledger, telemetry archives, encrypted backups)
+- **Cache / Queue**: Redis 7 (Sync outbox batches, rate limits)
+- **Reverse Proxy**: Caddy 2 (TLS termination with local mTLS certs)
 
-### Android Platform Channels
-
-| Channel Name | Channel Type | Purpose |
-|---|---|---|
-| `kero_space/accessibility` | EventChannel | Streams `AccessibilityEvent` payloads (click coords, package name, view text) from the AccessibilityService |
-| `kero_space/usage_stats` | MethodChannel | Queries `UsageStatsManager` for per-app foreground time by day/week |
-| `kero_space/screen_events` | EventChannel | Streams `Intent.ACTION_SCREEN_ON/OFF`, `ACTION_USER_PRESENT` broadcast events |
-| `kero_space/overlay` | MethodChannel | Commands: `showOverlay(config)`, `dismissOverlay()` — manages `TYPE_APPLICATION_OVERLAY` window |
-| `kero_space/health_connect` | MethodChannel | Reads steps, heart rate, sleep from Health Connect `HealthDataStore` |
-| `kero_space/calendar` | MethodChannel | CRUD on Samsung/Android `CalendarContract` ContentProvider |
-| `kero_space/wake_word` | EventChannel | Streams wake-word detection events from background audio service |
-
-### Windows Platform Channels
-
-| Channel Name | Channel Type | Purpose |
-|---|---|---|
-| `kero_space/win_process` | EventChannel | Foreground window title/process tracking via `GetForegroundWindow` Win32 API |
-| `kero_space/win_calendar` | MethodChannel | Outlook/Windows Calendar COM interop (optional) |
-
-### Channel Security Model
-- All channels are restricted to the Kero Space app's package signature — no external app can invoke them
-- AccessibilityService is declared with `android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"` ensuring only the system can bind it
-
----
-
-## 6. Docker Backend Architecture
-
-### Service Composition (docker-compose.yml)
-
-```
-services:
-  kero-space-api:        # Dart Shelf or Rust Actix REST API
-  kero-space-postgres:   # PostgreSQL 16 — primary data store
-  kero-space-redis:      # Redis 7 — sync queue, rate limiting
-  kero-space-caddy:      # Caddy 2 — TLS termination + reverse proxy (local cert)
-```
-
-### API Design
-- REST with OpenAPI 3.1 spec (auto-generated Dart client via `openapi-generator`)
-- JWT-based auth with refresh tokens (the Flutter app authenticates to your own Docker instance)
-- All endpoints are `POST /sync/batch` (outbox flush), `GET /sync/pull?since=<timestamp>` (delta pull), plus domain-specific CRUD routes
-- TLS required even on LAN — Caddy provisions a self-signed cert trusted by the Android system cert store
-
-### PostgreSQL Schema Strategy
-- UUID primary keys everywhere (matches Isar `serverId` field)
-- `updated_at` trigger on every table for delta sync
-- Row-level encryption on `confessions` table (pgcrypto extension, key derived server-side from user's hashed passphrase — defense-in-depth alongside client-side AES)
-- Partitioning on `telemetry_events` by month (high-volume table)
-
----
-
-## 7. Security Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│  SECURITY LAYERS                                    │
-│                                                     │
-│  L1: Device Security (Android Keystore / SecureEnclave) │
-│      - App signing key, OAuth tokens, JWT stored    │
-│        in flutter_secure_storage (hardware-backed)  │
-│                                                     │
-│  L2: Transport Security (TLS 1.3 + Certificate Pin) │
-│      - Dart HTTP client pins Docker server cert     │
-│      - Rejects any MITM attempt                     │
-│                                                     │
-│  L3: Application Encryption (AES-256-GCM)           │
-│      - Confessions: client-side before Isar write   │
-│      - Key derivation: Argon2id(passphrase, salt)   │
-│      - Salt stored separately in Secure Storage     │
-│                                                     │
-│  L4: Database Encryption (Isar + Postgres)          │
-│      - Isar instance opened with encryption key     │
-│      - Postgres confessions table: pgcrypto         │
-└─────────────────────────────────────────────────────┘
-```
+### Sync Protocol
+- `POST /sync/batch`: Ingests `SyncOutboxRecord` entities from client.
+- `GET /sync/pull?since=<timestamp>`: Returns modified records since last synchronization epoch.
+- **Client Outbox Pattern**: Local changes write to Isar first, queue in `syncOutboxRecords`, and dispatch via `SyncWorker`.
