@@ -36,16 +36,20 @@ class CommandParser {
     }
     if (normalized.startsWith('um ')) normalized = normalized.substring(3);
     if (normalized.startsWith('uh ')) normalized = normalized.substring(3);
+    if (normalized.startsWith('like ')) normalized = normalized.substring(5);
+    if (normalized.startsWith('you know ')) normalized = normalized.substring(9);
 
     // Normalize trigger variants
     normalized = normalized.replaceAll('to do', 'todo');
     normalized = normalized.replaceAll('to-do', 'todo');
     normalized = normalized.replaceAll('todos', 'todo');
 
-    // Replace number words with digits (simple version for V1)
-    _numberWords.forEach((word, digit) {
-      normalized = normalized.replaceAll(RegExp(r'\b' + word + r'\b'), digit);
-    });
+    // Replace number words with digits, checking longer phrases first
+    final sortedWords = _numberWords.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    for (final word in sortedWords) {
+      normalized = normalized.replaceAll(RegExp(r'\b' + word + r'\b'), _numberWords[word]!);
+    }
 
     return normalized.trim().replaceAll(_whitespaceRegex, ' ');
   }

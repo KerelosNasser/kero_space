@@ -474,14 +474,15 @@ class _VoiceAssistantSettingsScreenState extends State<VoiceAssistantSettingsScr
   }
 
   Widget _buildWakeWordPreferences(AppThemeColors colors) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.bgSurface,
+    return Material(
+      color: colors.bgSurface,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.borderSubtle),
+        side: BorderSide(color: colors.borderSubtle),
       ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
@@ -535,8 +536,9 @@ class _VoiceAssistantSettingsScreenState extends State<VoiceAssistantSettingsScr
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildLiveTestCard(AppThemeColors colors) {
     return Container(
