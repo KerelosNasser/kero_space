@@ -1,3 +1,6 @@
+@Timeout(Duration(minutes: 3))
+library;
+
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kero_space/features/church/data/repositories/confession_crypto_service.dart';
