@@ -6,6 +6,9 @@ import '../../data/data_export_service.dart';
 import '../../../../core/app_theme.dart';
 import '../../../../core/theme/theme_cubit.dart';
 import '../../../../core/theme/theme_state.dart';
+import '../../../../core/navigation/navigation_cubit.dart';
+import '../../../../core/navigation/navigation_state.dart';
+import '../../../../core/navigation/navigation_mode.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -127,6 +130,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
                 onTap: () => context.push('/settings/theme'),
+              );
+            },
+          ),
+          const Divider(),
+
+          // Navigation System Selector
+          BlocBuilder<NavigationCubit, NavigationState>(
+            builder: (context, navState) {
+              final activeMode = navState.mode;
+
+              return ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colors.accentSecondary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(activeMode.icon, color: colors.accentSecondary, size: 20),
+                ),
+                title: const Text(
+                  'Navigation System',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(activeMode.displayName),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: colors.bgElevated,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: colors.borderSubtle),
+                      ),
+                      child: Text(
+                        activeMode.tag,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: colors.accentSecondary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right, size: 20),
+                  ],
+                ),
+                onTap: () => context.push('/settings/navigation'),
               );
             },
           ),

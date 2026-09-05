@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/theme/theme_state.dart';
+import 'core/navigation/navigation_cubit.dart';
 import 'core/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/voice/presentation/bloc/voice_bloc.dart';
@@ -90,6 +91,7 @@ class KeroSpaceApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: getIt<ThemeCubit>()),
+        BlocProvider.value(value: getIt<NavigationCubit>()),
         BlocProvider.value(value: getIt<VoiceBloc>()),
         if (Platform.isWindows)
           BlocProvider.value(value: getIt<ProcessWatcherBloc>()),
