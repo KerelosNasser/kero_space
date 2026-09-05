@@ -25,18 +25,19 @@ class CopticFastCycle {
 }
 
 class CopticComputus {
-  /// Calculates the Orthodox Pascha (Easter) using the Meeus/Gauss Julian algorithm
+  /// Calculates the Orthodox Pascha (Easter) using the Meeus Julian algorithm
   /// and applies the Gregorian offset for the 20th/21st centuries.
   static DateTime getGregorianPascha(int year) {
-    int a = year % 19;
-    int i = (a * 19 + 15) % 30;
-    int j = (year + (year ~/ 4) + i + 2) % 7;
-    int l = i - j;
-    int month = 3 + ((l + 40) ~/ 44);
-    int day = l + 28 - (31 * (month ~/ 4));
-    
-    // Julian to Gregorian offset (valid from 1900 to 2099)
-    return DateTime(year, month, day).add(const Duration(days: 13));
+    final int a = year % 4;
+    final int b = year % 7;
+    final int c = year % 19;
+    final int d = (19 * c + 15) % 30;
+    final int e = (2 * a + 4 * b - d + 34) % 7;
+    final int month = (d + e + 114) ~/ 31;
+    final int day = ((d + e + 114) % 31) + 1;
+
+    // Julian to Gregorian offset (+13 days for 1900 to 2099), normalized to midnight
+    return DateTime(year, month, day + 13);
   }
 
   /// Determines the fasting status and strictness of a given date.
