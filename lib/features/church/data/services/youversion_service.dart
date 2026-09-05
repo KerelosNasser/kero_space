@@ -3,10 +3,9 @@ import '../models/coptic_day_info.dart';
 
 class YouVersionService {
   final Dio dio;
-  final String? _apiKey;
+  final String? apiKey;
 
-  YouVersionService({required this.dio, String? apiKey})
-      : _apiKey = apiKey;
+  YouVersionService({required this.dio, this.apiKey});
 
   static const _baseUrl = 'https://api.youversion.com';
 
@@ -16,7 +15,7 @@ class YouVersionService {
   }
 
   Future<String?> getPassageText(ScriptureReference ref) async {
-    if (_apiKey == null || _apiKey.isEmpty) return null;
+    if (apiKey == null || apiKey!.isEmpty) return null;
     try {
       final response = await dio.get(
         '$_baseUrl/bible/passage',
@@ -25,7 +24,7 @@ class YouVersionService {
           'version': '1', // NIV
         },
         options: Options(
-          headers: {'Authorization': 'Bearer $_apiKey'},
+          headers: {'Authorization': 'Bearer $apiKey'},
         ),
       );
       return response.data['text'] as String?;

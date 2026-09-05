@@ -28,18 +28,23 @@ class HomeScreen extends StatelessWidget {
             expandedHeight: 120.0,
             floating: false,
             pinned: true,
+            centerTitle: false,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
+              centerTitle: false,
+              titlePadding: const EdgeInsets.only(
+                left: 16,
+                bottom: 16,
               ),
-              title: const Text(
+              title: Text(
                 'Trobio',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                ),
               ),
               background: Container(
                 alignment: Alignment.bottomRight,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(right: 16, bottom: 16),
                 child: Text(
                   dateStr,
                   style: TextStyle(color: colors.textSecondary),
@@ -81,9 +86,10 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(child: _buildHealthCard(context)),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     Expanded(child: _buildTelemetryCard(context)),
                   ],
                 ),
@@ -100,13 +106,14 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(child: _buildFinanceCard(context)),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     Expanded(child: _buildChurchCard(context)),
                   ],
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 100),
               ]),
             ),
           ),
@@ -125,14 +132,27 @@ class HomeScreen extends StatelessWidget {
           loaded: (allTasks, dailyChecklist, allNotes) {
             final pending = dailyChecklist.where((t) => !t.isCompleted).length;
             subtitle = '$pending tasks pending';
-            metric = pending > 0
-                ? dailyChecklist
-                      .firstWhere(
-                        (t) => !t.isCompleted,
-                        orElse: () => dailyChecklist.first,
-                      )
-                      .title
-                : 'All Done!';
+            if (pending > 0) {
+              metric = dailyChecklist
+                  .firstWhere(
+                    (t) => !t.isCompleted,
+                    orElse: () => dailyChecklist.first,
+                  )
+                  .title;
+            } else if (dailyChecklist.isNotEmpty) {
+              metric = 'All Done!';
+            } else if (allTasks.isNotEmpty) {
+              final pendingAll = allTasks.where((t) => !t.isCompleted).toList();
+              if (pendingAll.isNotEmpty) {
+                metric = pendingAll.first.title;
+                subtitle = '${pendingAll.length} tasks in backlog';
+              } else {
+                metric = 'All Done!';
+              }
+            } else {
+              metric = 'No tasks yet';
+              subtitle = 'Add tasks in Productivity';
+            }
           },
           orElse: () {},
         );
@@ -237,40 +257,52 @@ class HomeScreen extends StatelessWidget {
         onTap: () => context.go(route),
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: colors.bgSurface,
             borderRadius: BorderRadius.circular(14),
-            border: Border(
-              left: BorderSide(color: accentColor, width: 3.5),
-              top: BorderSide(color: colors.borderSubtle, width: 1),
-              right: BorderSide(color: colors.borderSubtle, width: 1),
-              bottom: BorderSide(color: colors.borderSubtle, width: 1),
-            ),
+            border: Border.all(color: colors.borderSubtle, width: 1),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              Text(
-                domainLabel,
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
-                ),
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 3.5,
+                child: ColoredBox(color: accentColor),
               ),
-              const SizedBox(height: 8),
-              Text(
-                heroMetric,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: colors.textPrimary,
-                  letterSpacing: -0.2,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      domainLabel,
+                      style: TextStyle(
+                        color: colors.textSecondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      heroMetric,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: colors.textPrimary,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
