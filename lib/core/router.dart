@@ -9,6 +9,7 @@ import '../features/settings/presentation/screens/settings_screen.dart' as kero_
 import '../features/settings/presentation/screens/theme_preview_screen.dart';
 import '../features/settings/presentation/screens/custom_theme_studio_screen.dart';
 import '../features/settings/presentation/screens/navigation_settings_screen.dart';
+import '../features/settings/presentation/screens/voice_assistant_settings_screen.dart';
 import '../features/productivity/data/models/productivity_collections.dart';
 
 import '../features/health/presentation/screens/health_dashboard_screen.dart';
@@ -91,6 +92,11 @@ final router = GoRouter(
       path: '/settings/navigation',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const NavigationSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/settings/voice',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const VoiceAssistantSettingsScreen(),
     ),
     GoRoute(
       path: '/telemetry/blacklist',

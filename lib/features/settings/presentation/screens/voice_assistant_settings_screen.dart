@@ -147,7 +147,7 @@ class _VoiceAssistantSettingsScreenState extends State<VoiceAssistantSettingsScr
     );
   }
 
-  Widget _buildAssistantCard(AppColorScheme colors) {
+  Widget _buildAssistantCard(AppThemeColors colors) {
     return Container(
       decoration: BoxDecoration(
         color: colors.bgSurface,
@@ -248,7 +248,7 @@ class _VoiceAssistantSettingsScreenState extends State<VoiceAssistantSettingsScr
     );
   }
 
-  Widget _buildVoiceMatchCard(AppColorScheme colors) {
+  Widget _buildVoiceMatchCard(AppThemeColors colors) {
     final isEnrolled = _profileStatus.isEnrolled;
 
     return Container(
@@ -371,7 +371,7 @@ class _VoiceAssistantSettingsScreenState extends State<VoiceAssistantSettingsScr
     );
   }
 
-  Widget _buildTrainingWizard(AppColorScheme colors) {
+  Widget _buildTrainingWizard(AppThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -473,7 +473,7 @@ class _VoiceAssistantSettingsScreenState extends State<VoiceAssistantSettingsScr
     );
   }
 
-  Widget _buildWakeWordPreferences(AppColorScheme colors) {
+  Widget _buildWakeWordPreferences(AppThemeColors colors) {
     return Container(
       decoration: BoxDecoration(
         color: colors.bgSurface,
@@ -538,7 +538,7 @@ class _VoiceAssistantSettingsScreenState extends State<VoiceAssistantSettingsScr
     );
   }
 
-  Widget _buildLiveTestCard(AppColorScheme colors) {
+  Widget _buildLiveTestCard(AppThemeColors colors) {
     return Container(
       decoration: BoxDecoration(
         color: colors.bgSurface,

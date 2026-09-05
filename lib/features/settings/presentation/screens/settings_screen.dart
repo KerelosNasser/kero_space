@@ -183,6 +183,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(),
 
+          // Voice Assistant & Wake Word
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colors.accentPrimary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.mic_rounded, color: colors.accentPrimary, size: 20),
+            ),
+            title: const Text(
+              'Voice Assistant & Wake Word',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: const Text('“Hey Trobio” hotword, assistant role & voice match'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: colors.bgElevated,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: colors.borderSubtle),
+                  ),
+                  child: Text(
+                    'HEY TROBIO',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: colors.accentPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.chevron_right, size: 20),
+              ],
+            ),
+            onTap: () => context.push('/settings/voice'),
+          ),
+          const Divider(),
+
           // Data Export
           ListTile(
             leading: Container(
