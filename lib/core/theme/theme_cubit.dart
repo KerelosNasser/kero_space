@@ -75,6 +75,11 @@ class ThemeCubit extends Cubit<ThemeState> {
     await prefs.setString(_prefThemeMode, modeStr);
   }
 
+  Future<void> toggleThemeMode() async {
+    final next = state.themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    await setThemeMode(next);
+  }
+
   Future<void> updateCustomTheme(CustomThemeConfig config) async {
     emit(state.copyWith(
       selectedThemeId: AppThemeId.custom,

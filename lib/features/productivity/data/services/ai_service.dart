@@ -165,4 +165,38 @@ energyLevel must be 1 (Low), 2 (Medium), or 3 (High).'''
       return [];
     }
   }
+
+  /// Answers general developer and life-OS queries from the Command Palette.
+  Future<String> askGeneralQuestion(String prompt) async {
+    if (prompt.trim().isEmpty) return "Please enter a question or command.";
+    if (_openRouterApiKey.isEmpty) {
+      return "OpenRouter API key is not configured in .env. Please add OPENROUTER_API_KEY.";
+    }
+    try {
+      final response = await _dio.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        options: Options(headers: {
+          'Authorization': 'Bearer $_openRouterApiKey',
+          'Content-Type': 'application/json',
+        }),
+        data: {
+          'model': 'openai/gpt-oss-120b:free',
+          'messages': [
+            {
+              'role': 'system',
+              'content': 'You are Trobio Assistant, an ultra-smart, pragmatic assistant embedded in a personal developer life-OS. Provide direct, high-signal, concise answers without fluff. Format with bullet points or code snippets when helpful.'
+            },
+            {'role': 'user', 'content': prompt}
+          ],
+        },
+      );
+
+      final reply = response.data['choices'][0]['message']['content'].toString().trim();
+      return reply.isNotEmpty ? reply : "No response generated.";
+    } catch (e) {
+      debugPrint('AI Service Error (askGeneralQuestion): $e');
+      return "Network or API error: $e";
+    }
+  }
 }
+

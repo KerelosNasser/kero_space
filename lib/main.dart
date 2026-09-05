@@ -3,6 +3,7 @@ import 'core/theme/theme_cubit.dart';
 import 'core/theme/theme_state.dart';
 import 'core/navigation/navigation_cubit.dart';
 import 'core/router.dart';
+import 'shared/widgets/navigation/command_palette_modal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/voice/presentation/bloc/voice_bloc.dart';
 import 'features/voice/presentation/bloc/voice_state.dart';
@@ -39,6 +40,10 @@ class MarkAttendanceGlobalIntent extends Intent {
 
 class StartVoiceIntent extends Intent {
   const StartVoiceIntent();
+}
+
+class OpenCommandPaletteIntent extends Intent {
+  const OpenCommandPaletteIntent();
 }
 
 void main() async {
@@ -129,11 +134,48 @@ class KeroSpaceApp extends StatelessWidget {
                   const NavigateToIntent('/health/search'),
               const SingleActivator(LogicalKeyboardKey.slash, control: true):
                   const StartVoiceIntent(),
+              const SingleActivator(LogicalKeyboardKey.keyK, control: true):
+                  const OpenCommandPaletteIntent(),
+              const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
+                  const OpenCommandPaletteIntent(),
             },
             actions: {
               ...WidgetsApp.defaultActions,
               NavigateToIntent: CallbackAction<NavigateToIntent>(
                 onInvoke: (intent) => router.go(intent.route),
+              ),
+              OpenCommandPaletteIntent: CallbackAction<OpenCommandPaletteIntent>(
+                onInvoke: (intent) {
+                  final navContext = router.routerDelegate.navigatorKey.currentContext;
+                  if (navContext != null) {
+                    CommandPaletteModal.show(
+                      navContext,
+                      onSelectBranch: (i) {
+                        switch (i) {
+                          case 0:
+                            router.go('/');
+                            break;
+                          case 1:
+                            router.go('/productivity');
+                            break;
+                          case 2:
+                            router.go('/health');
+                            break;
+                          case 3:
+                            router.go('/finance');
+                            break;
+                          case 4:
+                            router.go('/church');
+                            break;
+                          case 5:
+                            router.go('/telemetry');
+                            break;
+                        }
+                      },
+                    );
+                  }
+                  return null;
+                },
               ),
               MarkAttendanceGlobalIntent:
                   CallbackAction<MarkAttendanceGlobalIntent>(

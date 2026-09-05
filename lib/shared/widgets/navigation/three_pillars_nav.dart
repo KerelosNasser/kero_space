@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/app_theme.dart';
+import 'command_palette_modal.dart';
 
 class ThreePillarsNav extends StatelessWidget {
   final int currentIndex;
@@ -143,6 +145,10 @@ class ThreePillarsNav extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
+      onLongPress: () {
+        HapticFeedback.mediumImpact();
+        CommandPaletteModal.show(context, onSelectBranch: this.onTap);
+      },
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -201,16 +207,33 @@ class ThreePillarsNav extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.1,
-                color: colors.textSecondary,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.1,
+                    color: colors.textSecondary,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    CommandPaletteModal.show(context, onSelectBranch: onTap);
+                  },
+                  icon: const Icon(Icons.search_rounded, size: 16),
+                  label: const Text('Search', style: TextStyle(fontSize: 12)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.accentPrimary,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             ...items.map((it) {
               final isSubSelected = it.index == currentIndex;
               return ListTile(
