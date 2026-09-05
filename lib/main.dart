@@ -57,9 +57,13 @@ void main() async {
   await getIt<NotificationParserService>().initialize(IsarService.instance);
 
   // Initialize church notifications
-  await getIt<ChurchNotificationService>().init();
-  await getIt<ChurchNotificationService>().scheduleSundayReminder();
-  await getIt<ChurchNotificationService>().scheduleFastingReminder();
+  try {
+    await getIt<ChurchNotificationService>().init();
+    await getIt<ChurchNotificationService>().scheduleSundayReminder();
+    await getIt<ChurchNotificationService>().scheduleFastingReminder();
+  } catch (e, st) {
+    debugPrint("Failed to initialize church notifications: $e\n$st");
+  }
 
   if (Platform.isWindows) {
     await WindowManagerService.init();
