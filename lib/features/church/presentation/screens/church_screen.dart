@@ -33,23 +33,26 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgPrimary,
+      backgroundColor: colors.bgBase,
       appBar: AppBar(
-        backgroundColor: AppTheme.bgPrimary,
-        title: const Text(
+        backgroundColor: colors.bgBase,
+        elevation: 0,
+        title: Text(
           'Church',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: colors.textPrimary),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.accentViolet,
-          labelColor: AppTheme.accentViolet,
-          unselectedLabelColor: AppTheme.textSecondary,
+          indicatorColor: colors.domainChurch,
+          labelColor: colors.domainChurch,
+          unselectedLabelColor: colors.textSecondary,
           tabs: const [
             Tab(text: 'Coptic'),
             Tab(text: 'Attendance'),

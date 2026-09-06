@@ -66,7 +66,12 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
               itemBuilder: (context, index) {
                 final ing = _results[index];
                 return GestureDetector(
-                  onTap: () => context.push('/health/log', extra: ing),
+                  onTap: () async {
+                    final logged = await context.push<bool>('/health/log', extra: ing);
+                    if (logged == true && context.mounted) {
+                      context.pop();
+                    }
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppTheme.bgElevated,

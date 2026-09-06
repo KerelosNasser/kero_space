@@ -11,6 +11,8 @@ class OverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     // Calculate total cash from sources
     final double cashValuation = state.moneySources.fold(
       0,
@@ -29,7 +31,7 @@ class OverviewTab extends StatelessWidget {
             padding: const EdgeInsets.all(24.0),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppTheme.accentMint, AppTheme.accentCyan],
+                colors: [colors.domainFinance, colors.accentSuccess],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -76,7 +78,7 @@ class OverviewTab extends StatelessWidget {
               hintText: 'Type: spent 150 EGP on Transport...',
               labelText: 'AI Quick Log (Lazy Logger)',
               suffixIcon: IconButton(
-                icon: const Icon(Icons.send, color: AppTheme.accentCyan),
+                icon: Icon(Icons.send, color: colors.domainFinance),
                 onPressed: () {
                   if (_quickLogController.text.trim().isNotEmpty) {
                     context.read<FinanceBloc>().add(
@@ -94,9 +96,9 @@ class OverviewTab extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Money Sources Grid (GridView)
-          const Text(
+          Text(
             'Money Sources',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.textPrimary),
           ),
           const SizedBox(height: 8),
           GridView.builder(
@@ -112,15 +114,19 @@ class OverviewTab extends StatelessWidget {
             itemBuilder: (context, index) {
               if (index == state.moneySources.length) {
                 return Card(
-                  color: AppTheme.bgElevated,
+                  color: colors.bgElevated,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: colors.borderSubtle),
+                  ),
                   child: InkWell(
                     onTap: () => _showAddSourceDialog(context),
-                    borderRadius: BorderRadius.circular(12),
-                    child: const Center(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Center(
                       child: Icon(
                         Icons.add,
                         size: 28,
-                        color: AppTheme.accentMint,
+                        color: colors.domainFinance,
                       ),
                     ),
                   ),
@@ -128,7 +134,11 @@ class OverviewTab extends StatelessWidget {
               }
               final source = state.moneySources[index];
               return Card(
-                color: AppTheme.bgElevated,
+                color: colors.bgElevated,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(color: colors.borderSubtle),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
@@ -140,18 +150,19 @@ class OverviewTab extends StatelessWidget {
                     children: [
                       Text(
                         source.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: AppTheme.textSecondary,
+                          color: colors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${source.balance.toStringAsFixed(2)} EGP',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ],
@@ -163,20 +174,24 @@ class OverviewTab extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Top Stocks Watchlist Grid
-          const Text(
+          Text(
             'Top Stocks Watchlist',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.textPrimary),
           ),
           const SizedBox(height: 8),
           state.watchlist.isEmpty
-              ? const Card(
-                  color: AppTheme.bgElevated,
+              ? Card(
+                  color: colors.bgElevated,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: colors.borderSubtle),
+                  ),
                   child: Padding(
-                    padding: EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Text(
                       'Your watchlist is empty. Add stocks in the Stocks tab.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: AppTheme.textSecondary),
+                      style: TextStyle(color: colors.textSecondary),
                     ),
                   ),
                 )
@@ -200,11 +215,15 @@ class OverviewTab extends StatelessWidget {
 
                     final isUp = dailyPct >= 0;
                     final trendColor = isUp
-                        ? AppTheme.accentMint
-                        : AppTheme.accentRose;
+                        ? colors.accentSuccess
+                        : colors.accentError;
 
                     return Card(
-                      color: AppTheme.bgElevated,
+                      color: colors.bgElevated,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(color: colors.borderSubtle),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12.0,
@@ -219,9 +238,10 @@ class OverviewTab extends StatelessWidget {
                               children: [
                                 Text(
                                   stock.ticker,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 13,
+                                    color: colors.textPrimary,
                                   ),
                                 ),
                                 Text(
@@ -232,10 +252,10 @@ class OverviewTab extends StatelessWidget {
                                       : '●',
                                   style: TextStyle(
                                     color: sentiment.contains('Bullish')
-                                        ? AppTheme.accentMint
+                                        ? colors.accentSuccess
                                         : sentiment.contains('Bearish')
-                                        ? AppTheme.accentRose
-                                        : Colors.grey,
+                                        ? colors.accentError
+                                        : colors.textDisabled,
                                     fontSize: 10,
                                   ),
                                 ),
@@ -265,11 +285,11 @@ class OverviewTab extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.bgElevated,
+                color: colors.bgElevated,
                 border: Border.all(
-                  color: AppTheme.accentCyan.withValues(alpha: 0.3),
+                  color: colors.domainFinance.withValues(alpha: 0.3),
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,29 +297,29 @@ class OverviewTab extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
+                      Row(
                         children: [
                           Icon(
                             Icons.auto_awesome,
-                            color: AppTheme.accentCyan,
+                            color: colors.domainFinance,
                             size: 20,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             'AI Insights',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: AppTheme.accentCyan,
+                              color: colors.domainFinance,
                             ),
                           ),
                         ],
                       ),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.refresh,
                           size: 18,
-                          color: AppTheme.textSecondary,
+                          color: colors.textSecondary,
                         ),
                         onPressed: () => context.read<FinanceBloc>().add(
                           RefreshAIAdviceEvent(),
@@ -310,10 +330,10 @@ class OverviewTab extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     state.aiAdvice!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       height: 1.4,
-                      color: AppTheme.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
@@ -329,11 +349,17 @@ class OverviewTab extends StatelessWidget {
   void _showAddSourceDialog(BuildContext context) {
     String name = '';
     double balance = 0;
+    final colors = context.appColors;
+
     showDialog(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Add Money Source'),
+          backgroundColor: colors.bgSurface,
+          title: Text(
+            'Add Money Source',
+            style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -358,9 +384,13 @@ class OverviewTab extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.domainFinance,
+                foregroundColor: Colors.white,
+              ),
               onPressed: () {
                 if (name.trim().isNotEmpty) {
                   context.read<FinanceBloc>().add(

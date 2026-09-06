@@ -105,22 +105,23 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
                                       orElse: () => CalendarEvent()..source = 'NONE',
                                     );
                                     if (fastEvent.source == 'COPTIC') {
+                                      final churchColor = context.appColors.domainChurch;
                                       return Container(
                                         margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                                         padding: const EdgeInsets.all(12.0),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.accentViolet.withValues(alpha: 0.2),
+                                          color: churchColor.withValues(alpha: 0.15),
                                           borderRadius: BorderRadius.circular(16.0),
-                                          border: Border.all(color: AppTheme.accentViolet.withValues(alpha: 0.5)),
+                                          border: Border.all(color: churchColor.withValues(alpha: 0.4)),
                                         ),
                                         child: Row(
                                           children: [
-                                            const Icon(Icons.restaurant_menu, color: AppTheme.accentViolet),
+                                            Icon(Icons.restaurant_menu, color: churchColor),
                                             const SizedBox(width: 12),
                                             Expanded(
                                               child: Text(
                                                 "Today is a Fasting Day: ${fastEvent.title}. Strictly Vegan.",
-                                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentViolet),
+                                                style: TextStyle(fontWeight: FontWeight.bold, color: churchColor),
                                               ),
                                             ),
                                           ],
@@ -284,7 +285,7 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: AppTheme.accentViolet,
+                      backgroundColor: context.appColors.domainProductivity,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),

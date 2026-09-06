@@ -12,6 +12,8 @@ class MinistryKanbanScreen extends StatefulWidget {
 }
 
 class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
+  MinistryTaskStatus _selectedColumn = MinistryTaskStatus.todo;
+
   @override
   void initState() {
     super.initState();
@@ -48,16 +50,53 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
             .where((t) => t.status == MinistryTaskStatus.done)
             .toList();
 
+        List<MinistryTask> currentTasks;
+        String columnTitle;
+        switch (_selectedColumn) {
+          case MinistryTaskStatus.todo:
+            currentTasks = todoTasks;
+            columnTitle = 'To Do';
+            break;
+          case MinistryTaskStatus.inProgress:
+            currentTasks = inProgressTasks;
+            columnTitle = 'In Progress';
+            break;
+          case MinistryTaskStatus.done:
+            currentTasks = doneTasks;
+            columnTitle = 'Done';
+            break;
+        }
+
         return Stack(
           children: [
-            PageView(
+            Column(
               children: [
-                _buildKanbanColumn('To Do', todoTasks,
-                    MinistryTaskStatus.todo),
-                _buildKanbanColumn('In Progress', inProgressTasks,
-                    MinistryTaskStatus.inProgress),
-                _buildKanbanColumn('Done', doneTasks,
-                    MinistryTaskStatus.done),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: SegmentedButton<MinistryTaskStatus>(
+                    segments: [
+                      ButtonSegment(
+                        value: MinistryTaskStatus.todo,
+                        label: Text('To Do (${todoTasks.length})'),
+                      ),
+                      ButtonSegment(
+                        value: MinistryTaskStatus.inProgress,
+                        label: Text('Doing (${inProgressTasks.length})'),
+                      ),
+                      ButtonSegment(
+                        value: MinistryTaskStatus.done,
+                        label: Text('Done (${doneTasks.length})'),
+                      ),
+                    ],
+                    selected: {_selectedColumn},
+                    onSelectionChanged: (selection) {
+                      setState(() => _selectedColumn = selection.first);
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: _buildKanbanColumn(columnTitle, currentTasks, _selectedColumn),
+                ),
               ],
             ),
             Positioned(

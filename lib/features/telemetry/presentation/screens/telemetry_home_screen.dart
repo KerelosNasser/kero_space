@@ -9,19 +9,20 @@ import 'omniscient_control_center_screen.dart';
 
 class TelemetryHomeScreen extends StatefulWidget {
   const TelemetryHomeScreen({super.key});
-  @override State<TelemetryHomeScreen> createState() => _State();
+  @override
+  State<TelemetryHomeScreen> createState() => _TelemetryHomeScreenState();
 }
 
-class _State extends State<TelemetryHomeScreen> {
-  int _idx = 0;
+class _TelemetryHomeScreenState extends State<TelemetryHomeScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   static const _tabs = [
     (Icons.phone_android, 'Overview'),
-    (Icons.grid_view,     'Heatmap'),
-    (Icons.shield,        'Resistance'),
-    (Icons.block,         'Blacklist'),
-    (Icons.touch_app,     'Clicks'),
-    (Icons.settings,      'Control'),
+    (Icons.grid_view, 'Heatmap'),
+    (Icons.shield, 'Resistance'),
+    (Icons.block, 'Blacklist'),
+    (Icons.touch_app, 'Clicks'),
+    (Icons.tune, 'Control'),
   ];
 
   static const _screens = [
@@ -34,25 +35,53 @@ class _State extends State<TelemetryHomeScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgPrimary,
+      backgroundColor: colors.bgBase,
       appBar: AppBar(
-        backgroundColor: AppTheme.bgPrimary,
-        title: Text(_tabs[_idx].$2,
-            style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
+        backgroundColor: colors.bgBase,
+        elevation: 0,
+        title: Text(
+          'Telemetry',
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          indicatorColor: colors.domainTelemetry,
+          labelColor: colors.domainTelemetry,
+          unselectedLabelColor: colors.textSecondary,
+          tabs: _tabs
+              .map(
+                (t) => Tab(
+                  icon: Icon(t.$1, size: 20),
+                  text: t.$2,
+                ),
+              )
+              .toList(),
+        ),
       ),
-      body: _screens[_idx],
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: AppTheme.bgSurface,
-        indicatorColor: AppTheme.accentCyan.withValues(alpha: 0.2),
-        selectedIndex: _idx,
-        onDestinationSelected: (i) => setState(() => _idx = i),
-        destinations: _tabs.map((t) => NavigationDestination(
-          icon: Icon(t.$1, color: AppTheme.textSecondary),
-          selectedIcon: Icon(t.$1, color: AppTheme.accentCyan),
-          label: t.$2,
-        )).toList(),
+      body: TabBarView(
+        controller: _tabController,
+        children: _screens,
       ),
     );
   }

@@ -1,9 +1,12 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_notification_listener/flutter_notification_listener.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 import 'package:kero_space/features/finance/presentation/widgets/overview_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/transactions_tab.dart';
+import 'package:kero_space/features/finance/presentation/widgets/budgets_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/subscriptions_tab.dart';
 import 'package:kero_space/features/finance/presentation/widgets/portfolio_tab.dart';
 import 'package:kero_space/shared/widgets/shimmer/finance_skeleton.dart';
@@ -25,7 +28,9 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
   }
 
   Future<void> _checkPermissions() async {
+    if (kIsWeb || !Platform.isAndroid) return;
     final hasPermission = await NotificationsListener.hasPermission;
+
     if (hasPermission != true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -48,14 +53,17 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Kero Money Hub'),
           bottom: const TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             tabs: [
               Tab(icon: Icon(Icons.dashboard), text: 'Overview'),
               Tab(icon: Icon(Icons.receipt_long), text: 'Txns'),
+              Tab(icon: Icon(Icons.pie_chart), text: 'Budgets'),
               Tab(icon: Icon(Icons.autorenew), text: 'Subs'),
               Tab(icon: Icon(Icons.show_chart), text: 'Stocks'),
             ],
@@ -70,6 +78,7 @@ class _FinanceHomeScreenState extends State<FinanceHomeScreen> {
                 children: [
                   OverviewTab(state: state),
                   TransactionsTab(state: state),
+                  BudgetsTab(state: state),
                   SubscriptionsTab(state: state),
                   PortfolioTab(state: state),
                 ],

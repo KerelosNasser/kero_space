@@ -21,22 +21,24 @@ class _CalendarTabViewState extends State<CalendarTabView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return BlocBuilder<CalendarBloc, CalendarState>(
       builder: (context, calState) {
         return calState.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (msg) => Center(child: Text("Error: $msg")),
+          error: (msg) => Center(child: Text("Error: $msg", style: TextStyle(color: colors.accentError))),
           loaded: (events) {
-            final dayEvents = events.where((e) => 
-                e.startTime.year == _selectedDay.year && 
-                e.startTime.month == _selectedDay.month && 
+            final dayEvents = events.where((e) =>
+                e.startTime.year == _selectedDay.year &&
+                e.startTime.month == _selectedDay.month &&
                 e.startTime.day == _selectedDay.day
             ).toList();
 
-            final dayTasks = widget.allTasks.where((t) => 
-                !t.isCompleted && t.dueDate != null &&
-                t.dueDate!.year == _selectedDay.year && 
-                t.dueDate!.month == _selectedDay.month && 
+            final dayTasks = widget.allTasks.where((t) =>
+                t.dueDate != null &&
+                t.dueDate!.year == _selectedDay.year &&
+                t.dueDate!.month == _selectedDay.month &&
                 t.dueDate!.day == _selectedDay.day
             ).toList();
 
@@ -50,16 +52,20 @@ class _CalendarTabViewState extends State<CalendarTabView> {
             return Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      context.read<ProductivityBloc>().add(const ProductivityEvent.autoScheduleTasks());
-                    },
-                    icon: const Icon(Icons.auto_awesome),
-                    label: const Text('Auto-Fill Empty Slots'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentViolet,
-                      foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.read<ProductivityBloc>().add(const ProductivityEvent.autoScheduleTasks());
+                      },
+                      icon: const Icon(Icons.auto_awesome, color: Colors.white),
+                      label: const Text('Auto-Fill Empty Slots', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.domainProductivity,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
                     ),
                   ),
                 ),
@@ -67,24 +73,36 @@ class _CalendarTabViewState extends State<CalendarTabView> {
                   firstDay: DateTime.utc(2020, 10, 16),
                   lastDay: DateTime.utc(2030, 3, 14),
                   focusedDay: _selectedDay,
-                  currentDay: _selectedDay,
+                  currentDay: DateTime.now(),
+                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                   calendarFormat: CalendarFormat.week,
                   availableCalendarFormats: const {
                     CalendarFormat.week: 'Week',
                   },
-                  headerStyle: const HeaderStyle(
+                  headerStyle: HeaderStyle(
                     formatButtonVisible: false,
                     titleCentered: true,
+                    titleTextStyle: TextStyle(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    leftChevronIcon: Icon(Icons.chevron_left, color: colors.textPrimary),
+                    rightChevronIcon: Icon(Icons.chevron_right, color: colors.textPrimary),
                   ),
                   calendarStyle: CalendarStyle(
+                    defaultTextStyle: TextStyle(color: colors.textPrimary),
+                    weekendTextStyle: TextStyle(color: colors.textSecondary),
                     todayDecoration: BoxDecoration(
-                      color: AppTheme.accentCyan.withValues(alpha: 0.3),
+                      color: colors.domainProductivity.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                     ),
-                    selectedDecoration: const BoxDecoration(
-                      color: AppTheme.accentCyan,
+                    todayTextStyle: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
+                    selectedDecoration: BoxDecoration(
+                      color: colors.domainProductivity,
                       shape: BoxShape.circle,
                     ),
+                    selectedTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   onDaySelected: (selectedDay, focusedDay) {
                     setState(() {
@@ -92,74 +110,119 @@ class _CalendarTabViewState extends State<CalendarTabView> {
                     });
                   },
                   eventLoader: (day) {
-                    return events.where((e) => 
-                      e.startTime.year == day.year && 
-                      e.startTime.month == day.month && 
+                    return events.where((e) =>
+                      e.startTime.year == day.year &&
+                      e.startTime.month == day.month &&
                       e.startTime.day == day.day
                     ).toList();
                   },
                   calendarBuilders: CalendarBuilders(
                     markerBuilder: (context, date, eventList) {
                       if (eventList.isEmpty) return const SizedBox();
-                      
+
                       final hasCoptic = eventList.any((e) => (e as CalendarEvent).source == 'COPTIC');
                       return Positioned(
-                        bottom: 1,
+                        bottom: 2,
                         child: Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                              color: hasCoptic ? AppTheme.accentViolet : AppTheme.accentCyan,
+                            color: hasCoptic ? colors.domainChurch : colors.domainProductivity,
                           ),
-                          width: 7.0,
-                          height: 7.0,
+                          width: 6.0,
+                          height: 6.0,
                         ),
                       );
                     },
                   ),
                 ),
-                const Divider(),
+                Divider(color: colors.borderSubtle),
                 Expanded(
-                  child: agendaItems.isEmpty 
-                    ? const Center(child: Text("Free time. Be lazy."))
-                    : ListView.builder(
-                    itemCount: agendaItems.length,
-                    itemBuilder: (context, index) {
-                      final item = agendaItems[index];
-                      if (item is CalendarEvent) {
-                        return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: ListTile(
-                            leading: Container(
-                              width: 4,
-                              color: item.source == 'COPTIC' ? AppTheme.accentViolet : AppTheme.accentCyan,
-                            ),
-                            title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text("${item.startTime.hour.toString().padLeft(2, '0')}:${item.startTime.minute.toString().padLeft(2, '0')} - ${item.source}"),
+                  child: agendaItems.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.event_available_outlined, size: 48, color: colors.textSecondary.withValues(alpha: 0.4)),
+                              const SizedBox(height: 12),
+                              Text(
+                                "No events or tasks scheduled",
+                                style: TextStyle(color: colors.textSecondary, fontSize: 15),
+                              ),
+                            ],
                           ),
-                        );
-                      } else if (item is Task) {
-                        return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(color: AppTheme.accentCyan, width: 1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: ListTile(
-                            leading: const Icon(Icons.check_circle_outline, color: AppTheme.accentCyan),
-                            title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text("Scheduled Task • ${item.dueDate!.hour.toString().padLeft(2, '0')}:${item.dueDate!.minute.toString().padLeft(2, '0')}"),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.check, color: AppTheme.accentMint),
-                              onPressed: () {
-                                context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(item.id));
-                              },
-                            ),
-                          ),
-                        );
-                      }
-                      return const SizedBox();
-                    },
-                  ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          itemCount: agendaItems.length,
+                          itemBuilder: (context, index) {
+                            final item = agendaItems[index];
+                            if (item is CalendarEvent) {
+                              final isCoptic = item.source == 'COPTIC';
+                              return Card(
+                                color: colors.bgElevated,
+                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: colors.borderSubtle),
+                                ),
+                                child: ListTile(
+                                  leading: Container(
+                                    width: 4,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: isCoptic ? colors.domainChurch : colors.domainProductivity,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                  title: Text(item.title, style: TextStyle(fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                                  subtitle: Text(
+                                    "${item.startTime.hour.toString().padLeft(2, '0')}:${item.startTime.minute.toString().padLeft(2, '0')} • ${item.source}",
+                                    style: TextStyle(color: colors.textSecondary),
+                                  ),
+                                ),
+                              );
+                            } else if (item is Task) {
+                              return Card(
+                                color: colors.bgElevated,
+                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                shape: RoundedRectangleBorder(
+                                  side: BorderSide(
+                                    color: item.isCompleted ? colors.borderSubtle : colors.domainProductivity.withValues(alpha: 0.5),
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  leading: Checkbox(
+                                    value: item.isCompleted,
+                                    activeColor: colors.accentSuccess,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                    onChanged: (val) {
+                                      if (val == true) {
+                                        context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(item.id));
+                                      } else {
+                                        context.read<ProductivityBloc>().add(ProductivityEvent.uncompleteTask(item.id));
+                                      }
+                                    },
+                                  ),
+                                  title: Text(
+                                    item.title,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: item.isCompleted ? colors.textDisabled : colors.textPrimary,
+                                      decoration: item.isCompleted ? TextDecoration.lineThrough : null,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "Scheduled Task • ${item.dueDate!.hour.toString().padLeft(2, '0')}:${item.dueDate!.minute.toString().padLeft(2, '0')}",
+                                    style: TextStyle(color: colors.textSecondary),
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox();
+                          },
+                        ),
                 ),
               ],
             );

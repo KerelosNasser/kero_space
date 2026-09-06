@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/features/health/data/models/health_collections.dart';
 import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -82,9 +83,21 @@ class _CalorieConfigScreenState extends State<CalorieConfigScreen> {
         },
       ),
       const SizedBox(height: 32),
-      ElevatedButton(
-        onPressed: _saveProfile,
-        child: const Text('Calculate BMR & Save'),
+      SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: context.appColors.domainHealth,
+            foregroundColor: context.appColors.bgBase,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+          onPressed: _saveProfile,
+          child: const Text(
+            'Calculate BMR & Save',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
     ];
   }
@@ -92,7 +105,12 @@ class _CalorieConfigScreenState extends State<CalorieConfigScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calorie Target Configuration')),
+      backgroundColor: context.appColors.bgBase,
+      appBar: AppBar(
+        title: const Text('Calorie Target Configuration'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: Form(
         key: _formKey,
         child: ListView.builder(

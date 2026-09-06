@@ -43,7 +43,7 @@ class _HealthDashboardScreenState extends State<HealthDashboardScreen>
     final isNutritionTab = _tabController.index == 0;
 
     return Scaffold(
-      backgroundColor: AppTheme.bgPrimary,
+      backgroundColor: context.appColors.bgBase,
       appBar: AppBar(
         title: const Text('Health'),
         actions: [

@@ -83,18 +83,19 @@ class _HeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final fastColor = info.fastStatus == FastingStatus.strict
-        ? AppTheme.accentRose
+        ? colors.accentError
         : info.fastStatus == FastingStatus.fishAllowed
-            ? AppTheme.accentMint
-            : AppTheme.accentPrimary;
+            ? colors.accentSuccess
+            : colors.accentPrimary;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -103,10 +104,10 @@ class _HeaderCard extends StatelessWidget {
             height: 60,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.accentViolet.withValues(alpha: 0.15),
+              color: colors.domainChurch.withValues(alpha: 0.15),
             ),
-            child: const Icon(Icons.calendar_month,
-                color: AppTheme.accentViolet, size: 30),
+            child: Icon(Icons.calendar_month,
+                color: colors.domainChurch, size: 30),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -115,18 +116,18 @@ class _HeaderCard extends StatelessWidget {
               children: [
                 Text(
                   '${info.copticDay} ${info.monthName} ${info.copticYear} AM',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
+                    color: colors.textPrimary,
                   ),
                 ),
                 if (info.seasonName != null) ...[
                   const SizedBox(height: 4),
                   Text(
                     info.seasonName!,
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 13),
+                    style: TextStyle(
+                        color: colors.textSecondary, fontSize: 13),
                   ),
                 ],
               ],
@@ -161,29 +162,30 @@ class _FeastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.accentGold.withValues(alpha: 0.10),
+        color: colors.accentWarning.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(16),
         border:
-            Border.all(color: AppTheme.accentGold.withValues(alpha: 0.20)),
+            Border.all(color: colors.accentWarning.withValues(alpha: 0.20)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome,
-                  color: AppTheme.accentGold, size: 20),
+              Icon(Icons.auto_awesome,
+                  color: colors.accentWarning, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   info.feastName!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.accentGold,
+                    color: colors.accentWarning,
                   ),
                 ),
               ),
@@ -193,8 +195,8 @@ class _FeastCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               info.feastDescription!,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 14),
+              style: TextStyle(
+                  color: colors.textSecondary, fontSize: 14),
             ),
           ],
         ],
@@ -213,24 +215,25 @@ class _ReadingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     if (info.readings.isEmpty) return const SizedBox.shrink();
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Today's Readings",
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -245,24 +248,24 @@ class _ReadingsCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.bgElevated,
+                      color: colors.bgElevated,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.menu_book,
-                            color: AppTheme.accentCyan, size: 18),
+                        Icon(Icons.menu_book,
+                            color: colors.accentSecondary, size: 18),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             ref.displayName,
-                            style: const TextStyle(
-                                color: AppTheme.textPrimary,
+                            style: TextStyle(
+                                color: colors.textPrimary,
                                 fontSize: 15),
                           ),
                         ),
-                        const Icon(Icons.chevron_right,
-                            color: AppTheme.textDisabled),
+                        Icon(Icons.chevron_right,
+                            color: colors.textDisabled),
                       ],
                     ),
                   ),
@@ -282,17 +285,18 @@ class _UpcomingFeastsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(bottom: 12),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
           child: Text(
             'Upcoming Feasts',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
         ),
@@ -309,13 +313,13 @@ class _UpcomingFeastsCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: feast.isMajor
-                      ? AppTheme.accentGold.withValues(alpha: 0.10)
-                      : AppTheme.bgSurface,
+                      ? colors.accentWarning.withValues(alpha: 0.10)
+                      : colors.bgSurface,
                   borderRadius: BorderRadius.circular(16),
                   border: feast.isMajor
                       ? Border.all(
                           color:
-                              AppTheme.accentGold.withValues(alpha: 0.30))
+                              colors.accentWarning.withValues(alpha: 0.30))
                       : null,
                 ),
                 child: Column(
@@ -323,8 +327,8 @@ class _UpcomingFeastsCard extends StatelessWidget {
                   children: [
                     Text(
                       feast.name,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: colors.textPrimary,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -336,13 +340,13 @@ class _UpcomingFeastsCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppTheme.bgElevated,
+                        color: colors.bgElevated,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '${feast.daysRemaining}d',
-                        style: const TextStyle(
-                          color: AppTheme.accentCyan,
+                        style: TextStyle(
+                          color: colors.accentSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -367,20 +371,21 @@ class _FastStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final isStrict = info.fastStatus == FastingStatus.strict;
+    final statusColor = isStrict ? colors.accentError : colors.accentSuccess;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isStrict
-            ? AppTheme.accentRose.withValues(alpha: 0.10)
-            : AppTheme.accentMint.withValues(alpha: 0.10),
+        color: statusColor.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
           Icon(
             isStrict ? Icons.block : Icons.check_circle_outline,
-            color: isStrict ? AppTheme.accentRose : AppTheme.accentMint,
+            color: statusColor,
           ),
           const SizedBox(width: 12),
           Text(
@@ -388,8 +393,7 @@ class _FastStatusCard extends StatelessWidget {
                 ? 'Strict Fast Today'
                 : 'Fast Day — Fish Allowed',
             style: TextStyle(
-              color:
-                  isStrict ? AppTheme.accentRose : AppTheme.accentMint,
+              color: statusColor,
               fontWeight: FontWeight.w600,
             ),
           ),

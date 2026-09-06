@@ -24,4 +24,18 @@ void main() {
     );
     expect(state.tickerSentiments, isNotNull);
   });
+
+  group('DeleteTransactionEvent', () {
+    test('DeleteTransactionEvent props and equality', () {
+      const event1 = DeleteTransactionEvent(101);
+      const event2 = DeleteTransactionEvent(101);
+      const event3 = DeleteTransactionEvent(202);
+
+      expect(event1, equals(event2));
+      expect(event1, isNot(equals(event3)));
+      expect(event1.id, 101);
+      expect(event1.props, [101]);
+    });
+  });
 }
+

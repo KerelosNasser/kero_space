@@ -29,7 +29,7 @@ import 'package:get_it/get_it.dart';
 
 import '../features/telemetry/presentation/bloc/telemetry_bloc.dart' as kero_space_telemetry_bloc;
 import '../features/telemetry/presentation/bloc/telemetry_event.dart' as kero_space_telemetry_event;
-import '../features/telemetry/presentation/pages/telemetry_screen.dart' as kero_space_telemetry_screen;
+import '../features/telemetry/presentation/screens/telemetry_home_screen.dart';
 import '../features/telemetry/presentation/screens/blacklist_management_screen.dart' as kero_space_blacklist_screen;
 import '../features/church/presentation/screens/church_screen.dart';
 import '../features/church/presentation/screens/confession_log_screen.dart';
@@ -236,7 +236,7 @@ final router = GoRouter(
               path: '/telemetry',
               builder: (context, state) => BlocProvider.value(
                 value: GetIt.I<kero_space_telemetry_bloc.TelemetryBloc>()..add(kero_space_telemetry_event.LoadTelemetryDashboard()),
-                child: const kero_space_telemetry_screen.TelemetryScreen(),
+                child: const TelemetryHomeScreen(),
               ),
             ),
           ],

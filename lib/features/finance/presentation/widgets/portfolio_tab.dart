@@ -11,13 +11,15 @@ class PortfolioTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Column(
       children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Text(
             'EGX Watchlist & Technical Sentiment',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colors.textPrimary),
           ),
         ),
         Expanded(
@@ -27,20 +29,20 @@ class PortfolioTab extends StatelessWidget {
               await Future.delayed(const Duration(seconds: 1));
             },
             child: state.watchlist.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Your watchlist is empty.\nAdd a ticker like COMI to track it.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+                      style: TextStyle(color: colors.textSecondary, fontSize: 16),
                     ),
                   )
                 : GridView.builder(
                     padding: const EdgeInsets.all(12),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.82,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.82,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
                     ),
                     itemCount: state.watchlist.length,
                     itemBuilder: (context, index) {
@@ -52,7 +54,7 @@ class PortfolioTab extends StatelessWidget {
                       final priceHistory = state.tickerHistories[stock.ticker] ?? [];
 
                       final isUp = dailyPct >= 0;
-                      final trendColor = isUp ? AppTheme.accentMint : AppTheme.accentRose;
+                      final trendColor = isUp ? colors.accentSuccess : colors.accentError;
 
                       // Make spark points
                       final List<FlSpot> spots = [];
@@ -62,9 +64,9 @@ class PortfolioTab extends StatelessWidget {
 
                       return Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.bgElevated,
+                          color: colors.bgElevated,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          border: Border.all(color: colors.borderSubtle),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.1),
@@ -87,10 +89,11 @@ class PortfolioTab extends StatelessWidget {
                                     Expanded(
                                       child: Text(
                                         stock.ticker,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                           letterSpacing: 0.5,
+                                          color: colors.textPrimary,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -102,13 +105,13 @@ class PortfolioTab extends StatelessWidget {
                                       child: Container(
                                         padding: const EdgeInsets.all(4),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.05),
+                                          color: colors.borderSubtle,
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.close,
                                           size: 14,
-                                          color: AppTheme.textSecondary,
+                                          color: colors.textSecondary,
                                         ),
                                       ),
                                     ),
@@ -141,7 +144,7 @@ class PortfolioTab extends StatelessWidget {
                                       'EGP',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: AppTheme.textSecondary.withValues(alpha: 0.8),
+                                        color: colors.textSecondary.withValues(alpha: 0.8),
                                       ),
                                     ),
                                   ],
@@ -157,7 +160,7 @@ class PortfolioTab extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
-                                        color: monthlyPct >= 0 ? AppTheme.accentMint : AppTheme.accentRose,
+                                        color: monthlyPct >= 0 ? colors.accentSuccess : colors.accentError,
                                       ),
                                     ),
                                     
@@ -166,17 +169,17 @@ class PortfolioTab extends StatelessWidget {
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: sentiment.contains('Bullish') 
-                                            ? AppTheme.accentMint.withValues(alpha: 0.1) 
+                                            ? colors.accentSuccess.withValues(alpha: 0.1) 
                                             : sentiment.contains('Bearish')
-                                                ? AppTheme.accentRose.withValues(alpha: 0.1)
-                                                : Colors.grey.withValues(alpha: 0.1),
+                                                ? colors.accentError.withValues(alpha: 0.1)
+                                                : colors.borderSubtle,
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
                                           color: sentiment.contains('Bullish') 
-                                              ? AppTheme.accentMint.withValues(alpha: 0.3) 
+                                              ? colors.accentSuccess.withValues(alpha: 0.3) 
                                               : sentiment.contains('Bearish')
-                                                  ? AppTheme.accentRose.withValues(alpha: 0.3)
-                                                  : Colors.grey.withValues(alpha: 0.3),
+                                                  ? colors.accentError.withValues(alpha: 0.3)
+                                                  : colors.borderSubtle,
                                           width: 0.5,
                                         ),
                                       ),
@@ -186,10 +189,10 @@ class PortfolioTab extends StatelessWidget {
                                           fontSize: 8, 
                                           fontWeight: FontWeight.bold,
                                           color: sentiment.contains('Bullish') 
-                                              ? AppTheme.accentMint 
+                                              ? colors.accentSuccess 
                                               : sentiment.contains('Bearish')
-                                                  ? AppTheme.accentRose
-                                                  : Colors.grey,
+                                                  ? colors.accentError
+                                                  : colors.textSecondary,
                                         ),
                                       ),
                                     ),

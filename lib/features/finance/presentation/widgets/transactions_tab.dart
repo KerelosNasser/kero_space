@@ -8,6 +8,31 @@ class TransactionsTab extends StatelessWidget {
 
   const TransactionsTab({super.key, required this.state});
 
+  Future<void> _confirmDeleteTransaction(BuildContext context, dynamic tx) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Transaction'),
+        content: Text('Are you sure you want to delete "${tx.vendor ?? tx.category}" (${tx.amount.toStringAsFixed(2)} EGP)?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      context.read<FinanceBloc>().add(DeleteTransactionEvent(tx.id));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -96,13 +121,20 @@ class TransactionsTab extends StatelessWidget {
                       color: AppTheme.bgElevated,
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       child: ListTile(
+                        onLongPress: () => _confirmDeleteTransaction(context, tx),
                         leading: Icon(
                           isIncome ? Icons.arrow_downward : Icons.arrow_upward,
                           color: isIncome ? AppTheme.accentMint : AppTheme.accentRose,
                         ),
                         title: Row(
                           children: [
-                            Text(tx.vendor ?? 'Unknown Vendor', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Expanded(
+                              child: Text(
+                                tx.vendor ?? 'Unknown Vendor',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                             const SizedBox(width: 8),
                             if (tx.isAutoParsed)
                               Container(
@@ -119,12 +151,22 @@ class TransactionsTab extends StatelessWidget {
                           ],
                         ),
                         subtitle: Text('${tx.category} • ${tx.date.toString().substring(0, 10)}'),
-                        trailing: Text(
-                          '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} EGP',
-                          style: TextStyle(
-                            color: isIncome ? AppTheme.accentMint : AppTheme.accentRose,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} EGP',
+                              style: TextStyle(
+                                color: isIncome ? AppTheme.accentMint : AppTheme.accentRose,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete_outline, size: 18, color: Theme.of(context).colorScheme.error.withValues(alpha: 0.7)),
+                              tooltip: 'Delete Transaction',
+                              onPressed: () => _confirmDeleteTransaction(context, tx),
+                            ),
+                          ],
                         ),
                       ),
                     );

@@ -272,12 +272,15 @@ class _MealLogScreenState extends State<MealLogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgPrimary,
+      backgroundColor: colors.bgBase,
       appBar: AppBar(
-        title: const Text('Log Meal'),
+        title: Text('Log Meal', style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: colors.textPrimary),
       ),
       body: SafeArea(
         child: Column(
@@ -298,15 +301,16 @@ class _MealLogScreenState extends State<MealLogScreen> {
             ),
             // Bottom Action Button
             Container(
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => _saveMeal(
                   _selectedTime,
                   _selectedMealType,
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentMint,
-                  foregroundColor: Colors.black,
+                  backgroundColor: colors.domainHealth,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     vertical: 16,
                     horizontal: 16,
@@ -333,6 +337,7 @@ class _MealLogScreenState extends State<MealLogScreen> {
   }
 
   Widget _buildMacroCard(String label, double value, Color color) {
+    final colors = context.appColors;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -354,8 +359,8 @@ class _MealLogScreenState extends State<MealLogScreen> {
             const SizedBox(height: 4),
             Text(
               '${value.toStringAsFixed(1)}g',
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -371,33 +376,34 @@ class _MealLogScreenState extends State<MealLogScreen> {
     MealType type,
   ) async {
     final state = context.read<HealthBloc>().state;
+    final colors = context.appColors;
 
     if (state.isFastingMode && !widget.ingredient.isFastingCompliant) {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: AppTheme.bgElevated,
-          title: const Text(
+          backgroundColor: colors.bgSurface,
+          title: Text(
             'Fasting Breach Warning',
-            style: TextStyle(color: AppTheme.textPrimary),
+            style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
           ),
-          content: const Text(
+          content: Text(
             'This ingredient is not compliant with your fast. Log it anyway?',
-            style: TextStyle(color: AppTheme.textSecondary),
+            style: TextStyle(color: colors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text(
+              child: Text(
                 'Cancel',
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: colors.textSecondary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text(
+              child: Text(
                 'Log Anyway',
-                style: TextStyle(color: AppTheme.accentRose),
+                style: TextStyle(color: colors.accentError, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -430,8 +436,7 @@ class _MealLogScreenState extends State<MealLogScreen> {
 
     if (mounted) {
       context.read<HealthBloc>().add(LogMeal(entry));
-      context.pop(); // Pop log screen
-      context.pop(); // Pop search screen to return to dashboard
+      context.pop(true);
     }
   }
 }

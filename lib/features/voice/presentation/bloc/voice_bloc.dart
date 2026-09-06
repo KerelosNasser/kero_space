@@ -14,6 +14,7 @@ import 'package:kero_space/features/productivity/presentation/bloc/productivity_
 import 'package:kero_space/features/productivity/data/models/productivity_collections.dart';
 import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
 import 'package:kero_space/features/health/data/models/health_collections.dart';
+import 'package:kero_space/features/health/data/repositories/nutrition_repository.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 import 'package:kero_space/features/church/presentation/bloc/church_bloc.dart';
 import 'package:kero_space/features/church/data/models/mass_attendance.dart';
@@ -182,17 +183,42 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
           ),
         );
       } else if (intent is LogMealIntent) {
-        msg = "Meal logged";
+        final grams = intent.grams ?? 100.0;
+        final ratio = grams / 100.0;
         final meal = MealEntry()
           ..name = intent.food
-          ..grams = intent.grams ?? 100.0
-          ..calories = 0
-          ..protein = 0
-          ..carbs = 0
-          ..fat = 0
+          ..grams = grams
           ..deviceId = 'voice'
           ..platform = 'voice'
           ..timestamp = DateTime.now();
+
+        try {
+          final repo = getIt<NutritionRepository>();
+          final matches = await repo.searchIngredients(intent.food);
+          if (matches.isNotEmpty) {
+            final matched = matches.first;
+            meal
+              ..name = matched.name
+              ..calories = matched.calories * ratio
+              ..protein = matched.protein * ratio
+              ..carbs = matched.carbs * ratio
+              ..fat = matched.fat * ratio
+              ..fiber = matched.fiber * ratio
+              ..sugar = matched.sugar * ratio
+              ..fastCarbs = matched.fastCarbs * ratio
+              ..slowCarbs = matched.slowCarbs * ratio
+              ..fatSaturated = matched.fatSaturated * ratio
+              ..fatUnsaturated = matched.fatUnsaturated * ratio
+              ..cholesterol = matched.cholesterol * ratio
+              ..sodium = matched.sodium * ratio
+              ..glycemicIndex = matched.glycemicIndex;
+            msg = "Logged ${grams.toStringAsFixed(0)}g ${matched.name} (${(matched.calories * ratio).toStringAsFixed(0)} kcal)";
+          } else {
+            msg = "Meal logged: ${grams.toStringAsFixed(0)}g ${intent.food}";
+          }
+        } catch (_) {
+          msg = "Meal logged: ${grams.toStringAsFixed(0)}g ${intent.food}";
+        }
         getIt<HealthBloc>().add(LogMeal(meal));
       } else if (intent is MarkAttendanceIntent) {
         msg = "Attendance marked";

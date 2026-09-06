@@ -117,12 +117,31 @@ class ChurchBloc extends Bloc<ChurchEvent, ChurchState> {
     });
 
     on<MarkAttendanceEvent>((event, emit) async {
-      final newAttendance = MassAttendance()
-        ..date = DateTime(event.date.year, event.date.month, event.date.day)
-        ..services = [event.type];
+      final dateOnly = DateTime(event.date.year, event.date.month, event.date.day);
+      final existingIndex = state.attendances.indexWhere((a) =>
+          a.date.year == dateOnly.year &&
+          a.date.month == dateOnly.month &&
+          a.date.day == dateOnly.day);
 
-      final updatedAttendances =
-          List<MassAttendance>.from(state.attendances)..add(newAttendance);
+      List<MassAttendance> updatedAttendances;
+      if (existingIndex >= 0) {
+        final existing = state.attendances[existingIndex];
+        if (!existing.services.contains(event.type)) {
+          final updated = MassAttendance()
+            ..id = existing.id
+            ..date = existing.date
+            ..services = [...existing.services, event.type];
+          updatedAttendances = List.from(state.attendances)..[existingIndex] = updated;
+        } else {
+          updatedAttendances = state.attendances;
+        }
+      } else {
+        final newAttendance = MassAttendance()
+          ..date = dateOnly
+          ..services = [event.type];
+        updatedAttendances = List.from(state.attendances)..add(newAttendance);
+      }
+
       emit(state.copyWith(
         attendances: updatedAttendances,
         status: ChurchStatus.success,
@@ -146,8 +165,9 @@ class ChurchBloc extends Bloc<ChurchEvent, ChurchState> {
 
     on<DeleteAttendanceEvent>((event, emit) async {
       final updatedAttendances = state.attendances.map((a) {
-        if (a.date ==
-            DateTime(event.date.year, event.date.month, event.date.day)) {
+        if (a.date.year == event.date.year &&
+            a.date.month == event.date.month &&
+            a.date.day == event.date.day) {
           final newServices =
               a.services.where((s) => s != event.type).toList();
           if (newServices.isEmpty) return null;

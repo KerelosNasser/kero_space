@@ -33,6 +33,24 @@ class FinanceRepository {
         .findAll();
   }
 
+  Future<void> deleteTransaction(int id) async {
+    await _isar.writeTxn(() async {
+      final tx = await _isar.transactions.get(id);
+      if (tx != null && tx.sourceName != null) {
+        final source = await _isar.moneySources.where().nameEqualTo(tx.sourceName!).findFirst();
+        if (source != null) {
+          if (tx.type == 'INCOME') {
+            source.balance -= tx.amount;
+          } else if (tx.type == 'EXPENSE') {
+            source.balance += tx.amount;
+          }
+          await _isar.moneySources.put(source);
+        }
+      }
+      await _isar.transactions.delete(id);
+    });
+  }
+
   // MoneySource CRUD
   Future<List<MoneySource>> getAllMoneySources() async {
     return await _isar.moneySources.where().findAll();

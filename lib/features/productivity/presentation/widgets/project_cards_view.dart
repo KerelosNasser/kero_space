@@ -29,37 +29,47 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
 
     try {
       final response = await _aiService.breakdownProject(prompt);
-      
+
       if (response is Map && response['type'] == 'clarification') {
         _showClarificationDialog(response['question']);
       } else if (response is Map && response['type'] == 'plan') {
         final icon = response['icon'] as String?;
         final projectTitle = response['title'] as String? ?? (followUpAnswer != null ? 'Project' : prompt);
         final subtasks = response['subtasks'] as List<dynamic>? ?? [];
-        
+
         if (!mounted) return;
         context.read<ProductivityBloc>().add(
-          ProductivityEvent.createProjectWithSubtasks(projectTitle, icon, subtasks)
+          ProductivityEvent.createProjectWithSubtasks(projectTitle, icon, subtasks),
         );
         _aiProjectController.clear();
       } else {
         if (!mounted) return;
-        context.read<ProductivityBloc>().add(ProductivityEvent.createProjectWithSubtasks(prompt, null, response as List<dynamic>));
+        context.read<ProductivityBloc>().add(
+          ProductivityEvent.createProjectWithSubtasks(prompt, null, response as List<dynamic>),
+        );
         _aiProjectController.clear();
       }
     } catch (e) {
       debugPrint("Generation error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to generate project: $e')),
+        );
+      }
     } finally {
-      setState(() {
-        _isGenerating = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isGenerating = false;
+        });
+      }
     }
   }
 
   void _showClarificationDialog(String question) {
     final answerController = TextEditingController();
     final originalPrompt = _aiProjectController.text.trim();
-    
+    final colors = context.appColors;
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -68,12 +78,12 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor.withValues(alpha: 0.95),
+            color: colors.bgSurface,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppTheme.accentViolet.withValues(alpha: 0.3)),
+            border: Border.all(color: colors.domainProductivity.withValues(alpha: 0.3)),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.accentViolet.withValues(alpha: 0.2),
+                color: colors.domainProductivity.withValues(alpha: 0.2),
                 blurRadius: 20,
                 spreadRadius: -5,
               )
@@ -82,11 +92,11 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.auto_awesome, color: AppTheme.accentViolet, size: 40),
+              Icon(Icons.auto_awesome, color: colors.domainProductivity, size: 40),
               const SizedBox(height: 16),
               Text(
                 question,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.textPrimary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -97,7 +107,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                   hintText: 'Your answer...',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
-                  fillColor: Theme.of(context).scaffoldBackgroundColor,
+                  fillColor: colors.bgElevated,
                 ),
                 onSubmitted: (val) {
                   Navigator.of(ctx).pop();
@@ -113,12 +123,12 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
+                    child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentViolet,
+                      backgroundColor: colors.domainProductivity,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -140,8 +150,45 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
     );
   }
 
+  void _confirmDeleteProject(BuildContext context, Task project) {
+    final colors = context.appColors;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.bgSurface,
+        title: Text(
+          'Delete Project?',
+          style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${project.title}" and all its subtasks?',
+          style: TextStyle(color: colors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.accentError,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              context.read<ProductivityBloc>().add(ProductivityEvent.deleteTask(project.id));
+              Navigator.pop(ctx);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showProjectDetails(BuildContext context, Task project, List<Task> subtasks) {
     final bloc = context.read<ProductivityBloc>();
+    final colors = context.appColors;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -164,7 +211,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
               height: MediaQuery.of(context).size.height * 0.85,
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
               decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
+                color: colors.bgSurface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 boxShadow: [
                   BoxShadow(
@@ -172,7 +219,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                     blurRadius: 20,
                     spreadRadius: 5,
                   )
-                ]
+                ],
               ),
               child: Column(
                 children: [
@@ -183,7 +230,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                       width: 40,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                        color: colors.textDisabled.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -200,59 +247,73 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                         Expanded(
                           child: Text(
                             project.title,
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
+                              color: colors.textPrimary,
+                            ),
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: Icon(Icons.close, color: colors.textSecondary),
                           onPressed: () => Navigator.of(ctx).pop(),
                         )
                       ],
                     ),
                   ),
-                  const Divider(height: 1, thickness: 1, color: Colors.black12),
+                  Divider(height: 1, thickness: 1, color: colors.borderSubtle),
                   if (currentRelatedNotes.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 8.0, bottom: 8.0),
-                            child: Text('Related Notes (AI Auto-Linked)', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentCyan)),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
+                            child: Text(
+                              'Related Notes (AI Auto-Linked)',
+                              style: TextStyle(fontWeight: FontWeight.bold, color: colors.domainProductivity),
+                            ),
                           ),
                           ...currentRelatedNotes.map((note) => Card(
+                            color: colors.bgElevated,
                             margin: const EdgeInsets.only(bottom: 8),
                             shape: RoundedRectangleBorder(
-                              side: const BorderSide(color: AppTheme.accentCyan, width: 1),
+                              side: BorderSide(color: colors.domainProductivity, width: 1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ListTile(
-                              leading: const Icon(Icons.auto_awesome, color: AppTheme.accentCyan, size: 20),
-                              title: Text(note.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                              leading: Icon(Icons.auto_awesome, color: colors.domainProductivity, size: 20),
+                              title: Text(note.title, style: TextStyle(fontWeight: FontWeight.w600, color: colors.textPrimary)),
                               dense: true,
                             ),
                           )),
-                          const Divider(height: 24),
+                          Divider(height: 24, color: colors.borderSubtle),
                         ],
                       ),
                     ),
                   Expanded(
                     child: currentSubtasks.isEmpty
-                      ? const Center(child: Text("No tasks in this project yet.", style: TextStyle(color: AppTheme.textSecondary)))
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: currentSubtasks.length,
-                          itemBuilder: (context, index) {
-                            final task = currentSubtasks[index];
-                            return _TaskListItem(key: ValueKey(task.id), task: task);
-                          },
-                        ),
+                        ? Center(
+                            child: Text(
+                              "No tasks in this project yet.",
+                              style: TextStyle(color: colors.textSecondary),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: currentSubtasks.length,
+                            itemBuilder: (context, index) {
+                              final task = currentSubtasks[index];
+                              return _TaskListItem(key: ValueKey(task.id), task: task);
+                            },
+                          ),
                   ),
                 ],
               ),
             );
-          }
+          },
         ),
       ),
     );
@@ -260,6 +321,7 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final projects = widget.allTasks.where((t) => t.type == TaskType.project).toList();
 
     return Column(
@@ -269,26 +331,34 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: colors.bgElevated,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colors.borderSubtle),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                 )
-              ]
+              ],
             ),
             child: TextField(
               controller: _aiProjectController,
               decoration: InputDecoration(
                 hintText: 'Lazy? Type "Plan Vacation" and AI will build it.',
-                prefixIcon: const Icon(Icons.auto_awesome, color: AppTheme.accentViolet),
-                suffixIcon: _isGenerating 
-                  ? const Padding(padding: EdgeInsets.all(12.0), child: CircularProgressIndicator(strokeWidth: 2))
-                  : IconButton(
-                      icon: const Icon(Icons.send, color: AppTheme.accentCyan),
-                      onPressed: _generateProject,
-                    ),
+                prefixIcon: Icon(Icons.auto_awesome, color: colors.domainProductivity),
+                suffixIcon: _isGenerating
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        icon: Icon(Icons.send, color: colors.domainProductivity),
+                        onPressed: () => _generateProject(),
+                      ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
@@ -299,9 +369,37 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
 
         // Grid of Kanban Project Cards
         if (projects.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(32.0),
-            child: Text("No projects yet.", style: TextStyle(color: AppTheme.textSecondary)),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.folder_open_outlined,
+                      size: 64,
+                      color: colors.textSecondary.withValues(alpha: 0.4),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No projects yet',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Type a goal in the AI prompt above or tap Add to create your first project.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: colors.textSecondary, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           )
         else
           Expanded(
@@ -327,8 +425,9 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                   child: Container(
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                      color: colors.bgElevated,
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: colors.borderSubtle),
                       boxShadow: [
                         BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)
                       ],
@@ -341,41 +440,45 @@ class _ProjectCardsViewState extends State<ProjectCardsView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: AppTheme.accentViolet.withValues(alpha: 0.1),
+                                color: colors.domainProductivity.withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
                               ),
                               child: Text(
                                 project.icon ?? '🚀',
-                                style: const TextStyle(fontSize: 24),
+                                style: const TextStyle(fontSize: 22),
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, size: 20, color: AppTheme.textSecondary),
-                              onPressed: () {
-                                context.read<ProductivityBloc>().add(ProductivityEvent.deleteTask(project.id));
-                              },
+                              icon: Icon(Icons.delete_outline, size: 20, color: colors.textSecondary),
+                              onPressed: () => _confirmDeleteProject(context, project),
+                              tooltip: 'Delete Project',
                             )
                           ],
                         ),
                         const Spacer(),
                         Text(
                           project.title,
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, letterSpacing: -0.5),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            letterSpacing: -0.3,
+                            color: colors.textPrimary,
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           "${subtasks.length} tasks",
-                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                          style: TextStyle(color: colors.textSecondary, fontSize: 12),
                         ),
                         const SizedBox(height: 12),
                         LinearProgressIndicator(
                           value: progress,
-                          backgroundColor: AppTheme.textSecondary.withValues(alpha: 0.2),
-                          color: AppTheme.accentMint,
+                          backgroundColor: colors.bgSurface,
+                          color: colors.accentSuccess,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ],
@@ -441,29 +544,33 @@ class _TaskListItemState extends State<_TaskListItem> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: colors.bgElevated,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.accentViolet.withValues(alpha: 0.1)),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 2),
           )
-        ]
+        ],
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Checkbox(
           value: widget.task.isCompleted,
-          activeColor: AppTheme.accentMint,
+          activeColor: colors.accentSuccess,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           onChanged: (val) {
             if (val == true && !widget.task.isCompleted) {
               context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(widget.task.id));
+            } else if (val == false && widget.task.isCompleted) {
+              context.read<ProductivityBloc>().add(ProductivityEvent.uncompleteTask(widget.task.id));
             }
           },
         ),
@@ -486,16 +593,16 @@ class _TaskListItemState extends State<_TaskListItem> {
                   });
                 },
                 child: Text(
-                  widget.task.title, 
+                  widget.task.title,
                   style: TextStyle(
                     fontSize: 16,
                     decoration: widget.task.isCompleted ? TextDecoration.lineThrough : null,
-                    color: widget.task.isCompleted ? AppTheme.textSecondary : AppTheme.textPrimary,
-                  )
+                    color: widget.task.isCompleted ? colors.textDisabled : colors.textPrimary,
+                  ),
                 ),
               ),
         trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: AppTheme.textSecondary, size: 20),
+          icon: Icon(Icons.delete_outline, color: colors.textSecondary, size: 20),
           onPressed: () => context.read<ProductivityBloc>().add(ProductivityEvent.deleteTask(widget.task.id)),
         ),
       ),

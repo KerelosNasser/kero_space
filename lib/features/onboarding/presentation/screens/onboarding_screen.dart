@@ -189,8 +189,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgPrimary,
+      backgroundColor: colors.bgBase,
       body: SafeArea(
         child: Column(
           children: [
@@ -199,26 +201,26 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 padding: const EdgeInsets.all(24.0),
                 children: [
                   const SizedBox(height: 24),
-                  const Icon(
+                  Icon(
                     Icons.shield_outlined,
                     size: 80,
-                    color: AppTheme.accentGold,
+                    color: colors.accentWarning,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'Welcome to Trobio',
                     style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: colors.textPrimary,
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'To provide the Omniscient Layer experience, we need a few permissions.',
                     style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: colors.textSecondary,
                       fontSize: 16,
                     ),
                     textAlign: TextAlign.center,
@@ -232,10 +234,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                   ),
                   const SizedBox(height: 32),
-                  const Text(
+                  Text(
                     'Health Profile (Optional)',
                     style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: colors.textPrimary,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -243,41 +245,41 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ),
                   const SizedBox(height: 16),
                   SwitchListTile(
-                    title: const Text(
+                    title: Text(
                       'Coptic Fasting Mode',
-                      style: TextStyle(color: AppTheme.textPrimary),
+                      style: TextStyle(color: colors.textPrimary),
                     ),
                     value: _isFastingMode,
-                    activeThumbColor: AppTheme.accentPrimary,
+                    activeThumbColor: colors.accentPrimary,
                     onChanged: (val) => setState(() => _isFastingMode = val),
                   ),
                   TextFormField(
                     initialValue: _weight.toString(),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Weight (kg)',
-                      labelStyle: TextStyle(color: AppTheme.textSecondary),
+                      labelStyle: TextStyle(color: colors.textSecondary),
                     ),
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                     keyboardType: TextInputType.number,
                     onChanged: (val) => _weight = double.tryParse(val) ?? 70.0,
                   ),
                   TextFormField(
                     initialValue: _height.toString(),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Height (cm)',
-                      labelStyle: TextStyle(color: AppTheme.textSecondary),
+                      labelStyle: TextStyle(color: colors.textSecondary),
                     ),
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                     keyboardType: TextInputType.number,
                     onChanged: (val) => _height = double.tryParse(val) ?? 175.0,
                   ),
                   TextFormField(
                     initialValue: _age.toString(),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Age',
-                      labelStyle: TextStyle(color: AppTheme.textSecondary),
+                      labelStyle: TextStyle(color: colors.textSecondary),
                     ),
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                     keyboardType: TextInputType.number,
                     onChanged: (val) => _age = int.tryParse(val) ?? 25,
                   ),
@@ -292,8 +294,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentGold,
-                    foregroundColor: AppTheme.bgPrimary,
+                    backgroundColor: colors.accentWarning,
+                    foregroundColor: colors.bgBase,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),

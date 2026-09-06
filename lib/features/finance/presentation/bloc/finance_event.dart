@@ -37,6 +37,15 @@ class AddTransactionEvent extends FinanceEvent {
   List<Object?> get props => [amount, type, category, vendor, sourceName];
 }
 
+class DeleteTransactionEvent extends FinanceEvent {
+  final int id;
+
+  const DeleteTransactionEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
+
 class SetBudgetEvent extends FinanceEvent {
   final String category;
   final double limit;

@@ -83,9 +83,10 @@ class _State extends State<OmniscientControlCenterScreen> {
     }
 
     if (missingItem != null && context.mounted) {
+      final colors = context.appColors;
       await showModalBottomSheet(
         context: context,
-        backgroundColor: AppTheme.bgPrimary,
+        backgroundColor: colors.bgSurface,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -106,6 +107,7 @@ class _State extends State<OmniscientControlCenterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return BlocBuilder<TelemetryBloc, TelemetryState>(builder: (context, state) {
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -113,7 +115,7 @@ class _State extends State<OmniscientControlCenterScreen> {
           Text('Agent Control Center', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 4),
           Text('Toggle agents and configure blocker rules.',
-              style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary)),
+              style: Theme.of(context).textTheme.labelSmall!.copyWith(color: colors.textSecondary)),
           const SizedBox(height: 16),
           GridView.builder(
             shrinkWrap: true,
@@ -136,16 +138,16 @@ class _State extends State<OmniscientControlCenterScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.bgSurface, borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.accentRose.withValues(alpha: 0.4)),
+              color: colors.bgSurface, borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colors.accentError.withValues(alpha: 0.4)),
             ),
             child: Row(children: [
-              const Icon(Icons.warning_amber_rounded, color: AppTheme.accentRose),
+              Icon(Icons.warning_amber_rounded, color: colors.accentError),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Bypass Blocker', style: Theme.of(context).textTheme.headlineMedium),
                 Text('Solve a math puzzle to bypass. Event is logged.',
-                    style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary)),
+                    style: Theme.of(context).textTheme.labelSmall!.copyWith(color: colors.textSecondary)),
               ])),
               TextButton(
                 onPressed: () async {
@@ -156,7 +158,7 @@ class _State extends State<OmniscientControlCenterScreen> {
                         const SnackBar(content: Text('Bypass granted. Logged.')));
                   }
                 },
-                style: TextButton.styleFrom(foregroundColor: AppTheme.accentRose),
+                style: TextButton.styleFrom(foregroundColor: colors.accentError),
                 child: const Text('Override'),
               ),
             ]),
@@ -213,14 +215,15 @@ class _PermissionBottomSheetState extends State<_PermissionBottomSheet> with Wid
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.bgElevated, borderRadius: BorderRadius.circular(2))),
+          Container(width: 40, height: 4, decoration: BoxDecoration(color: colors.bgElevated, borderRadius: BorderRadius.circular(2))),
           const SizedBox(height: 24),
-          const Text('Permission Required', style: TextStyle(color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Permission Required', style: TextStyle(color: colors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           PermissionTile(item: widget.item, isGranted: _isGranted, onRequest: _request),
           const SizedBox(height: 16),
@@ -229,3 +232,4 @@ class _PermissionBottomSheetState extends State<_PermissionBottomSheet> with Wid
     );
   }
 }
+

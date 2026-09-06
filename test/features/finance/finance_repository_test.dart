@@ -87,4 +87,59 @@ void main() {
     final deleted = await repository.getHoldingForTicker('COMI');
     expect(deleted, isNull);
   });
+
+  test('Deletes income transaction and rolls back money source balance', () async {
+    final source = MoneySource()..name = 'Freelance'..balance = 1000.0;
+    await isar.writeTxn(() => isar.moneySources.put(source));
+
+    final tx = Transaction()
+      ..amount = 500.0
+      ..type = 'INCOME'
+      ..category = 'Freelance'
+      ..sourceName = 'Freelance'
+      ..date = DateTime.now();
+
+    await repository.addTransaction(tx);
+    final addedTx = (await repository.getAllTransactions()).first;
+    expect(addedTx.amount, 500.0);
+
+    final sourceAfterAdd = await isar.moneySources.where().nameEqualTo('Freelance').findFirst();
+    expect(sourceAfterAdd!.balance, 1500.0);
+
+    await repository.deleteTransaction(addedTx.id);
+
+    final txList = await repository.getAllTransactions();
+    expect(txList.isEmpty, isTrue);
+
+    final sourceAfterDelete = await isar.moneySources.where().nameEqualTo('Freelance').findFirst();
+    expect(sourceAfterDelete!.balance, 1000.0);
+  });
+
+  test('Deletes expense transaction and refunds money source balance', () async {
+    final source = MoneySource()..name = 'QNB'..balance = 2000.0;
+    await isar.writeTxn(() => isar.moneySources.put(source));
+
+    final tx = Transaction()
+      ..amount = 300.0
+      ..type = 'EXPENSE'
+      ..category = 'Dining'
+      ..sourceName = 'QNB'
+      ..date = DateTime.now();
+
+    await repository.addTransaction(tx);
+    final addedTx = (await repository.getAllTransactions()).first;
+    expect(addedTx.amount, 300.0);
+
+    final sourceAfterAdd = await isar.moneySources.where().nameEqualTo('QNB').findFirst();
+    expect(sourceAfterAdd!.balance, 1700.0);
+
+    await repository.deleteTransaction(addedTx.id);
+
+    final txList = await repository.getAllTransactions();
+    expect(txList.isEmpty, isTrue);
+
+    final sourceAfterDelete = await isar.moneySources.where().nameEqualTo('QNB').findFirst();
+    expect(sourceAfterDelete!.balance, 2000.0);
+  });
 }
+

@@ -99,6 +99,55 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
     }
   }
 
+  Future<void> _enterBarcodeManually() async {
+    final controller = TextEditingController();
+    final barcode = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enter Barcode'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'e.g. 737628064502',
+            labelText: 'Barcode Number',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
+            child: const Text('Lookup'),
+          ),
+        ],
+      ),
+    );
+
+    if (barcode != null && barcode.isNotEmpty && mounted) {
+      setState(() {
+        _isProcessing = true;
+        _statusMessage = 'Looking up product...';
+      });
+      final product = await _barcodeService.getProductFromBarcode(barcode);
+      if (!mounted) return;
+      if (product != null) {
+        context.pushReplacement('/health/log', extra: product);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product not found in OpenFoodFacts.')),
+        );
+        setState(() {
+          _isProcessing = false;
+          _statusMessage = 'Scanning barcode...';
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _scannerController.dispose();
@@ -107,13 +156,22 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgPrimary,
+      backgroundColor: colors.bgBase,
       appBar: AppBar(
-        title: const Text('Food Scanner'),
+        title: Text('Food Scanner', style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: colors.textPrimary),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.flash_on),
+            tooltip: 'Toggle Flashlight',
+            onPressed: () => _scannerController.toggleTorch(),
+          ),
+        ],
       ),
       extendBodyBehindAppBar: true,
       body: Stack(
@@ -129,7 +187,7 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
               width: 250,
               height: 250,
               decoration: BoxDecoration(
-                border: Border.all(color: AppTheme.accentMint, width: 3),
+                border: Border.all(color: colors.domainHealth, width: 3),
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
@@ -137,16 +195,16 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
           
           if (_isProcessing)
             Container(
-              color: AppTheme.bgOverlay,
+              color: Colors.black.withValues(alpha: 0.7),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const CircularProgressIndicator(color: AppTheme.accentMint),
+                    CircularProgressIndicator(color: colors.domainHealth),
                     const SizedBox(height: 16),
                     Text(
                       _statusMessage,
-                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -170,18 +228,18 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
                 children: [
                   FloatingActionButton.extended(
                     heroTag: 'barcode_fab',
-                    onPressed: () {},
-                    backgroundColor: AppTheme.accentMint,
-                    icon: const Icon(Icons.qr_code_scanner, color: AppTheme.bgPrimary),
-                    label: const Text('Barcode', style: TextStyle(color: AppTheme.bgPrimary, fontWeight: FontWeight.bold)),
+                    onPressed: _enterBarcodeManually,
+                    backgroundColor: colors.domainHealth,
+                    icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
+                    label: const Text('Barcode', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 16),
                   FloatingActionButton.extended(
                     heroTag: 'ai_fab',
                     onPressed: _takePhotoAndAnalyze,
-                    backgroundColor: AppTheme.accentViolet,
-                    icon: const Icon(Icons.auto_awesome, color: AppTheme.textPrimary),
-                    label: const Text('AI Vision', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+                    backgroundColor: colors.accentPrimary,
+                    icon: const Icon(Icons.auto_awesome, color: Colors.white),
+                    label: const Text('AI Vision', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

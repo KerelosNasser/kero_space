@@ -16,6 +16,8 @@ class AiScannerService {
       return null;
     }
 
+    final model = dotenv.env['OPENROUTER_VISION_MODEL'] ?? 'google/gemini-2.0-flash-001';
+
     try {
       final response = await _dio.post(
         'https://openrouter.ai/api/v1/chat/completions',
@@ -26,7 +28,7 @@ class AiScannerService {
           },
         ),
         data: {
-          'model': 'nvidia/llama-nemotron-rerank-vl-1b-v2:free',
+          'model': model,
           'response_format': {"type": "json_object"},
           'messages': [
             {

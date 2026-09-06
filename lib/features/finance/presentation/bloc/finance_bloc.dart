@@ -32,6 +32,7 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
     on<LoadFinanceData>(_onLoadFinanceData);
     on<RefreshStockPrices>(_onRefreshStockPrices);
     on<AddTransactionEvent>(_onAddTransaction);
+    on<DeleteTransactionEvent>(_onDeleteTransaction);
     on<SetBudgetEvent>(_onSetBudget);
     on<AddToWatchlistEvent>(_onAddToWatchlist);
     on<RemoveFromWatchlistEvent>(_onRemoveFromWatchlist);
@@ -264,6 +265,12 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       ..isAutoParsed = false;
 
     await _financeRepository.addTransaction(tx);
+    add(LoadFinanceData());
+  }
+
+  Future<void> _onDeleteTransaction(
+      DeleteTransactionEvent event, Emitter<FinanceState> emit) async {
+    await _financeRepository.deleteTransaction(event.id);
     add(LoadFinanceData());
   }
 

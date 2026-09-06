@@ -48,10 +48,12 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
     final state = context.read<ConfessionBloc>().state;
     if (state is ConfessionUnlocked) {
       final entries = await widget.repo.getConfessions(state.sessionKey);
-      setState(() {
-        _pastConfessions = entries;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _pastConfessions = entries;
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -67,6 +69,8 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return BlocListener<ConfessionBloc, ConfessionState>(
       listener: (context, state) {
         if (state is ConfessionLocked) {
@@ -74,11 +78,15 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.bgPrimary,
+        backgroundColor: colors.bgBase,
         appBar: AppBar(
-          title: const Text('Confessions Log', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
-          backgroundColor: AppTheme.bgPrimary,
-          iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+          title: Text(
+            'Confessions Log',
+            style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: colors.bgBase,
+          elevation: 0,
+          iconTheme: IconThemeData(color: colors.textPrimary),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.go('/church'),
@@ -111,8 +119,8 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
             ),
           ],
         ),
-        body: _isLoading 
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.accentViolet))
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator(color: colors.domainChurch))
             : Column(
                 children: [
                   Expanded(
@@ -121,8 +129,9 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                       padding: const EdgeInsets.all(16.0),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.bgSurface,
-                          borderRadius: BorderRadius.circular(12),
+                          color: colors.bgSurface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: colors.borderSubtle),
                         ),
                         child: Column(
                           children: [
@@ -142,9 +151,12 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                               child: Align(
                                 alignment: Alignment.centerRight,
                                 child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentViolet),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colors.domainChurch,
+                                    foregroundColor: Colors.white,
+                                  ),
                                   onPressed: _saveConfession,
-                                  child: const Text('Save Encrypted', style: TextStyle(color: AppTheme.textPrimary)),
+                                  child: const Text('Save Encrypted', style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ),
                             )
@@ -153,42 +165,64 @@ class _ConfessionLogScreenState extends State<ConfessionLogScreen> with WidgetsB
                       ),
                     ),
                   ),
-                  const Divider(color: AppTheme.bgElevated),
+                  Divider(color: colors.borderSubtle),
                   Expanded(
                     flex: 1,
-                    child: ListView.builder(
-                      itemCount: _pastConfessions.length,
-                      itemBuilder: (context, index) {
-                        final entry = _pastConfessions[index];
-                        final date = entry['date'] as DateTime;
-                        Document? doc;
-                        try {
-                          final deltaJson = jsonDecode(entry['text']);
-                          doc = Document.fromJson(deltaJson);
-                        } catch (e) {
-                          doc = Document()..insert(0, 'Failed to decode content');
-                        }
-                        
-                        return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppTheme.bgSurface,
-                            borderRadius: BorderRadius.circular(12),
+                    child: _pastConfessions.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.lock_outline, size: 48, color: colors.textSecondary.withValues(alpha: 0.4)),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No saved confessions yet',
+                                  style: TextStyle(color: colors.textSecondary, fontSize: 15),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: _pastConfessions.length,
+                            itemBuilder: (context, index) {
+                              final entry = _pastConfessions[index];
+                              final date = entry['date'] as DateTime;
+                              Document? doc;
+                              try {
+                                final deltaJson = jsonDecode(entry['text']);
+                                doc = Document.fromJson(deltaJson);
+                              } catch (e) {
+                                doc = Document()..insert(0, 'Failed to decode content');
+                              }
+
+                              return Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: colors.bgSurface,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: colors.borderSubtle),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${date.toLocal()}'.split('.')[0],
+                                      style: TextStyle(color: colors.textSecondary, fontSize: 12),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    QuillEditor.basic(
+                                      controller: QuillController(
+                                        document: doc,
+                                        selection: const TextSelection.collapsed(offset: 0),
+                                        readOnly: true,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('${date.toLocal()}'.split('.')[0], style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                              const SizedBox(height: 8),
-                              QuillEditor.basic(
-                                controller: QuillController(document: doc, selection: const TextSelection.collapsed(offset: 0), readOnly: true),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),
