@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kero_space/core/app_theme.dart';
+import 'package:kero_space/core/di/injection.dart';
 import '../bloc/exercise_bloc.dart';
 import '../../data/repositories/exercises_repository.dart';
 
@@ -27,7 +28,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     super.dispose();
   }
 
-  void _submitSet(BuildContext context) {
+  void _submitSet(BuildContext context, WorkoutExerciseViewModel exercise) {
     final colors = context.appColors;
     final weight = double.tryParse(_weightController.text.trim()) ?? 0.0;
     final reps = int.tryParse(_repsController.text.trim()) ?? 0;
@@ -39,11 +40,13 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       return;
     }
 
+    final nextSet = exercise.nextSetNumber;
+
     context.read<ExerciseBloc>().add(
           LogExerciseSet(
-            exerciseId: widget.exercise.id,
-            exerciseName: widget.exercise.name,
-            setNumber: widget.exercise.nextSetNumber,
+            exerciseId: exercise.id,
+            exerciseName: exercise.name,
+            setNumber: nextSet,
             reps: reps,
             weight: weight,
           ),
@@ -54,7 +57,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Set ${widget.exercise.nextSetNumber} logged!'),
+        content: Text('Set $nextSet logged!'),
         backgroundColor: colors.accentSuccess,
       ),
     );
@@ -63,29 +66,46 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final exercise = widget.exercise;
-    final maxWeight = exercise.loggedSets.isEmpty
-        ? 0.0
-        : exercise.loggedSets
-            .map((s) => s.weight)
-            .reduce((a, b) => a > b ? a : b);
-    final totalReps = exercise.loggedSets.fold<int>(0, (sum, s) => sum + s.reps);
 
-    return Scaffold(
-      backgroundColor: colors.bgBase,
-      appBar: AppBar(
-        title: Text(
-          exercise.name,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: colors.textPrimary,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(color: colors.textPrimary),
-      ),
+    ExerciseBloc bloc;
+    try {
+      bloc = context.read<ExerciseBloc>();
+    } catch (_) {
+      bloc = getIt<ExerciseBloc>();
+    }
+
+    return BlocProvider.value(
+      value: bloc,
+      child: BlocBuilder<ExerciseBloc, ExerciseState>(
+        builder: (context, state) {
+          final exercise = state.todayWorkout?.exercises.firstWhere(
+                (e) => e.id == widget.exercise.id,
+                orElse: () => widget.exercise,
+              ) ??
+              widget.exercise;
+
+          final maxWeight = exercise.loggedSets.isEmpty
+              ? 0.0
+              : exercise.loggedSets
+                  .map((s) => s.weight)
+                  .reduce((a, b) => a > b ? a : b);
+          final totalReps = exercise.loggedSets.fold<int>(0, (sum, s) => sum + s.reps);
+
+          return Scaffold(
+            backgroundColor: colors.bgBase,
+            appBar: AppBar(
+              title: Text(
+                exercise.name,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: colors.textPrimary,
+                ),
+              ),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              iconTheme: IconThemeData(color: colors.textPrimary),
+            ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
@@ -216,7 +236,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => _submitSet(context),
+                      onPressed: () => _submitSet(context, exercise),
                       icon: const Icon(Icons.add_task_rounded, size: 18),
                       label: Text('Log Set #${exercise.nextSetNumber}'),
                     ),
@@ -305,6 +325,9 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
             const SizedBox(height: 24),
           ],
         ),
+      ),
+    );
+        },
       ),
     );
   }

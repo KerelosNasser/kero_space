@@ -19,6 +19,9 @@ import '../features/health/presentation/screens/meal_log_screen.dart';
 import '../features/health/presentation/screens/food_scanner_screen.dart';
 import '../features/health/data/models/health_collections.dart';
 import '../features/health/presentation/bloc/health_bloc.dart';
+import '../features/exercises/presentation/screens/exercise_detail_screen.dart';
+import '../features/exercises/presentation/bloc/exercise_bloc.dart';
+import '../features/exercises/data/repositories/exercises_repository.dart';
 import '../features/finance/presentation/screens/finance_home_screen.dart';
 import '../features/finance/presentation/bloc/finance_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -137,6 +140,17 @@ final router = GoRouter(
       path: '/health/scan',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const FoodScannerScreen(),
+    ),
+    GoRoute(
+      path: '/health/exercise_detail',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final exercise = state.extra as WorkoutExerciseViewModel;
+        return BlocProvider.value(
+          value: GetIt.I<ExerciseBloc>(),
+          child: ExerciseDetailScreen(exercise: exercise),
+        );
+      },
     ),
     GoRoute(
       path: '/church/confessions_log',

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/features/exercises/data/repositories/exercises_repository.dart';
 import 'package:kero_space/features/exercises/presentation/bloc/exercise_bloc.dart';
-import '../screens/exercise_detail_screen.dart';
 
 class ExercisesTab extends StatelessWidget {
   const ExercisesTab({super.key});
@@ -344,14 +344,7 @@ class _ExerciseCard extends StatelessWidget {
   final TodayWorkoutViewModel workout;
 
   void _openDetails(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: context.read<ExerciseBloc>(),
-          child: ExerciseDetailScreen(exercise: exercise),
-        ),
-      ),
-    );
+    context.push('/health/exercise_detail', extra: exercise);
   }
 
   @override

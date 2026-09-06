@@ -77,7 +77,7 @@ class NotesMasonryGrid extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: context.appColors.primary.withValues(alpha: 0.3)),
+              border: Border.all(color: context.appColors.domainProductivity.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

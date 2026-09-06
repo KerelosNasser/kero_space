@@ -66,7 +66,16 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
               ],
             ),
           ),
-          body: BlocBuilder<ProductivityBloc, ProductivityState>(
+          body: BlocConsumer<ProductivityBloc, ProductivityState>(
+            listener: (context, state) {
+              state.maybeWhen(
+                loaded: (allTasks, dailyChecklist, allNotes) {
+                  final hasHighPriorityPending = dailyChecklist.any((t) => !t.isCompleted && (t.energyLevel == 3));
+                  _updateTaskGatedMode(hasHighPriorityPending);
+                },
+                orElse: () {},
+              );
+            },
             builder: (context, state) {
               return state.when(
                 loading: () => const ProductivitySkeleton(),
@@ -75,10 +84,6 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
                   onRetry: () => context.read<ProductivityBloc>().add(const ProductivityEvent.loadData()),
                 ),
                 loaded: (allTasks, dailyChecklist, allNotes) {
-                  // Check if there are any high priority tasks pending for enforcement
-                  final hasHighPriorityPending = dailyChecklist.any((t) => !t.isCompleted && (t.energyLevel == 3));
-                  _updateTaskGatedMode(hasHighPriorityPending);
-
                   return TabBarView(
                     children: [
                       // Tab 1: Today

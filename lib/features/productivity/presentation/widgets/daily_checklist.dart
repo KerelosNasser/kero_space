@@ -110,7 +110,7 @@ class _TaskRowState extends State<TaskRow> with SingleTickerProviderStateMixin {
                   context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(widget.task.id));
                 } else {
                   HapticFeedback.selectionClick();
-                  // No un-complete logic right now, but could be added
+                  context.read<ProductivityBloc>().add(ProductivityEvent.uncompleteTask(widget.task.id));
                 }
               },
             ),
