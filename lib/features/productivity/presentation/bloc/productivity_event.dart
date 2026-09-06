@@ -6,10 +6,12 @@ class ProductivityEvent with _$ProductivityEvent {
   const factory ProductivityEvent.createTask(Task task) = _CreateTask;
   const factory ProductivityEvent.updateTask(Task task) = _UpdateTask;
   const factory ProductivityEvent.completeTask(int taskId) = _CompleteTask;
+  const factory ProductivityEvent.uncompleteTask(int taskId) = _UncompleteTask;
   const factory ProductivityEvent.deleteTask(int taskId) = _DeleteTask;
   
   const factory ProductivityEvent.createNote(Note note, {int? linkedTaskId}) = _CreateNote;
   const factory ProductivityEvent.updateNote(Note note) = _UpdateNote;
+  const factory ProductivityEvent.deleteNote(int noteId) = _DeleteNote;
 
   const factory ProductivityEvent.createProjectWithSubtasks(String title, String? icon, List<dynamic> subtasks) = _CreateProjectWithSubtasks;
   const factory ProductivityEvent.autoScheduleTasks() = _AutoScheduleTasks;

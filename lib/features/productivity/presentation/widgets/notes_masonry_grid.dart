@@ -28,9 +28,11 @@ class NotesMasonryGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (notes.isEmpty) {
-      return const Center(
-        child: Text("No notes yet. Tap + to create one.", 
-          style: TextStyle(color: Colors.grey)),
+      return Center(
+        child: Text(
+          "No notes yet. Tap + to create one.", 
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+        ),
       );
     }
 
@@ -47,12 +49,35 @@ class NotesMasonryGrid extends StatelessWidget {
 
         return GestureDetector(
           onTap: () => context.push('/note_editor', extra: {'note': note, 'bloc': context.read<ProductivityBloc>()}),
+          onLongPress: () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Delete Note'),
+                content: Text('Are you sure you want to delete "${note.title}"?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error),
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: const Text('Delete'),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true && context.mounted) {
+              context.read<ProductivityBloc>().add(ProductivityEvent.deleteNote(note.id));
+            }
+          },
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+              border: Border.all(color: context.appColors.primary.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

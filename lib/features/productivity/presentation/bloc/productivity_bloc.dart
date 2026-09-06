@@ -21,9 +21,11 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
     on<_CreateTask>(_onCreateTask);
     on<_UpdateTask>(_onUpdateTask);
     on<_CompleteTask>(_onCompleteTask);
+    on<_UncompleteTask>(_onUncompleteTask);
     on<_DeleteTask>(_onDeleteTask);
     on<_CreateNote>(_onCreateNote);
     on<_UpdateNote>(_onUpdateNote);
+    on<_DeleteNote>(_onDeleteNote);
     on<_CreateProjectWithSubtasks>(_onCreateProjectWithSubtasks);
     on<_AutoScheduleTasks>(_onAutoScheduleTasks);
   }
@@ -184,6 +186,30 @@ class ProductivityBloc extends Bloc<ProductivityEvent, ProductivityState> {
       add(const ProductivityEvent.loadData());
     } catch (e) {
       emit(ProductivityState.error('Failed to save. Please try again.'));
+    }
+  }
+
+  Future<void> _onUncompleteTask(
+    _UncompleteTask event,
+    Emitter<ProductivityState> emit,
+  ) async {
+    try {
+      await _repository.uncompleteTask(event.taskId);
+      add(const ProductivityEvent.loadData());
+    } catch (e) {
+      emit(ProductivityState.error('Failed to update task. Please try again.'));
+    }
+  }
+
+  Future<void> _onDeleteNote(
+    _DeleteNote event,
+    Emitter<ProductivityState> emit,
+  ) async {
+    try {
+      await _repository.deleteNote(event.noteId);
+      add(const ProductivityEvent.loadData());
+    } catch (e) {
+      emit(ProductivityState.error('Failed to delete note. Please try again.'));
     }
   }
 

@@ -99,6 +99,20 @@ class ProductivityRepository {
     }
   }
 
+  Future<void> uncompleteTask(int taskId) async {
+    final isar = IsarService.instance;
+    final now = DateTime.now();
+
+    await isar.writeTxn(() async {
+      final task = await isar.tasks.get(taskId);
+      if (task != null) {
+        task.isCompleted = false;
+        task.updatedAt = now;
+        await isar.tasks.put(task);
+      }
+    });
+  }
+
   // Notes
   Future<List<Note>> getAllNotes() async {
     final isar = IsarService.instance;
@@ -110,6 +124,13 @@ class ProductivityRepository {
     note.updatedAt = DateTime.now();
     await isar.writeTxn(() async {
       await isar.notes.put(note);
+    });
+  }
+
+  Future<void> deleteNote(int noteId) async {
+    final isar = IsarService.instance;
+    await isar.writeTxn(() async {
+      await isar.notes.delete(noteId);
     });
   }
 }

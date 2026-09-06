@@ -93,8 +93,32 @@ void main() async {
   runApp(const KeroSpaceApp());
 }
 
-class KeroSpaceApp extends StatelessWidget {
+class KeroSpaceApp extends StatefulWidget {
   const KeroSpaceApp({super.key});
+
+  @override
+  State<KeroSpaceApp> createState() => _KeroSpaceAppState();
+}
+
+class _KeroSpaceAppState extends State<KeroSpaceApp> {
+  bool _isVoiceSheetOpen = false;
+
+  void _showVoiceModal(BuildContext context) {
+    if (_isVoiceSheetOpen) return;
+    _isVoiceSheetOpen = true;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const VoiceBottomSheet(),
+    ).whenComplete(() {
+      _isVoiceSheetOpen = false;
+      final current = getIt<VoiceBloc>().state;
+      if (current is! VoiceIdle) {
+        getIt<VoiceBloc>().add(CancelIntentEvent());
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -201,13 +225,8 @@ class KeroSpaceApp extends StatelessWidget {
             builder: (context, child) {
               return BlocListener<VoiceBloc, VoiceState>(
                 listener: (context, state) {
-                  if (state is VoiceWakeDetected) {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => const VoiceBottomSheet(),
-                    );
+                  if (state is VoiceWakeDetected || state is VoiceListening) {
+                    _showVoiceModal(context);
                   }
                 },
                 child: child ?? const SizedBox.shrink(),
