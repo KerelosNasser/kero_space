@@ -145,6 +145,9 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.domainTelemetry,
   });
 
+  Color get accentDanger => accentError;
+  Color get domainVoice => accentSecondary;
+
   @override
   AppThemeColors copyWith({
     Color? bgBase,

@@ -8,22 +8,20 @@ class VoiceWaveform extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // For V1, we'll use a simple animated container placeholder if the Rive asset isn't present
-    // or a pulsing mic icon. The design spec mentions "Rive waveform", so ideally we load 
-    // an asset from assets/animations/voice_wave.riv, but since we don't have the asset downloaded 
-    // yet, we'll use a simple flutter animation fallback.
+    final colors = context.appColors;
+    final primaryColor = colors.domainVoice;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       width: isListening ? 80 : 60,
       height: isListening ? 80 : 60,
       decoration: BoxDecoration(
-        color: isListening ? AppTheme.accentCyan.withValues(alpha: 0.2) : AppTheme.textDisabled.withValues(alpha: 0.1),
+        color: isListening ? primaryColor.withValues(alpha: 0.2) : colors.textSecondary.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Center(
         child: Icon(
           Icons.mic,
-          color: isListening ? AppTheme.accentCyan : AppTheme.textSecondary,
+          color: isListening ? primaryColor : colors.textSecondary,
           size: isListening ? 40 : 30,
         ),
       ),

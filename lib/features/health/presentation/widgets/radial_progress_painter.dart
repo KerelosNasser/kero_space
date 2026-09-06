@@ -16,8 +16,10 @@ class PremiumCalorieRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final double progress = value.clamp(0.0, 1.0);
     final bool isOver = value > 1.0;
+    final primaryColor = isOver ? colors.accentError : colors.accentSuccess;
 
     return SizedBox(
       height: 180,
@@ -28,8 +30,8 @@ class PremiumCalorieRing extends StatelessWidget {
           CustomPaint(
             painter: RadialProgressPainter(
               progress: progress,
-              color: isOver ? AppTheme.accentRose : AppTheme.accentMint,
-              trackColor: AppTheme.bgElevated,
+              color: primaryColor,
+              trackColor: colors.bgElevated,
             ),
           ),
           Center(
@@ -38,20 +40,20 @@ class PremiumCalorieRing extends StatelessWidget {
               children: [
                 Text(
                   '$current',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
-                    color: AppTheme.textPrimary,
+                    color: colors.textPrimary,
                     letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'of $target kcal',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: AppTheme.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ),
                 if (isOver) ...[
@@ -59,15 +61,15 @@ class PremiumCalorieRing extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentRose.withValues(alpha: 0.15),
+                      color: colors.accentError.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       '+${current - target} kcal',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.accentRose,
+                        color: colors.accentError,
                       ),
                     ),
                   ),

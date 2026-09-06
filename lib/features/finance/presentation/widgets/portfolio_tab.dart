@@ -233,12 +233,12 @@ class PortfolioTab extends StatelessWidget {
                                     ),
                                   )
                                 else
-                                  const SizedBox(
+                                  SizedBox(
                                     height: 36,
                                     child: Center(
                                       child: Text(
                                         'Gathering chart data...', 
-                                        style: TextStyle(fontSize: 8, color: AppTheme.textSecondary),
+                                        style: TextStyle(fontSize: 8, color: colors.textSecondary),
                                       ),
                                     ),
                                   ),

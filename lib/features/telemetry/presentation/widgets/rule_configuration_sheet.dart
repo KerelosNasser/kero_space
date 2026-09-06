@@ -9,9 +9,10 @@ class RuleConfigurationSheet extends StatefulWidget {
   const RuleConfigurationSheet({super.key, required this.packageName, this.existingRule});
 
   static Future<BlacklistRule?> show(BuildContext context, String packageName, {BlacklistRule? existingRule}) {
+    final colors = context.appColors;
     return showModalBottomSheet<BlacklistRule>(
       context: context,
-      backgroundColor: AppTheme.bgSurface,
+      backgroundColor: colors.bgSurface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -46,16 +47,31 @@ class _State extends State<RuleConfigurationSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final primaryAccent = colors.domainTelemetry;
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Configure App Rule', style: Theme.of(context).textTheme.titleLarge),
+          Text(
+            'Configure App Rule',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
           const SizedBox(height: 24),
           
-          Text('Target Specific Context', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            'Target Specific Context',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colors.textPrimary,
+                ),
+          ),
           const SizedBox(height: 8),
           SegmentedButton<String?>(
             segments: const [
@@ -65,15 +81,21 @@ class _State extends State<RuleConfigurationSheet> {
             selected: {_subAppTarget},
             onSelectionChanged: (set) => setState(() => _subAppTarget = set.first),
             style: SegmentedButton.styleFrom(
-              backgroundColor: AppTheme.bgPrimary,
-              foregroundColor: AppTheme.textPrimary,
-              selectedForegroundColor: Colors.black,
-              selectedBackgroundColor: AppTheme.accentCyan,
+              backgroundColor: colors.bgElevated,
+              foregroundColor: colors.textPrimary,
+              selectedForegroundColor: colors.bgSurface,
+              selectedBackgroundColor: primaryAccent,
             ),
           ),
           
           const SizedBox(height: 24),
-          Text('Session Limit (Minutes)', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            'Session Limit (Minutes)',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colors.textPrimary,
+                ),
+          ),
           const SizedBox(height: 8),
           SegmentedButton<int?>(
             segments: const [
@@ -85,16 +107,22 @@ class _State extends State<RuleConfigurationSheet> {
             selected: {_sessionLimit},
             onSelectionChanged: (set) => setState(() => _sessionLimit = set.first),
             style: SegmentedButton.styleFrom(
-              backgroundColor: AppTheme.bgPrimary,
-              foregroundColor: AppTheme.textPrimary,
-              selectedForegroundColor: Colors.black,
-              selectedBackgroundColor: AppTheme.accentCyan,
+              backgroundColor: colors.bgElevated,
+              foregroundColor: colors.textPrimary,
+              selectedForegroundColor: colors.bgSurface,
+              selectedBackgroundColor: primaryAccent,
             ),
           ),
           
           if (_sessionLimit != null) ...[
             const SizedBox(height: 24),
-            Text('Cooldown Period', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Cooldown Period',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colors.textPrimary,
+                  ),
+            ),
             const SizedBox(height: 8),
             SegmentedButton<int?>(
               segments: const [
@@ -105,20 +133,20 @@ class _State extends State<RuleConfigurationSheet> {
               selected: {_cooldown ?? 60},
               onSelectionChanged: (set) => setState(() => _cooldown = set.first),
               style: SegmentedButton.styleFrom(
-                backgroundColor: AppTheme.bgPrimary,
-                foregroundColor: AppTheme.textPrimary,
-                selectedForegroundColor: Colors.black,
-                selectedBackgroundColor: AppTheme.accentCyan,
+                backgroundColor: colors.bgElevated,
+                foregroundColor: colors.textPrimary,
+                selectedForegroundColor: colors.bgSurface,
+                selectedBackgroundColor: primaryAccent,
               ),
             ),
             
             const SizedBox(height: 24),
             SwitchListTile(
-              title: const Text('Strict Block', style: TextStyle(color: AppTheme.textPrimary)),
-              subtitle: const Text('No bypass during cooldown', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              title: Text('Strict Block', style: TextStyle(color: colors.textPrimary)),
+              subtitle: Text('No bypass during cooldown', style: TextStyle(color: colors.textSecondary, fontSize: 12)),
               value: _strictMode,
               onChanged: (val) => setState(() => _strictMode = val),
-              activeTrackColor: AppTheme.accentCyan,
+              activeTrackColor: primaryAccent,
               contentPadding: EdgeInsets.zero,
             ),
           ],
@@ -129,8 +157,8 @@ class _State extends State<RuleConfigurationSheet> {
             height: 50,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.accentCyan,
-                foregroundColor: Colors.black,
+                backgroundColor: primaryAccent,
+                foregroundColor: colors.bgSurface,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () {

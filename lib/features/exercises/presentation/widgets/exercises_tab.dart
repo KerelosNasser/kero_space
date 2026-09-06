@@ -32,6 +32,8 @@ class _ExercisesTabView extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
+        final colors = context.appColors;
+
         if (state.status == ExerciseStatus.failure) {
           return Center(
             child: Padding(
@@ -41,7 +43,7 @@ class _ExercisesTabView extends StatelessWidget {
                 children: [
                   Text(
                     state.errorMessage ?? 'Unable to load workout plan.',
-                    style: const TextStyle(color: AppTheme.textSecondary),
+                    style: TextStyle(color: colors.textSecondary),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -69,12 +71,12 @@ class _ExercisesTabView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Workout Splits',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -93,16 +95,16 @@ class _ExercisesTabView extends StatelessWidget {
                             ),
                             labelStyle: TextStyle(
                               color: isSelected
-                                  ? AppTheme.bgPrimary
-                                  : AppTheme.textPrimary,
+                                  ? Colors.white
+                                  : colors.textPrimary,
                               fontWeight: FontWeight.w600,
                             ),
-                            selectedColor: AppTheme.accentMint,
-                            backgroundColor: AppTheme.bgElevated,
+                            selectedColor: colors.accentPrimary,
+                            backgroundColor: colors.bgSurface,
                             side: BorderSide(
                               color: isSelected
-                                  ? AppTheme.accentMint
-                                  : AppTheme.divider,
+                                  ? colors.accentPrimary
+                                  : colors.borderSubtle,
                             ),
                           );
                         },
@@ -114,8 +116,8 @@ class _ExercisesTabView extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       selectedSplit.description,
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                      style: TextStyle(
+                        color: colors.textSecondary,
                         fontSize: 13,
                       ),
                     ),
@@ -138,18 +140,18 @@ class _ExercisesTabView extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Recent Sessions',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                        color: colors.textPrimary,
                       ),
                     ),
                     Text(
                       '${state.history.length} tracked',
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                      style: TextStyle(
+                        color: colors.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -177,10 +179,10 @@ class _ExercisesTabView extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppTheme.bgSurface,
+                          color: colors.bgSurface,
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: colors.borderSubtle,
                           ),
                         ),
                         child: Row(
@@ -189,14 +191,14 @@ class _ExercisesTabView extends StatelessWidget {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: AppTheme.accentViolet.withValues(
+                                color: colors.accentPrimary.withValues(
                                   alpha: 0.12,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.history,
-                                color: AppTheme.accentViolet,
+                                color: colors.accentPrimary,
                               ),
                             ),
                             const SizedBox(width: 14),
@@ -206,8 +208,8 @@ class _ExercisesTabView extends StatelessWidget {
                                 children: [
                                   Text(
                                     entry.dayName,
-                                    style: const TextStyle(
-                                      color: AppTheme.textPrimary,
+                                    style: TextStyle(
+                                      color: colors.textPrimary,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
                                     ),
@@ -215,8 +217,8 @@ class _ExercisesTabView extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Text(
                                     DateFormat('EEE, MMM d').format(entry.date),
-                                    style: const TextStyle(
-                                      color: AppTheme.textSecondary,
+                                    style: TextStyle(
+                                      color: colors.textSecondary,
                                       fontSize: 12,
                                     ),
                                   ),
@@ -228,15 +230,15 @@ class _ExercisesTabView extends StatelessWidget {
                               children: [
                                 Text(
                                   '${entry.totalSets} sets',
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                    color: colors.textPrimary,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   '${entry.totalVolume.toStringAsFixed(0)} kg vol',
-                                  style: const TextStyle(
-                                    color: AppTheme.textSecondary,
+                                  style: TextStyle(
+                                    color: colors.textSecondary,
                                     fontSize: 11,
                                   ),
                                 ),
@@ -268,12 +270,14 @@ class _TodayWorkoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,8 +291,8 @@ class _TodayWorkoutCard extends StatelessWidget {
                   children: [
                     Text(
                       splitName,
-                      style: const TextStyle(
-                        color: AppTheme.accentMint,
+                      style: TextStyle(
+                        color: colors.accentPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -296,8 +300,8 @@ class _TodayWorkoutCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       '${DateFormat('EEEE').format(todayWorkout.date)} - ${todayWorkout.dayName}',
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: colors.textPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -311,13 +315,14 @@ class _TodayWorkoutCard extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.bgElevated,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
                 child: Text(
                   DateFormat('MMM d').format(todayWorkout.date),
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: colors.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -349,6 +354,8 @@ class _ExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -357,9 +364,9 @@ class _ExerciseCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.bgElevated.withValues(alpha: 0.75),
+            color: colors.bgSurface,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: context.appColors.borderSubtle),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,8 +380,8 @@ class _ExerciseCard extends StatelessWidget {
                   children: [
                     Text(
                       exercise.name,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: colors.textPrimary,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -382,8 +389,8 @@ class _ExerciseCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '${exercise.category} - ${exercise.equipment}',
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                      style: TextStyle(
+                        color: colors.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -394,8 +401,8 @@ class _ExerciseCard extends StatelessWidget {
               FilledButton.tonal(
                 onPressed: () => _showLogSetSheet(context),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.accentCyan.withValues(alpha: 0.16),
-                  foregroundColor: AppTheme.accentCyan,
+                  backgroundColor: colors.accentPrimary.withValues(alpha: 0.16),
+                  foregroundColor: colors.accentPrimary,
                 ),
                 child: Text('Set ${exercise.nextSetNumber}'),
               ),
@@ -406,10 +413,11 @@ class _ExerciseCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _metaChip(Icons.repeat, '${exercise.suggestedSets} sets'),
-              _metaChip(Icons.tune, exercise.targetReps),
+              _metaChip(context, Icons.repeat, '${exercise.suggestedSets} sets'),
+              _metaChip(context, Icons.tune, exercise.targetReps),
               if (exercise.loggedSets.isNotEmpty)
                 _metaChip(
+                  context,
                   Icons.check_circle,
                   'Last ${exercise.loggedSets.last.weight.toStringAsFixed(0)}kg x ${exercise.loggedSets.last.reps}',
                 ),
@@ -420,8 +428,8 @@ class _ExerciseCard extends StatelessWidget {
             exercise.instructionsEn,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
+            style: TextStyle(
+              color: colors.textSecondary,
               fontSize: 12,
               height: 1.45,
             ),
@@ -433,22 +441,24 @@ class _ExerciseCard extends StatelessWidget {
     );
   }
 
-  Widget _metaChip(IconData icon, String label) {
+  Widget _metaChip(BuildContext context, IconData icon, String label) {
+    final colors = context.appColors;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: colors.borderSubtle.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppTheme.textSecondary),
+          Icon(icon, size: 14, color: colors.textSecondary),
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: colors.textPrimary,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -459,6 +469,7 @@ class _ExerciseCard extends StatelessWidget {
   }
 
   Future<void> _showLogSetSheet(BuildContext context) async {
+    final colors = context.appColors;
     final repsController = TextEditingController();
     final weightController = TextEditingController();
 
@@ -476,8 +487,9 @@ class _ExerciseCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.bgSurface,
+              color: colors.bgSurface,
               borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -485,8 +497,8 @@ class _ExerciseCard extends StatelessWidget {
               children: [
                 Text(
                   'Log ${exercise.name}',
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -560,21 +572,23 @@ class _EmptyHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.appColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.fitness_center, color: AppTheme.textSecondary, size: 28),
-          SizedBox(height: 12),
+          Icon(Icons.fitness_center, color: colors.textSecondary, size: 28),
+          const SizedBox(height: 12),
           Text(
             'Log your first set to start building workout history.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            style: TextStyle(color: colors.textSecondary, fontSize: 13),
           ),
         ],
       ),

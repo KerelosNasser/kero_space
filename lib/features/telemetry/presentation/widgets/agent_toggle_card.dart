@@ -16,13 +16,16 @@ class AgentToggleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final primaryAccent = colors.domainTelemetry;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isEnabled ? AppTheme.accentCyan.withValues(alpha: 0.5) : AppTheme.bgElevated,
+          color: isEnabled ? primaryAccent.withValues(alpha: 0.5) : colors.borderSubtle,
           width: 1.5,
         ),
       ),
@@ -32,17 +35,23 @@ class AgentToggleCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(children: [
-            Icon(icon, color: isEnabled ? AppTheme.accentCyan : AppTheme.textDisabled, size: 20),
+            Icon(icon, color: isEnabled ? primaryAccent : colors.textSecondary.withValues(alpha: 0.5), size: 20),
             const Spacer(),
-            Switch.adaptive(value: isEnabled, onChanged: onToggle, activeTrackColor: AppTheme.accentCyan),
+            Switch.adaptive(value: isEnabled, onChanged: onToggle, activeTrackColor: primaryAccent),
           ]),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: Theme.of(context).textTheme.headlineMedium),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
               Text(
                 statusSummary,
-                style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

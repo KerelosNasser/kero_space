@@ -22,6 +22,8 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return BlocConsumer<ChurchBloc, ChurchState>(
       listener: (context, state) {
         if (state.status == ChurchStatus.failure &&
@@ -29,15 +31,15 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
                 content: Text(state.errorMessage!),
-                backgroundColor: AppTheme.accentRose),
+                backgroundColor: colors.accentDanger),
           );
         }
       },
       builder: (context, state) {
         if (state.status == ChurchStatus.loading && state.tasks.isEmpty) {
-          return const Center(
+          return Center(
               child: CircularProgressIndicator(
-                  color: AppTheme.accentViolet));
+                  color: colors.domainChurch));
         }
 
         final todoTasks = state.tasks
@@ -95,7 +97,7 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
                   ),
                 ),
                 Expanded(
-                  child: _buildKanbanColumn(columnTitle, currentTasks, _selectedColumn),
+                  child: _buildKanbanColumn(context, columnTitle, currentTasks, _selectedColumn),
                 ),
               ],
             ),
@@ -103,9 +105,9 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
               bottom: 16,
               right: 16,
               child: FloatingActionButton(
-                backgroundColor: AppTheme.accentViolet,
+                backgroundColor: colors.domainChurch,
                 onPressed: () => _showAddTaskDialog(context),
-                child: const Icon(Icons.add, color: AppTheme.accentPrimary),
+                child: const Icon(Icons.add, color: Colors.white),
               ),
             ),
           ],
@@ -115,7 +117,9 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
   }
 
   Widget _buildKanbanColumn(
-      String title, List<MinistryTask> tasks, MinistryTaskStatus columnStatus) {
+      BuildContext context, String title, List<MinistryTask> tasks, MinistryTaskStatus columnStatus) {
+    final colors = context.appColors;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -123,25 +127,35 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
-                color: AppTheme.textPrimary,
+            style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 22,
                 fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Expanded(
             child: tasks.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.inbox_outlined,
-                            color: AppTheme.textDisabled, size: 48),
-                        SizedBox(height: 8),
-                        Text('No tasks',
-                            style:
-                                TextStyle(color: AppTheme.textDisabled)),
-                      ],
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.inbox_outlined,
+                              color: colors.domainChurch.withValues(alpha: 0.4), size: 56),
+                          const SizedBox(height: 12),
+                          Text('No tasks in this column',
+                              style: TextStyle(
+                                  color: colors.textPrimary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 6),
+                          Text('Tap + to create a new ministry task.',
+                              style: TextStyle(
+                                  color: colors.textSecondary,
+                                  fontSize: 13)),
+                        ],
+                      ),
                     ),
                   )
                 : ListView.builder(
@@ -149,26 +163,31 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
                     itemBuilder: (context, index) {
                       final task = tasks[index];
                       return Card(
-                        color: AppTheme.bgSurface,
+                        color: colors.bgSurface,
                         margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(color: colors.borderSubtle),
+                        ),
                         child: ListTile(
                           title: Text(task.title,
-                              style: const TextStyle(
-                                  color: AppTheme.textPrimary)),
+                              style: TextStyle(
+                                  color: colors.textPrimary,
+                                  fontWeight: FontWeight.w600)),
                           subtitle: task.description != null
                               ? Text(task.description!,
-                                  style: const TextStyle(
-                                      color: AppTheme.textSecondary))
+                                  style: TextStyle(
+                                      color: colors.textSecondary))
                               : null,
                           trailing: DropdownButton<MinistryTaskStatus>(
-                            dropdownColor: AppTheme.bgElevated,
+                            dropdownColor: colors.bgSurface,
                             value: task.status,
                             items: MinistryTaskStatus.values.map((status) {
                               return DropdownMenuItem(
                                 value: status,
                                 child: Text(status.name,
-                                    style: const TextStyle(
-                                        color: AppTheme.textPrimary)),
+                                    style: TextStyle(
+                                        color: colors.textPrimary)),
                               );
                             }).toList(),
                             onChanged: (newStatus) {
@@ -191,6 +210,7 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
   }
 
   void _showAddTaskDialog(BuildContext context) {
+    final colors = context.appColors;
     final titleController = TextEditingController();
     final descController = TextEditingController();
 
@@ -198,37 +218,38 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: AppTheme.bgSurface,
-          title: const Text('New Task',
-              style: TextStyle(color: AppTheme.textPrimary)),
+          backgroundColor: colors.bgSurface,
+          title: Text('New Task',
+              style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: const InputDecoration(
+                style: TextStyle(color: colors.textPrimary),
+                decoration: InputDecoration(
                     hintText: 'Title',
-                    hintStyle: TextStyle(color: AppTheme.textSecondary)),
+                    hintStyle: TextStyle(color: colors.textSecondary)),
               ),
+              const SizedBox(height: 12),
               TextField(
                 controller: descController,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: const InputDecoration(
+                style: TextStyle(color: colors.textPrimary),
+                decoration: InputDecoration(
                     hintText: 'Description',
-                    hintStyle: TextStyle(color: AppTheme.textSecondary)),
+                    hintStyle: TextStyle(color: colors.textSecondary)),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel',
-                  style: TextStyle(color: AppTheme.textSecondary)),
+              child: Text('Cancel',
+                  style: TextStyle(color: colors.textSecondary)),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentViolet),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                  backgroundColor: colors.domainChurch),
               onPressed: () {
                 if (titleController.text.isNotEmpty) {
                   final task = MinistryTask()
@@ -242,8 +263,7 @@ class _MinistryKanbanScreenState extends State<MinistryKanbanScreen> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Save',
-                  style: TextStyle(color: AppTheme.textPrimary)),
+              child: const Text('Save'),
             ),
           ],
         );

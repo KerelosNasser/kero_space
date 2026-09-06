@@ -15,31 +15,32 @@ class PermissionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Container(
-      color: AppTheme.accentGold,
+      color: colors.accentWarning,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: SafeArea(
         bottom: false,
         child: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: AppTheme.textPrimary),
+            Icon(Icons.warning_amber_rounded, color: colors.bgSurface),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                style: TextStyle(color: colors.bgSurface, fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             TextButton(
               onPressed: onEnable,
               style: TextButton.styleFrom(
-                foregroundColor: AppTheme.textPrimary,
+                foregroundColor: colors.bgSurface,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
-              child: const Text('Enable →'),
+              child: const Text('Enable →', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             IconButton(
-              icon: const Icon(Icons.close, color: AppTheme.textPrimary, size: 20),
+              icon: Icon(Icons.close, color: colors.bgSurface, size: 20),
               onPressed: onDismiss,
             ),
           ],

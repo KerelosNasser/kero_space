@@ -15,9 +15,12 @@ class ScreenTimeOverviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final primaryAccent = colors.domainTelemetry;
+
     return BlocBuilder<TelemetryBloc, TelemetryState>(builder: (context, state) {
       if (state.status == TelemetryStatus.loading) {
-        return const Center(child: CircularProgressIndicator());
+        return Center(child: CircularProgressIndicator(color: primaryAccent));
       }
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -27,24 +30,43 @@ class ScreenTimeOverviewScreen extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppTheme.bgSurface,
+              color: colors.bgSurface,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+              border: Border.all(color: primaryAccent.withValues(alpha: 0.3)),
             ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text("Today's Screen Time",
-                  style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary)),
+              Text(
+                "Today's Screen Time",
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
+              ),
               const SizedBox(height: 8),
-              Text(_fmt(state.todayScreenTimeMs),
-                  style: Theme.of(context).textTheme.displayLarge!.copyWith(color: AppTheme.accentCyan)),
+              Text(
+                _fmt(state.todayScreenTimeMs),
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      color: primaryAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
             ]),
           ),
           const SizedBox(height: 24),
-          Text('7-Day Trend', style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            '7-Day Trend',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
           const SizedBox(height: 12),
           SizedBox(height: 180, child: _WeeklyChart(data: state.weeklyScreenTime)),
           const SizedBox(height: 24),
-          Text('App Breakdown Today', style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            'App Breakdown Today',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
           const SizedBox(height: 12),
           SizedBox(height: 260, child: _AppPieChart(apps: state.todayTopApps)),
         ]),
@@ -59,14 +81,21 @@ class _WeeklyChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data.isEmpty) return const Center(child: Text('No data yet', style: TextStyle(color: AppTheme.textSecondary)));
+    final colors = context.appColors;
+    final primaryAccent = colors.domainTelemetry;
+
+    if (data.isEmpty) {
+      return Center(
+        child: Text('No data yet', style: TextStyle(color: colors.textSecondary)),
+      );
+    }
     final spots = data.asMap().entries
         .map((e) => FlSpot(e.key.toDouble(), e.value.$2 / 60000.0)).toList();
     return LineChart(LineChartData(
       lineBarsData: [LineChartBarData(
-        spots: spots, isCurved: true, color: AppTheme.accentCyan, barWidth: 2,
+        spots: spots, isCurved: true, color: primaryAccent, barWidth: 2,
         dotData: const FlDotData(show: false),
-        belowBarData: BarAreaData(show: true, color: AppTheme.accentCyan.withValues(alpha: 0.1)),
+        belowBarData: BarAreaData(show: true, color: primaryAccent.withValues(alpha: 0.1)),
       )],
       gridData: const FlGridData(show: false),
       borderData: FlBorderData(show: false),
@@ -83,17 +112,26 @@ class _WeeklyChart extends StatelessWidget {
 class _AppPieChart extends StatelessWidget {
   final List apps;
   const _AppPieChart({required this.apps});
-  static const _colors = [
-    AppTheme.accentCyan, AppTheme.accentMint, AppTheme.accentGold, AppTheme.accentViolet,
-    AppTheme.accentRose,
-  ];
 
   @override
   Widget build(BuildContext context) {
-    if (apps.isEmpty) return const Center(child: Text('No usage data yet', style: TextStyle(color: AppTheme.textSecondary)));
+    final colors = context.appColors;
+    final chartColors = [
+      colors.domainTelemetry,
+      colors.accentSuccess,
+      colors.accentWarning,
+      colors.domainVoice,
+      colors.accentError,
+    ];
+
+    if (apps.isEmpty) {
+      return Center(
+        child: Text('No usage data yet', style: TextStyle(color: colors.textSecondary)),
+      );
+    }
     final sections = apps.asMap().entries.map((e) => PieChartSectionData(
       value: (e.value.foregroundMs as int).toDouble(),
-      color: _colors[e.key % _colors.length],
+      color: chartColors[e.key % chartColors.length],
       radius: 80, showTitle: false,
     )).toList();
     return PieChart(PieChartData(sections: sections, centerSpaceRadius: 50, sectionsSpace: 2));

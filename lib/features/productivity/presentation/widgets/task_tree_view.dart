@@ -43,7 +43,39 @@ class _TaskTreeViewState extends State<TaskTreeView> {
   @override
   Widget build(BuildContext context) {
     if (widget.allTasks.isEmpty) {
-      return const Center(child: Text("No projects yet. Create one!"));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.account_tree_outlined,
+                size: 64,
+                color: context.appColors.domainProductivity.withValues(alpha: 0.4),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "No task tree hierarchy",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Projects and subtasks will display as an interactive hierarchy here.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     return TreeView<Task>(
@@ -52,11 +84,32 @@ class _TaskTreeViewState extends State<TaskTreeView> {
         return TreeItemWidget(
           entry: entry,
           treeController: treeController,
-          onComplete: () {
-            context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(entry.node.id));
+          onToggleComplete: () {
+            if (entry.node.isCompleted) {
+              context.read<ProductivityBloc>().add(ProductivityEvent.uncompleteTask(entry.node.id));
+            } else {
+              context.read<ProductivityBloc>().add(ProductivityEvent.completeTask(entry.node.id));
+            }
           },
-          onDelete: () {
-            context.read<ProductivityBloc>().add(ProductivityEvent.deleteTask(entry.node.id));
+          onDelete: () async {
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Delete Task'),
+                content: Text('Delete "${entry.node.title}"? Any subtasks will also be affected.'),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                  FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error),
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Delete'),
+                  ),
+                ],
+              ),
+            );
+            if (confirm == true && context.mounted) {
+              context.read<ProductivityBloc>().add(ProductivityEvent.deleteTask(entry.node.id));
+            }
           },
         );
       },
@@ -67,19 +120,21 @@ class _TaskTreeViewState extends State<TaskTreeView> {
 class TreeItemWidget extends StatelessWidget {
   final TreeEntry<Task> entry;
   final TreeController<Task> treeController;
-  final VoidCallback onComplete;
+  final VoidCallback onToggleComplete;
   final VoidCallback onDelete;
 
   const TreeItemWidget({
     super.key,
     required this.entry,
     required this.treeController,
-    required this.onComplete,
+    required this.onToggleComplete,
     required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return InkWell(
       onTap: () => treeController.toggleExpansion(entry.node),
       child: Padding(
@@ -99,16 +154,21 @@ class TreeItemWidget extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: entry.node.type == TaskType.project ? FontWeight.bold : FontWeight.normal,
                   decoration: entry.node.isCompleted ? TextDecoration.lineThrough : null,
+                  color: entry.node.isCompleted ? colors.textSecondary : null,
                 ),
               ),
             ),
-            if (!entry.node.isCompleted)
-              IconButton(
-                icon: const Icon(Icons.check, color: AppTheme.accentMint),
-                onPressed: onComplete,
-              ),
             IconButton(
-              icon: const Icon(Icons.delete, color: AppTheme.accentRose),
+              icon: Icon(
+                entry.node.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                color: entry.node.isCompleted ? colors.accentSuccess : colors.textSecondary,
+              ),
+              tooltip: entry.node.isCompleted ? 'Mark Incomplete' : 'Complete',
+              onPressed: onToggleComplete,
+            ),
+            IconButton(
+              icon: Icon(Icons.delete_outline, color: colors.accentDanger),
+              tooltip: 'Delete',
               onPressed: onDelete,
             ),
           ],

@@ -13,21 +13,22 @@ class ErrorSnackbarListener extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<AppErrorBloc, AppErrorState>(
       listener: (context, state) {
+        final colors = context.appColors;
         if (state is TransientErrorState) {
           final scaffoldMessenger = ScaffoldMessenger.of(context);
           scaffoldMessenger.hideCurrentSnackBar();
           
           scaffoldMessenger.showSnackBar(
             SnackBar(
-              backgroundColor: AppTheme.accentRose,
+              backgroundColor: colors.accentError,
               content: Text(
                 state.message,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
               ),
               action: state.onRetry != null
                   ? SnackBarAction(
                       label: 'RETRY',
-                      textColor: AppTheme.textPrimary,
+                      textColor: Colors.white,
                       onPressed: state.onRetry!,
                     )
                   : null,

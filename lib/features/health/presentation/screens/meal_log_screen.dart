@@ -46,6 +46,8 @@ class _MealLogScreenState extends State<MealLogScreen> {
   double get _totalFat => widget.ingredient.fat * _ratio;
 
   Widget _buildHeaderSection() {
+    final colors = context.appColors;
+
     return Column(
       children: [
         // Hero Header
@@ -54,12 +56,12 @@ class _MealLogScreenState extends State<MealLogScreen> {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.accentMint.withValues(alpha: 0.1),
+              color: colors.domainHealth.withValues(alpha: 0.15),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.restaurant,
               size: 48,
-              color: AppTheme.accentMint,
+              color: colors.domainHealth,
             ),
           ),
         ),
@@ -67,20 +69,20 @@ class _MealLogScreenState extends State<MealLogScreen> {
         Text(
           widget.ingredient.name,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           '${_totalCalories.toStringAsFixed(0)} kcal',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
-            color: AppTheme.accentMint,
+            color: colors.accentSuccess,
           ),
         ),
       ],
@@ -88,17 +90,20 @@ class _MealLogScreenState extends State<MealLogScreen> {
   }
 
   Widget _buildAmountSection() {
+    final colors = context.appColors;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.bgElevated,
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
-          const Text(
+          Text(
             'Amount',
-            style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+            style: TextStyle(fontSize: 16, color: colors.textSecondary),
           ),
           const Spacer(),
           SizedBox(
@@ -107,18 +112,18 @@ class _MealLogScreenState extends State<MealLogScreen> {
               controller: _gramsController,
               keyboardType: TextInputType.number,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
+                color: colors.textPrimary,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: InputBorder.none,
                 isDense: true,
                 suffixText: 'g',
                 suffixStyle: TextStyle(
                   fontSize: 16,
-                  color: AppTheme.textSecondary,
+                  color: colors.textSecondary,
                   fontWeight: FontWeight.normal,
                 ),
               ),
@@ -135,27 +140,31 @@ class _MealLogScreenState extends State<MealLogScreen> {
   }
 
   Widget _buildMacrosSection() {
+    final colors = context.appColors;
+
     return Row(
       children: [
-        _buildMacroCard('Protein', _totalProtein, AppTheme.accentCyan),
+        _buildMacroCard('Protein', _totalProtein, colors.accentDanger),
         const SizedBox(width: 12),
-        _buildMacroCard('Carbs', _totalCarbs, AppTheme.accentRose),
+        _buildMacroCard('Carbs', _totalCarbs, colors.accentPrimary),
         const SizedBox(width: 12),
-        _buildMacroCard('Fat', _totalFat, AppTheme.accentGold),
+        _buildMacroCard('Fat', _totalFat, colors.accentWarning),
       ],
     );
   }
 
   Widget _buildDetailsSection() {
+    final colors = context.appColors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Details',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -184,24 +193,25 @@ class _MealLogScreenState extends State<MealLogScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.bgElevated,
+                    color: colors.bgSurface,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Time',
                         style: TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: colors.textSecondary,
                           fontSize: 12,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         DateFormat.jm().format(_selectedTime),
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: colors.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -216,16 +226,17 @@ class _MealLogScreenState extends State<MealLogScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.bgElevated,
+                  color: colors.bgSurface,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Type',
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -233,10 +244,10 @@ class _MealLogScreenState extends State<MealLogScreen> {
                       child: DropdownButton<MealType>(
                         value: _selectedMealType,
                         isExpanded: true,
-                        dropdownColor: AppTheme.bgElevated,
-                        icon: const Icon(
+                        dropdownColor: colors.bgSurface,
+                        icon: Icon(
                           Icons.keyboard_arrow_down,
-                          color: AppTheme.textSecondary,
+                          color: colors.textSecondary,
                         ),
                         items: MealType.values
                             .map(
@@ -244,8 +255,8 @@ class _MealLogScreenState extends State<MealLogScreen> {
                                 value: type,
                                 child: Text(
                                   type.name.toUpperCase(),
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                    color: colors.textPrimary,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),

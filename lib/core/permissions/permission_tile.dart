@@ -16,14 +16,16 @@ class PermissionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isGranted ? AppTheme.accentMint.withValues(alpha: 0.3) : AppTheme.bgElevated,
+          color: isGranted ? colors.accentSuccess.withValues(alpha: 0.4) : colors.borderSubtle,
           width: 1.5,
         ),
       ),
@@ -32,12 +34,12 @@ class PermissionTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isGranted ? AppTheme.accentMint.withValues(alpha: 0.1) : AppTheme.bgElevated,
+              color: isGranted ? colors.accentSuccess.withValues(alpha: 0.12) : colors.borderSubtle.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
               item.icon,
-              color: isGranted ? AppTheme.accentMint : AppTheme.accentGold,
+              color: isGranted ? colors.accentSuccess : colors.accentWarning,
             ),
           ),
           const SizedBox(width: 16),
@@ -47,8 +49,8 @@ class PermissionTile extends StatelessWidget {
               children: [
                 Text(
                   item.title,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -56,8 +58,8 @@ class PermissionTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   item.description,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: colors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -66,12 +68,13 @@ class PermissionTile extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           if (isGranted)
-            const Icon(Icons.check_circle, color: AppTheme.accentMint, size: 28)
+            Icon(Icons.check_circle, color: colors.accentSuccess, size: 28)
           else
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.bgElevated,
-                foregroundColor: AppTheme.accentGold,
+                backgroundColor: colors.accentWarning.withValues(alpha: 0.15),
+                foregroundColor: colors.accentWarning,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

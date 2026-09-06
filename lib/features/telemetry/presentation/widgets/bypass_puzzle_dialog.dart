@@ -42,28 +42,38 @@ class _State extends State<BypassPuzzleDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Dialog(
-      backgroundColor: AppTheme.bgSurface,
+      backgroundColor: colors.bgSurface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.lock_outline, color: AppTheme.accentRose, size: 36),
+          Icon(Icons.lock_outline, color: colors.accentError, size: 36),
           const SizedBox(height: 12),
-          Text('Emergency Bypass', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Emergency Bypass',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
           const SizedBox(height: 6),
-          Text('Solve the puzzle. This action is logged.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary)),
+          Text(
+            'Solve the puzzle. This action is logged.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
+          ),
           const SizedBox(height: 20),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: Text(
               _revealed ? '$_a + $_b = ?' : '? + ? = ?',
               key: ValueKey(_revealed),
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: _revealed ? AppTheme.accentGold : AppTheme.textDisabled,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: _revealed ? colors.accentWarning : colors.textSecondary.withValues(alpha: 0.5),
                 letterSpacing: 4,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -73,12 +83,12 @@ class _State extends State<BypassPuzzleDialog> {
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
             autofocus: true,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 24),
+            style: TextStyle(color: colors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
             decoration: InputDecoration(
               hintText: 'Answer',
               errorText: _error,
               filled: true,
-              fillColor: AppTheme.bgElevated,
+              fillColor: colors.bgElevated,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
             onSubmitted: (_) => _submit(),
@@ -89,7 +99,7 @@ class _State extends State<BypassPuzzleDialog> {
             const SizedBox(width: 12),
             Expanded(child: FilledButton(
               onPressed: _submit,
-              style: FilledButton.styleFrom(backgroundColor: AppTheme.accentRose),
+              style: FilledButton.styleFrom(backgroundColor: colors.accentError),
               child: const Text('Bypass'),
             )),
           ]),

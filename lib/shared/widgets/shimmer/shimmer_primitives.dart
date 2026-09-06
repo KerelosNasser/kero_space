@@ -16,14 +16,15 @@ class ShimmerBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Shimmer.fromColors(
-      baseColor: AppTheme.bgElevated,
-      highlightColor: AppTheme.accentPrimary.withValues(alpha: 0.1),
+      baseColor: colors.bgElevated,
+      highlightColor: colors.borderSubtle.withValues(alpha: 0.5),
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: AppTheme.accentPrimary,
+          color: colors.bgElevated,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
       ),
@@ -38,14 +39,15 @@ class ShimmerCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Shimmer.fromColors(
-      baseColor: AppTheme.bgElevated,
-      highlightColor: AppTheme.accentPrimary.withValues(alpha: 0.1),
+      baseColor: colors.bgElevated,
+      highlightColor: colors.borderSubtle.withValues(alpha: 0.5),
       child: Container(
         width: diameter,
         height: diameter,
         decoration: BoxDecoration(
-          color: AppTheme.accentPrimary,
+          color: colors.bgElevated,
           shape: BoxShape.circle,
         ),
       ),

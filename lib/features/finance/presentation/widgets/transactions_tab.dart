@@ -35,6 +35,8 @@ class TransactionsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Column(
       children: [
         // Budgets Progress Section (if budgets exist)
@@ -66,8 +68,9 @@ class TransactionsTab extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.bgElevated,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,13 +80,13 @@ class TransactionsTab extends StatelessWidget {
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
                         value: percentage,
-                        backgroundColor: AppTheme.bgElevated,
-                        color: percentage >= 1.0 ? AppTheme.accentRose : AppTheme.accentCyan,
+                        backgroundColor: colors.bgSurface,
+                        color: percentage >= 1.0 ? colors.accentDanger : colors.accentPrimary,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '${spent.toStringAsFixed(0)} / ${budget.monthlyLimit.toStringAsFixed(0)} EGP',
-                        style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                        style: TextStyle(fontSize: 11, color: colors.textSecondary),
                       ),
                     ],
                   ),
@@ -105,10 +108,37 @@ class TransactionsTab extends StatelessWidget {
 
         Expanded(
           child: state.transactions.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No transactions recorded yet.',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          size: 64,
+                          color: colors.domainFinance.withValues(alpha: 0.4),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No transactions recorded yet',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Log your daily expenses and income to track cashflow and budgets.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : ListView.builder(
@@ -118,13 +148,13 @@ class TransactionsTab extends StatelessWidget {
                     final isIncome = tx.type == 'INCOME';
                     
                     return Card(
-                      color: AppTheme.bgElevated,
+                      color: Theme.of(context).cardColor,
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       child: ListTile(
                         onLongPress: () => _confirmDeleteTransaction(context, tx),
                         leading: Icon(
                           isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                          color: isIncome ? AppTheme.accentMint : AppTheme.accentRose,
+                          color: isIncome ? colors.accentSuccess : colors.accentDanger,
                         ),
                         title: Row(
                           children: [
@@ -140,12 +170,12 @@ class TransactionsTab extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.accentCyan.withValues(alpha: 0.2),
+                                  color: colors.accentPrimary.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   tx.sourceName ?? 'Auto',
-                                  style: const TextStyle(fontSize: 9, color: AppTheme.accentCyan, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 9, color: colors.accentPrimary, fontWeight: FontWeight.bold),
                                 ),
                               ),
                           ],
@@ -157,7 +187,7 @@ class TransactionsTab extends StatelessWidget {
                             Text(
                               '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} EGP',
                               style: TextStyle(
-                                color: isIncome ? AppTheme.accentMint : AppTheme.accentRose,
+                                color: isIncome ? colors.accentSuccess : colors.accentDanger,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

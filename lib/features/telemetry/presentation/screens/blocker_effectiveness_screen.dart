@@ -10,26 +10,51 @@ class BlockerEffectivenessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return BlocBuilder<TelemetryBloc, TelemetryState>(builder: (context, state) {
       if (state.blockerStats.isEmpty) {
-        return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.shield_outlined, color: AppTheme.accentMint, size: 64),
-          const SizedBox(height: 16),
-          Text('No blocker events yet', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 8),
-          Text('Add apps to the blacklist to start tracking.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary)),
-        ]));
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.shield_outlined, color: colors.accentSuccess, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                'No blocker events yet',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Add apps to the blacklist to start tracking.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
+              ),
+            ],
+          ),
+        );
       }
-      return ListView(padding: const EdgeInsets.all(16), children: [
-        Text('Resistance Report', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Text('Last 7 days — how well you resisted mindless scrolling',
-            style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary)),
-        const SizedBox(height: 16),
-        ...state.blockerStats.map((s) => ResistanceRateCard(stat: s)),
-      ]);
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(
+            'Resistance Report',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Last 7 days — how well you resisted mindless scrolling',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
+          ),
+          const SizedBox(height: 16),
+          ...state.blockerStats.map((s) => ResistanceRateCard(stat: s)),
+        ],
+      );
     });
   }
 }

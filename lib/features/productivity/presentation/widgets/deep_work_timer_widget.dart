@@ -76,6 +76,8 @@ class _DeepWorkTimerWidgetState extends State<DeepWorkTimerWidget> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return GestureDetector(
       onTap: _isActive ? null : _startTimer,
       child: AnimatedBuilder(
@@ -90,14 +92,14 @@ class _DeepWorkTimerWidgetState extends State<DeepWorkTimerWidget> with SingleTi
                 borderRadius: BorderRadius.circular(24),
                 gradient: LinearGradient(
                   colors: _isActive 
-                    ? [AppTheme.accentViolet.withValues(alpha: 0.8), AppTheme.accentRose.withValues(alpha: 0.8)]
+                    ? [colors.domainProductivity.withValues(alpha: 0.8), colors.accentPrimary.withValues(alpha: 0.8)]
                     : [Theme.of(context).cardColor, Theme.of(context).cardColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: _isActive ? [
                   BoxShadow(
-                    color: AppTheme.accentViolet.withValues(alpha: 0.4),
+                    color: colors.domainProductivity.withValues(alpha: 0.4),
                     blurRadius: 20,
                     spreadRadius: 2,
                   )
@@ -119,7 +121,7 @@ class _DeepWorkTimerWidgetState extends State<DeepWorkTimerWidget> with SingleTi
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: _isActive ? Colors.white : AppTheme.textPrimary,
+                          color: _isActive ? Colors.white : colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -127,7 +129,7 @@ class _DeepWorkTimerWidgetState extends State<DeepWorkTimerWidget> with SingleTi
                         _isActive ? "Strict app blocking enabled." : "25 min focus block",
                         style: TextStyle(
                           fontSize: 14,
-                          color: _isActive ? Colors.white70 : AppTheme.textSecondary,
+                          color: _isActive ? Colors.white70 : colors.textSecondary,
                         ),
                       ),
                     ],
@@ -142,7 +144,7 @@ class _DeepWorkTimerWidgetState extends State<DeepWorkTimerWidget> with SingleTi
                       ),
                     )
                   else
-                    const Icon(Icons.play_circle_fill, size: 36, color: AppTheme.accentViolet),
+                    Icon(Icons.play_circle_fill, size: 36, color: colors.domainProductivity),
                 ],
               ),
             ),

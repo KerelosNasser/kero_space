@@ -23,13 +23,14 @@ class VoiceBottomSheet extends StatelessWidget {
         minChildSize: 0.2,
         maxChildSize: 0.5,
         builder: (context, scrollController) {
+          final colors = context.appColors;
           return Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
+              color: colors.bgSurface,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.bgPrimary.withValues(alpha: 0.1),
+                  color: colors.textPrimary.withValues(alpha: 0.08),
                   blurRadius: 10,
                   spreadRadius: 2,
                 )
@@ -53,7 +54,7 @@ class VoiceBottomSheet extends StatelessWidget {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: AppTheme.textDisabled.withValues(alpha: 0.3),
+                          color: colors.borderSubtle,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -72,6 +73,7 @@ class VoiceBottomSheet extends StatelessWidget {
   }
 
   Widget _buildStateContent(BuildContext context, VoiceState state) {
+    final colors = context.appColors;
     if (state is VoiceWakeDetected) {
       return Column(
         children: [
@@ -79,7 +81,7 @@ class VoiceBottomSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             "Hey Kero detected...",
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: colors.textPrimary),
           ),
         ],
       );
@@ -92,7 +94,7 @@ class VoiceBottomSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             state.partialText.isEmpty ? "Listening..." : state.partialText,
-            style: Theme.of(context).textTheme.titleLarge,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(color: colors.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -104,11 +106,11 @@ class VoiceBottomSheet extends StatelessWidget {
     if (state is VoiceProcessing) {
       return Column(
         children: [
-          const CircularProgressIndicator(),
+          CircularProgressIndicator(color: colors.domainVoice),
           const SizedBox(height: 16),
           Text(
             state.text,
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: colors.textPrimary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -118,16 +120,16 @@ class VoiceBottomSheet extends StatelessWidget {
     if (state is VoiceConfirmPending) {
       return Column(
         children: [
-          const Icon(Icons.check_circle_outline, color: AppTheme.accentMint, size: 48),
+          Icon(Icons.check_circle_outline, color: colors.accentSuccess, size: 48),
           const SizedBox(height: 16),
           Text(
             "Confirm Action",
-            style: Theme.of(context).textTheme.titleLarge,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(color: colors.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
             _getIntentDescription(state.intent),
-            style: Theme.of(context).textTheme.bodyLarge,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: colors.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -140,6 +142,7 @@ class VoiceBottomSheet extends StatelessWidget {
                 label: const Text("Cancel"),
               ),
               FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: colors.accentSuccess),
                 onPressed: () => context.read<VoiceBloc>().add(ConfirmIntentEvent()),
                 icon: const Icon(Icons.check),
                 label: const Text("Confirm"),
@@ -153,11 +156,11 @@ class VoiceBottomSheet extends StatelessWidget {
     if (state is VoiceSuccess) {
       return Column(
         children: [
-          const Icon(Icons.check_circle, color: AppTheme.accentMint, size: 64),
+          Icon(Icons.check_circle, color: colors.accentSuccess, size: 64),
           const SizedBox(height: 16),
           Text(
             state.message,
-            style: Theme.of(context).textTheme.titleLarge,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(color: colors.textPrimary),
           ),
         ],
       );
@@ -166,18 +169,18 @@ class VoiceBottomSheet extends StatelessWidget {
     if (state is VoiceFailure) {
       return Column(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AppTheme.accentGold, size: 48),
+          Icon(Icons.warning_amber_rounded, color: colors.accentWarning, size: 48),
           const SizedBox(height: 16),
           Text(
             state.errorMessage,
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: colors.textPrimary),
             textAlign: TextAlign.center,
           ),
           if (state.rawText.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               "Heard: \"${state.rawText}\"",
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],

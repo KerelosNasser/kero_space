@@ -108,6 +108,8 @@ class _NutritionDashboardTab extends StatelessWidget {
         final carbsTarget = (targetBmr * 0.40) / 4;
         final fatTarget = (targetBmr * 0.30) / 9;
 
+        final colors = context.appColors;
+
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
@@ -117,21 +119,21 @@ class _NutritionDashboardTab extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppTheme.bgSurface,
+                    color: colors.bgSurface,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: colors.borderSubtle,
                     ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Nutrition Overview',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -149,22 +151,25 @@ class _NutritionDashboardTab extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 _buildMacroProgressBar(
+                                  context: context,
                                   label: 'Protein',
                                   current: dailyProtein,
                                   target: proteinTarget,
-                                  color: AppTheme.accentCyan,
+                                  color: colors.accentDanger,
                                 ),
                                 _buildMacroProgressBar(
+                                  context: context,
                                   label: 'Carbs',
                                   current: dailyCarbs,
                                   target: carbsTarget,
-                                  color: AppTheme.accentRose,
+                                  color: colors.accentPrimary,
                                 ),
                                 _buildMacroProgressBar(
+                                  context: context,
                                   label: 'Fats',
                                   current: dailyFat,
                                   target: fatTarget,
-                                  color: AppTheme.accentGold,
+                                  color: colors.accentWarning,
                                 ),
                               ],
                             ),
@@ -189,22 +194,25 @@ class _NutritionDashboardTab extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildSquareCard(
+                      context,
                       Icons.directions_walk,
                       '${state.steps.toInt()}',
                       'Steps',
-                      AppTheme.accentCyan,
+                      colors.accentPrimary,
                     ),
                     _buildSquareCard(
+                      context,
                       Icons.favorite,
                       '${state.heartRate.toInt()}',
                       'HR (bpm)',
-                      AppTheme.accentRose,
+                      colors.accentDanger,
                     ),
                     _buildSquareCard(
+                      context,
                       Icons.bedtime,
                       (state.sleepMinutes / 60).toStringAsFixed(1),
                       'Sleep (h)',
-                      AppTheme.accentGold,
+                      colors.accentWarning,
                     ),
                   ],
                 ),
@@ -216,20 +224,20 @@ class _NutritionDashboardTab extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       "Today's Meals",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                        color: colors.textPrimary,
                       ),
                     ),
                     if (state.todayMeals.isNotEmpty)
                       Text(
                         '${state.todayMeals.length} logged',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppTheme.textSecondary,
+                          color: colors.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -238,17 +246,37 @@ class _NutritionDashboardTab extends StatelessWidget {
               ),
             ),
             if (state.todayMeals.isEmpty)
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
+                  padding: const EdgeInsets.symmetric(vertical: 40),
                   child: Center(
-                    child: Text(
-                      'No meals logged yet today.',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 14,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.lunch_dining_outlined,
+                          size: 56,
+                          color: colors.domainHealth.withValues(alpha: 0.4),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No meals logged yet today',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: colors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Search foods or scan ingredients to track your daily macros.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -272,10 +300,10 @@ class _NutritionDashboardTab extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.bgSurface,
+                          color: colors.bgSurface,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.04),
+                            color: colors.borderSubtle,
                           ),
                         ),
                         child: Row(
@@ -284,12 +312,12 @@ class _NutritionDashboardTab extends StatelessWidget {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: AppTheme.bgElevated,
+                                color: colors.domainHealth.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
                                 _getMealIcon(meal.mealType),
-                                color: AppTheme.accentViolet,
+                                color: colors.domainHealth,
                                 size: 20,
                               ),
                             ),
@@ -300,27 +328,27 @@ class _NutritionDashboardTab extends StatelessWidget {
                                 children: [
                                   Text(
                                     meal.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimary,
+                                      color: colors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'P: ${mealProtein.toStringAsFixed(0)}g  C: ${mealCarbs.toStringAsFixed(0)}g  F: ${mealFat.toStringAsFixed(0)}g',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
-                                      color: AppTheme.textSecondary,
+                                      color: colors.textSecondary,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     '${DateFormat.jm().format(meal.timestamp)} - ${meal.mealType.name.toUpperCase()} - ${mealGrams.toInt()}g',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 10,
-                                      color: AppTheme.textDisabled,
+                                      color: colors.textSecondary.withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ],
@@ -331,17 +359,17 @@ class _NutritionDashboardTab extends StatelessWidget {
                               children: [
                                 Text(
                                   '${mealCalories.toInt()}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimary,
+                                    color: colors.textPrimary,
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   'kcal',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: AppTheme.textSecondary,
+                                    color: colors.textSecondary,
                                   ),
                                 ),
                               ],
@@ -361,19 +389,22 @@ class _NutritionDashboardTab extends StatelessWidget {
   }
 
   Widget _buildSquareCard(
+    BuildContext context,
     IconData icon,
     String value,
     String label,
     Color iconColor,
   ) {
+    final colors = context.appColors;
+
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         decoration: BoxDecoration(
-          color: AppTheme.bgSurface,
+          color: colors.bgSurface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -389,10 +420,10 @@ class _NutritionDashboardTab extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: AppTheme.textPrimary,
+                color: colors.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -400,9 +431,9 @@ class _NutritionDashboardTab extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
-                color: AppTheme.textSecondary,
+                color: colors.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
               maxLines: 1,
@@ -415,11 +446,13 @@ class _NutritionDashboardTab extends StatelessWidget {
   }
 
   Widget _buildMacroProgressBar({
+    required BuildContext context,
     required String label,
     required double current,
     required double target,
     required Color color,
   }) {
+    final colors = context.appColors;
     final ratio = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
     final percentage = (ratio * 100).toInt();
 
@@ -433,16 +466,16 @@ class _NutritionDashboardTab extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: colors.textPrimary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 '${current.toStringAsFixed(0)}g / ${target.toStringAsFixed(0)}g ($percentage%)',
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
+                style: TextStyle(
+                  color: colors.textSecondary,
                   fontSize: 10,
                 ),
               ),
@@ -454,7 +487,7 @@ class _NutritionDashboardTab extends StatelessWidget {
             child: LinearProgressIndicator(
               value: ratio,
               minHeight: 6,
-              backgroundColor: AppTheme.bgElevated,
+              backgroundColor: colors.borderSubtle.withValues(alpha: 0.3),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
@@ -531,37 +564,40 @@ class _DeepNutritionSegmentedCardState
     final carbsTarget = (targetBmr * 0.40) / 4;
     final fatTarget = (targetBmr * 0.30) / 9;
 
+    final colors = context.appColors;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Deep Nutrition Details',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppTheme.bgElevated,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Row(
               children: [
-                _buildTabButton(0, 'Protein', AppTheme.accentCyan),
-                _buildTabButton(1, 'Carbs', AppTheme.accentMint),
-                _buildTabButton(2, 'Fats', AppTheme.accentGold),
-                _buildTabButton(3, 'Micros', AppTheme.accentViolet),
+                _buildTabButton(0, 'Protein', colors.accentDanger),
+                _buildTabButton(1, 'Carbs', colors.accentPrimary),
+                _buildTabButton(2, 'Fats', colors.accentWarning),
+                _buildTabButton(3, 'Micros', colors.domainHealth),
               ],
             ),
           ),
@@ -569,6 +605,7 @@ class _DeepNutritionSegmentedCardState
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: _buildTabContent(
+              context,
               dailyProtein,
               proteinTarget,
               dailyCarbs,
@@ -591,6 +628,7 @@ class _DeepNutritionSegmentedCardState
   }
 
   Widget _buildTabButton(int index, String title, Color activeColor) {
+    final colors = context.appColors;
     final isSelected = _selectedTab == index;
     return Expanded(
       child: GestureDetector(
@@ -614,7 +652,7 @@ class _DeepNutritionSegmentedCardState
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: isSelected ? activeColor : AppTheme.textSecondary,
+              color: isSelected ? activeColor : colors.textSecondary,
             ),
           ),
         ),
@@ -623,6 +661,7 @@ class _DeepNutritionSegmentedCardState
   }
 
   Widget _buildTabContent(
+    BuildContext context,
     double dailyProtein,
     double proteinTarget,
     double dailyCarbs,
@@ -638,16 +677,19 @@ class _DeepNutritionSegmentedCardState
     double dailyCholesterol,
     double dailySodium,
   ) {
+    final colors = context.appColors;
+
     if (_selectedTab == 0) {
       return Column(
         key: const ValueKey(0),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildTabHeaderProgressBar(
+            context: context,
             label: 'Protein',
             current: dailyProtein,
             target: proteinTarget,
-            color: AppTheme.accentCyan,
+            color: colors.accentDanger,
           ),
           const SizedBox(height: 20),
           GridView.count(
@@ -659,16 +701,18 @@ class _DeepNutritionSegmentedCardState
             physics: const NeverScrollableScrollPhysics(),
             children: [
               _buildDetailGridCard(
+                context: context,
                 label: 'Consumed',
                 value: '${dailyProtein.toStringAsFixed(1)}g',
-                color: AppTheme.accentCyan,
+                color: colors.accentDanger,
                 icon: Icons.fitness_center,
                 subtitle: 'Daily Total Intake',
               ),
               _buildDetailGridCard(
+                context: context,
                 label: 'Daily Target',
                 value: '${proteinTarget.toStringAsFixed(1)}g',
-                color: AppTheme.textSecondary,
+                color: colors.textSecondary,
                 icon: Icons.flag,
                 subtitle: '30% of energy goal',
               ),
@@ -684,10 +728,11 @@ class _DeepNutritionSegmentedCardState
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildTabHeaderProgressBar(
+            context: context,
             label: 'Carbs',
             current: dailyCarbs,
             target: carbsTarget,
-            color: AppTheme.accentMint,
+            color: colors.accentPrimary,
           ),
           const SizedBox(height: 20),
           GridView.count(
@@ -699,30 +744,34 @@ class _DeepNutritionSegmentedCardState
             physics: const NeverScrollableScrollPhysics(),
             children: [
               _buildDetailGridCard(
+                context: context,
                 label: 'Fast Carbs',
                 value: '${dailyFastCarbs.toStringAsFixed(1)}g',
-                color: AppTheme.accentRose,
+                color: colors.accentDanger,
                 icon: Icons.bolt,
                 subtitle: 'Quick absorbing sugars',
               ),
               _buildDetailGridCard(
+                context: context,
                 label: 'Slow Carbs',
                 value: '${dailySlowCarbs.toStringAsFixed(1)}g',
-                color: AppTheme.accentViolet,
+                color: colors.accentPrimary,
                 icon: Icons.grain,
                 subtitle: 'Complex starches / grains',
               ),
               _buildDetailGridCard(
+                context: context,
                 label: 'Fiber',
                 value: '${dailyFiber.toStringAsFixed(1)}g',
-                color: AppTheme.accentMint,
+                color: colors.accentSuccess,
                 icon: Icons.spa,
                 subtitle: 'Target: 30g / day',
               ),
               _buildDetailGridCard(
+                context: context,
                 label: 'Sugars',
                 value: '${dailySugar.toStringAsFixed(1)}g',
-                color: AppTheme.accentGold,
+                color: colors.accentWarning,
                 icon: Icons.icecream,
                 subtitle: 'Limit: <36g / day',
               ),
@@ -738,10 +787,11 @@ class _DeepNutritionSegmentedCardState
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildTabHeaderProgressBar(
+            context: context,
             label: 'Fats',
             current: dailyFat,
             target: dailyFatTarget,
-            color: AppTheme.accentGold,
+            color: colors.accentWarning,
           ),
           const SizedBox(height: 20),
           GridView.count(
@@ -753,16 +803,18 @@ class _DeepNutritionSegmentedCardState
             physics: const NeverScrollableScrollPhysics(),
             children: [
               _buildDetailGridCard(
+                context: context,
                 label: 'Saturated Fat',
                 value: '${dailyFatSaturated.toStringAsFixed(1)}g',
-                color: AppTheme.accentRose,
+                color: colors.accentDanger,
                 icon: Icons.opacity,
                 subtitle: 'Limit: <20g / day',
               ),
               _buildDetailGridCard(
+                context: context,
                 label: 'Unsaturated Fat',
                 value: '${dailyFatUnsaturated.toStringAsFixed(1)}g',
-                color: AppTheme.accentCyan,
+                color: colors.accentPrimary,
                 icon: Icons.water_drop,
                 subtitle: 'Healthy oils / lipids',
               ),
@@ -776,9 +828,9 @@ class _DeepNutritionSegmentedCardState
       key: const ValueKey(3),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           'Micro-nutrients & cardiovascular markers',
-          style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+          style: TextStyle(color: colors.textSecondary, fontSize: 13),
         ),
         const SizedBox(height: 16),
         GridView.count(
@@ -790,16 +842,18 @@ class _DeepNutritionSegmentedCardState
           physics: const NeverScrollableScrollPhysics(),
           children: [
             _buildDetailGridCard(
+              context: context,
               label: 'Cholesterol',
               value: '${dailyCholesterol.toStringAsFixed(0)} mg',
-              color: AppTheme.accentGold,
+              color: colors.accentWarning,
               icon: Icons.donut_large,
               subtitle: 'Limit: 300 mg / day',
             ),
             _buildDetailGridCard(
+              context: context,
               label: 'Sodium',
               value: '${dailySodium.toStringAsFixed(0)} mg',
-              color: AppTheme.accentCyan,
+              color: colors.accentPrimary,
               icon: Icons.science,
               subtitle: 'Limit: 2300 mg / day',
             ),
@@ -810,11 +864,13 @@ class _DeepNutritionSegmentedCardState
   }
 
   Widget _buildTabHeaderProgressBar({
+    required BuildContext context,
     required String label,
     required double current,
     required double target,
     required Color color,
   }) {
+    final colors = context.appColors;
     final ratio = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
     final percentage = (ratio * 100).toInt();
 
@@ -826,16 +882,16 @@ class _DeepNutritionSegmentedCardState
           children: [
             Text(
               'Total $label Intake',
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
+              style: TextStyle(
+                color: colors.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Text(
               '${current.toStringAsFixed(1)}g / ${target.toStringAsFixed(0)}g ($percentage%)',
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
@@ -848,7 +904,7 @@ class _DeepNutritionSegmentedCardState
           child: LinearProgressIndicator(
             value: ratio,
             minHeight: 8,
-            backgroundColor: AppTheme.bgElevated,
+            backgroundColor: colors.borderSubtle.withValues(alpha: 0.3),
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
@@ -857,18 +913,21 @@ class _DeepNutritionSegmentedCardState
   }
 
   Widget _buildDetailGridCard({
+    required BuildContext context,
     required String label,
     required String value,
     required Color color,
     required IconData icon,
     required String subtitle,
   }) {
+    final colors = context.appColors;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.bgElevated.withValues(alpha: 0.15),
+        color: colors.bgSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -888,8 +947,8 @@ class _DeepNutritionSegmentedCardState
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: colors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -905,8 +964,8 @@ class _DeepNutritionSegmentedCardState
             children: [
               Text(
                 value,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: colors.textPrimary,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -914,8 +973,8 @@ class _DeepNutritionSegmentedCardState
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  color: AppTheme.textDisabled,
+                style: TextStyle(
+                  color: colors.textSecondary.withValues(alpha: 0.7),
                   fontSize: 10,
                 ),
                 maxLines: 1,

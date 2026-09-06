@@ -35,6 +35,7 @@ class _State extends State<ClickLogBrowserScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return BlocBuilder<TelemetryBloc, TelemetryState>(builder: (context, state) {
       return Column(children: [
         Padding(
@@ -44,27 +45,52 @@ class _State extends State<ClickLogBrowserScreen> {
               setState(() => _pkgFilter = v.isEmpty ? null : v);
               context.read<TelemetryBloc>().add(LoadClickLogs(packageFilter: _pkgFilter));
             },
-            style: const TextStyle(color: AppTheme.textPrimary),
+            style: TextStyle(color: colors.textPrimary),
             decoration: InputDecoration(
               hintText: 'Filter by package...',
-              prefixIcon: const Icon(Icons.filter_list, color: AppTheme.textSecondary),
-              filled: true, fillColor: AppTheme.bgSurface,
+              prefixIcon: Icon(Icons.filter_list, color: colors.textSecondary),
+              filled: true,
+              fillColor: colors.bgSurface,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
           ),
         ),
-        Expanded(child: state.clickLogs.isEmpty
-            ? const Center(child: Text('No click logs yet', style: TextStyle(color: AppTheme.textSecondary)))
-            : ListView.builder(
-                controller: _scroll,
-                itemCount: state.clickLogs.length + (state.clickLogHasMore ? 1 : 0),
-                itemBuilder: (context, i) {
-                  if (i == state.clickLogs.length) {
-                    return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
-                  }
-                  return ClickLogEntryTile(event: state.clickLogs[i]);
-                },
-              )),
+        Expanded(
+          child: state.clickLogs.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.touch_app_outlined, size: 56, color: colors.textSecondary.withValues(alpha: 0.4)),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No click logs recorded',
+                        style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Accessibility interaction events will appear here.',
+                        style: TextStyle(color: colors.textSecondary, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  controller: _scroll,
+                  itemCount: state.clickLogs.length + (state.clickLogHasMore ? 1 : 0),
+                  itemBuilder: (context, i) {
+                    if (i == state.clickLogs.length) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: CircularProgressIndicator(color: colors.domainTelemetry),
+                        ),
+                      );
+                    }
+                    return ClickLogEntryTile(event: state.clickLogs[i]);
+                  },
+                ),
+        ),
       ]);
     });
   }

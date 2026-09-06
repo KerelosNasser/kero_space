@@ -39,4 +39,10 @@ class EncryptedIsarConfessionsRepo {
     }
     return result;
   }
+
+  Future<void> deleteConfession(Id id) async {
+    await _isar.writeTxn(() async {
+      await _isar.confessions.delete(id);
+    });
+  }
 }

@@ -15,13 +15,15 @@ class NotesMasonryGrid extends StatelessWidget {
   const NotesMasonryGrid({super.key, required this.notes});
 
   String _extractPlainText(String quillDeltaJson) {
+    if (quillDeltaJson.trim().isEmpty) return "Empty note";
     try {
       final myJSON = jsonDecode(quillDeltaJson);
       final doc = quill.Document.fromJson(myJSON);
       final text = doc.toPlainText();
       return text.trim().isNotEmpty ? text.trim() : "Empty note";
     } catch (e) {
-      return "Invalid content";
+      final cleanText = quillDeltaJson.trim();
+      return cleanText.isNotEmpty ? cleanText : "Empty note";
     }
   }
 
@@ -29,9 +31,36 @@ class NotesMasonryGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     if (notes.isEmpty) {
       return Center(
-        child: Text(
-          "No notes yet. Tap + to create one.", 
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.note_alt_outlined,
+                size: 64,
+                color: context.appColors.domainProductivity.withValues(alpha: 0.4),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "No notes found",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Capture ideas, meeting notes, and knowledge snippets.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -84,7 +113,7 @@ class NotesMasonryGrid extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  note.title,
+                  note.title.trim().isEmpty ? 'Untitled Note' : note.title.trim(),
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),

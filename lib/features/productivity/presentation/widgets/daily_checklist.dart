@@ -16,7 +16,39 @@ class DailyChecklist extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (tasks.isEmpty) {
-      return const Center(child: Text("No tasks due today. Great job!"));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.check_circle_outline,
+                size: 64,
+                color: context.appColors.domainProductivity.withValues(alpha: 0.4),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "All tasks completed",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "You are all caught up for today. Add new tasks or take a break!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     return ListView.builder(
@@ -67,6 +99,7 @@ class _TaskRowState extends State<TaskRow> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     // If not completed, show the breathing gradient
     final bool isFocusTask = !widget.task.isCompleted;
 
@@ -91,7 +124,7 @@ class _TaskRowState extends State<TaskRow> with SingleTickerProviderStateMixin {
                 color: isFocusTask ? null : Theme.of(context).cardColor.withValues(alpha: 0.4),
                 boxShadow: isFocusTask ? [
                   BoxShadow(
-                    color: AppTheme.textPrimary.withValues(alpha: _breathingAnimation.value * 0.1),
+                    color: colors.textPrimary.withValues(alpha: _breathingAnimation.value * 0.1),
                     blurRadius: 10,
                     spreadRadius: 2,
                   )
@@ -118,11 +151,13 @@ class _TaskRowState extends State<TaskRow> with SingleTickerProviderStateMixin {
               widget.task.title,
               style: TextStyle(
                 decoration: widget.task.isCompleted ? TextDecoration.lineThrough : null,
-                color: widget.task.isCompleted ? AppTheme.textSecondary : null,
+                color: widget.task.isCompleted ? colors.textSecondary : null,
               ),
             ),
             subtitle: widget.task.description != null ? Text(widget.task.description!) : null,
-            trailing: isFocusTask ? const Icon(Icons.star_border, size: 16, color: AppTheme.textSecondary) : const Icon(Icons.check, color: AppTheme.accentMint),
+            trailing: isFocusTask
+                ? Icon(Icons.star_border, size: 16, color: colors.textSecondary)
+                : Icon(Icons.check, color: colors.accentSuccess),
           ),
         ),
         Positioned(
@@ -131,7 +166,7 @@ class _TaskRowState extends State<TaskRow> with SingleTickerProviderStateMixin {
             confettiController: _confettiController,
             blastDirectionality: BlastDirectionality.explosive,
             shouldLoop: false,
-            colors: const [AppTheme.accentMint, AppTheme.accentCyan, AppTheme.accentRose, AppTheme.accentGold, AppTheme.accentViolet],
+            colors: [colors.accentSuccess, colors.accentPrimary, colors.accentWarning, colors.accentDanger],
             createParticlePath: drawStar,
             numberOfParticles: 15,
             emissionFrequency: 0.05,

@@ -42,41 +42,68 @@ class _State extends State<BlacklistManagementScreen> {
           .toList()
         ..sort((a, b) => (usageMap[b.packageName] ?? 0).compareTo(usageMap[a.packageName] ?? 0));
 
+      final colors = context.appColors;
+
       return Scaffold(
-        appBar: AppBar(title: const Text('Configure App Blockers')),
+        backgroundColor: colors.bgBase,
+        appBar: AppBar(
+          title: Text('Configure App Blockers', style: TextStyle(color: colors.textPrimary)),
+          backgroundColor: colors.bgBase,
+          iconTheme: IconThemeData(color: colors.textPrimary),
+        ),
         body: Column(children: [
           Padding(
-          padding: const EdgeInsets.all(16),
-          child: TextField(
-            onChanged: (v) => setState(() => _query = v),
-            style: const TextStyle(color: AppTheme.textPrimary),
-            decoration: InputDecoration(
-              hintText: 'Search apps...',
-              prefixIcon: const Icon(Icons.search, color: AppTheme.textSecondary),
-              filled: true, fillColor: AppTheme.bgSurface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              onChanged: (v) => setState(() => _query = v),
+              style: TextStyle(color: colors.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Search apps...',
+                prefixIcon: Icon(Icons.search, color: colors.textSecondary),
+                filled: true,
+                fillColor: colors.bgSurface,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
             ),
           ),
-        ),
-        _loading
-            ? const Expanded(child: Center(child: CircularProgressIndicator()))
-            : Expanded(child: ListView.builder(
-                itemCount: filtered.length,
-                itemBuilder: (context, i) {
-                  final app = filtered[i];
-                  return AppUsageTile(
-                    app: app, foregroundMs: usageMap[app.packageName],
-                    isBlacklisted: blacklisted.contains(app.packageName),
-                    onAdd: () async {
-                      final rule = await RuleConfigurationSheet.show(context, app.packageName);
-                      if (rule != null && context.mounted) {
-                        context.read<TelemetryBloc>().add(AddBlacklistRule(rule));
-                      }
-                    },
-                    onRemove: () => context.read<TelemetryBloc>().add(RemoveBlacklistRule(app.packageName)),
-                  );
-                },
-              )),
+          _loading
+              ? Expanded(child: Center(child: CircularProgressIndicator(color: colors.domainTelemetry)))
+              : filtered.isEmpty
+                  ? Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.apps, size: 56, color: colors.textSecondary.withValues(alpha: 0.4)),
+                            const SizedBox(height: 12),
+                            Text(
+                              _query.isEmpty ? 'No installed apps detected' : 'No apps matching "$_query"',
+                              style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Expanded(
+                      child: ListView.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, i) {
+                          final app = filtered[i];
+                          return AppUsageTile(
+                            app: app,
+                            foregroundMs: usageMap[app.packageName],
+                            isBlacklisted: blacklisted.contains(app.packageName),
+                            onAdd: () async {
+                              final rule = await RuleConfigurationSheet.show(context, app.packageName);
+                              if (rule != null && context.mounted) {
+                                context.read<TelemetryBloc>().add(AddBlacklistRule(rule));
+                              }
+                            },
+                            onRemove: () => context.read<TelemetryBloc>().add(RemoveBlacklistRule(app.packageName)),
+                          );
+                        },
+                      ),
+                    ),
         ]),
       );
     });

@@ -28,19 +28,30 @@ class _State extends State<UnlockHeatmapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final primaryAccent = colors.domainTelemetry;
+
     return BlocBuilder<TelemetryBloc, TelemetryState>(builder: (context, state) {
       return Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Unlock Patterns', style: Theme.of(context).textTheme.titleMedium),
-          Text('Tap a cell to see unlock count for that hour.',
-              style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary)),
+          Text(
+            'Unlock Patterns',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          Text(
+            'Tap a cell to see unlock count for that hour.',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
+          ),
           const SizedBox(height: 16),
           // hour labels
           Row(children: [
             const SizedBox(width: 36),
             ...List.generate(24, (h) => Expanded(child: h % 6 == 0
-                ? Text('${h}h', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 9))
+                ? Text('${h}h', style: TextStyle(color: colors.textSecondary, fontSize: 9))
                 : const SizedBox())),
           ]),
           const SizedBox(height: 4),
@@ -48,10 +59,15 @@ class _State extends State<UnlockHeatmapScreen> {
             padding: const EdgeInsets.only(bottom: 4),
             child: Row(children: [
               SizedBox(width: 36, child: Text(_days[d],
-                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11))),
+                  style: TextStyle(color: colors.textSecondary, fontSize: 11))),
               Expanded(child: SizedBox(height: 28,
                 child: state.unlockHeatmap.isEmpty
-                    ? Container(color: AppTheme.bgElevated)
+                    ? Container(
+                        decoration: BoxDecoration(
+                          color: colors.bgElevated,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      )
                     : HeatmapGrid(
                         matrix: [state.unlockHeatmap[d]],
                         onCellTap: (_, col) => setState(() { _selDay = d; _selHour = col; }),
@@ -64,18 +80,24 @@ class _State extends State<UnlockHeatmapScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.bgSurface, borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+                color: colors.bgSurface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: primaryAccent.withValues(alpha: 0.3)),
               ),
               child: Row(children: [
-                const Icon(Icons.lock_open, color: AppTheme.accentCyan),
+                Icon(Icons.lock_open, color: primaryAccent),
                 const SizedBox(width: 12),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('${_days[_selDay!]} at ${_selHour.toString().padLeft(2,'0')}:00',
-                      style: Theme.of(context).textTheme.headlineMedium),
+                  Text(
+                    '${_days[_selDay!]} at ${_selHour.toString().padLeft(2,'0')}:00',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
                   Text(
                     '${state.unlockHeatmap.isNotEmpty ? state.unlockHeatmap[_selDay!][_selHour!] : 0} unlocks',
-                    style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
                   ),
                 ]),
               ]),

@@ -9,19 +9,28 @@ class HeatmapGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final maxVal = matrix.expand((r) => r).fold(1, (a, b) => a > b ? a : b);
     return LayoutBuilder(builder: (context, constraints) {
       final cellW = constraints.maxWidth / (matrix.isEmpty ? 1 : matrix[0].length);
-      final cellH = constraints.maxHeight / matrix.length;
+      final cellH = constraints.maxHeight / (matrix.isEmpty ? 1 : matrix.length);
       return GestureDetector(
         onTapUp: (d) {
+          if (matrix.isEmpty || matrix[0].isEmpty) return;
           final col = (d.localPosition.dx / cellW).floor().clamp(0, (matrix[0].length) - 1);
           final row = (d.localPosition.dy / cellH).floor().clamp(0, matrix.length - 1);
           onCellTap(row, col);
         },
         child: CustomPaint(
           size: Size(constraints.maxWidth, constraints.maxHeight),
-          painter: _HeatmapPainter(matrix: matrix, maxVal: maxVal, cellW: cellW, cellH: cellH),
+          painter: _HeatmapPainter(
+            matrix: matrix,
+            maxVal: maxVal,
+            cellW: cellW,
+            cellH: cellH,
+            baseColor: colors.bgElevated,
+            highlightColor: colors.domainTelemetry,
+          ),
         ),
       );
     });
@@ -33,16 +42,24 @@ class _HeatmapPainter extends CustomPainter {
   final int maxVal;
   final double cellW;
   final double cellH;
+  final Color baseColor;
+  final Color highlightColor;
 
-  const _HeatmapPainter(
-      {required this.matrix, required this.maxVal, required this.cellW, required this.cellH});
+  const _HeatmapPainter({
+    required this.matrix,
+    required this.maxVal,
+    required this.cellW,
+    required this.cellH,
+    required this.baseColor,
+    required this.highlightColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     for (int r = 0; r < matrix.length; r++) {
       for (int c = 0; c < matrix[r].length; c++) {
         final intensity = maxVal > 0 ? matrix[r][c] / maxVal : 0.0;
-        final color = Color.lerp(AppTheme.bgElevated, AppTheme.accentCyan, intensity)!;
+        final color = Color.lerp(baseColor, highlightColor, intensity)!;
         final rect = Rect.fromLTWH(c * cellW + 1, r * cellH + 1, cellW - 2, cellH - 2);
         canvas.drawRRect(
           RRect.fromRectAndRadius(rect, const Radius.circular(3)),
@@ -53,5 +70,9 @@ class _HeatmapPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_HeatmapPainter old) => old.matrix != matrix || old.maxVal != maxVal;
+  bool shouldRepaint(_HeatmapPainter old) =>
+      old.matrix != matrix ||
+      old.maxVal != maxVal ||
+      old.baseColor != baseColor ||
+      old.highlightColor != highlightColor;
 }

@@ -41,13 +41,14 @@ class _CommandHintTickerState extends State<CommandHintTicker> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 500),
       child: Text(
         hints[_currentIndex],
         key: ValueKey<int>(_currentIndex),
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppTheme.textSecondary,
+          color: colors.textSecondary,
           fontStyle: FontStyle.italic,
         ),
       ),

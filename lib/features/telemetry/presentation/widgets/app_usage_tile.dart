@@ -21,19 +21,36 @@ class AppUsageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final icon = app.icon;
     return ListTile(
       leading: icon != null
           ? Image.memory(icon, width: 40, height: 40)
-          : const Icon(Icons.android, color: AppTheme.accentCyan),
-      title: Text(app.name, style: Theme.of(context).textTheme.bodyLarge),
+          : Icon(Icons.android, color: colors.domainTelemetry),
+      title: Text(
+        app.name,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
       subtitle: foregroundMs != null && foregroundMs! > 0
-          ? Text('Used ${_fmt(foregroundMs!)} today',
-              style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppTheme.textSecondary))
+          ? Text(
+              'Used ${_fmt(foregroundMs!)} today',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
+            )
           : null,
       trailing: isBlacklisted
-          ? IconButton(icon: const Icon(Icons.remove_circle_outline, color: AppTheme.accentRose), onPressed: onRemove)
-          : IconButton(icon: const Icon(Icons.add_circle_outline, color: AppTheme.accentCyan), onPressed: onAdd),
+          ? IconButton(
+              icon: Icon(Icons.remove_circle_outline, color: colors.accentError),
+              onPressed: onRemove,
+              tooltip: 'Remove rule',
+            )
+          : IconButton(
+              icon: Icon(Icons.add_circle_outline, color: colors.domainTelemetry),
+              onPressed: onAdd,
+              tooltip: 'Add rule',
+            ),
     );
   }
 }

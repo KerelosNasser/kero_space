@@ -30,9 +30,15 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       text: widget.existingNote?.title ?? '',
     );
     if (widget.existingNote != null) {
-      final myJSON = jsonDecode(widget.existingNote!.quillDelta);
+      quill.Document doc;
+      try {
+        final myJSON = jsonDecode(widget.existingNote!.quillDelta);
+        doc = quill.Document.fromJson(myJSON);
+      } catch (_) {
+        doc = quill.Document()..insert(0, widget.existingNote!.quillDelta);
+      }
       _controller = quill.QuillController(
-        document: quill.Document.fromJson(myJSON),
+        document: doc,
         selection: const TextSelection.collapsed(offset: 0),
       );
     } else {

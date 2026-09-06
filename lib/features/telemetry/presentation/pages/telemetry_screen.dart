@@ -14,12 +14,18 @@ class TelemetryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
+      backgroundColor: colors.bgBase,
       appBar: AppBar(
-        title: const Text('Telemetry'),
+        title: Text('Telemetry', style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold)),
+        backgroundColor: colors.bgBase,
+        elevation: 0,
+        iconTheme: IconThemeData(color: colors.textPrimary),
         actions: [
           IconButton(
-            icon: const Icon(Icons.block, color: AppTheme.accentRose),
+            icon: Icon(Icons.block, color: colors.accentDanger),
             tooltip: 'Configure App Blockers',
             onPressed: () => context.push('/telemetry/blacklist'),
           ),
@@ -49,26 +55,26 @@ class TelemetryScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: AppTheme.bgSurface,
+                        color: colors.bgSurface,
                         borderRadius: BorderRadius.circular(16),
-                        border: const Border(left: BorderSide(color: AppTheme.accentGold, width: 4)),
+                        border: Border(left: BorderSide(color: colors.domainTelemetry, width: 4)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('TODAY\'S SCREEN TIME', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1.2)),
+                          Text('TODAY\'S SCREEN TIME', style: TextStyle(color: colors.textSecondary, fontSize: 13, letterSpacing: 1.2)),
                           const SizedBox(height: 8),
-                          Text('${hours.toStringAsFixed(1)} hours', style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                          Text('${hours.toStringAsFixed(1)} hours', style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: colors.textPrimary)),
                         ],
                       ),
                     ),
                   ),
                 ),
               ),
-              const SliverPadding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 sliver: SliverToBoxAdapter(
-                  child: Text('WEEKLY TREND', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1.2)),
+                  child: Text('WEEKLY TREND', style: TextStyle(color: colors.textSecondary, fontSize: 13, letterSpacing: 1.2)),
                 ),
               ),
               SliverToBoxAdapter(
@@ -78,34 +84,45 @@ class TelemetryScreen extends StatelessWidget {
                     height: 200,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.bgSurface,
+                      color: colors.bgSurface,
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colors.borderSubtle),
                     ),
-                    child: _buildChart(state.weeklyScreenTime),
+                    child: _buildChart(context, state.weeklyScreenTime),
                   ),
                 ),
               ),
-              const SliverPadding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 sliver: SliverToBoxAdapter(
-                  child: Text('TOP APPS', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1.2)),
+                  child: Text('TOP APPS', style: TextStyle(color: colors.textSecondary, fontSize: 13, letterSpacing: 1.2)),
                 ),
               ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final app = state.todayTopApps[index];
-                    final appHours = app.foregroundMs / (1000 * 60 * 60);
-                    return ListTile(
-                      leading: const CircleAvatar(backgroundColor: AppTheme.bgElevated, child: Icon(Icons.apps, color: AppTheme.accentGold)),
-                      title: Text(app.packageName.split('.').last, style: const TextStyle(color: AppTheme.textPrimary)),
-                      subtitle: Text(app.packageName, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                      trailing: Text('${appHours.toStringAsFixed(1)}h', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
-                    );
-                  },
-                  childCount: state.todayTopApps.length,
+              if (state.todayTopApps.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text('No application usage recorded today.', style: TextStyle(color: colors.textSecondary)),
+                    ),
+                  ),
+                )
+              else
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final app = state.todayTopApps[index];
+                      final appHours = app.foregroundMs / (1000 * 60 * 60);
+                      return ListTile(
+                        leading: CircleAvatar(backgroundColor: colors.domainTelemetry.withValues(alpha: 0.15), child: Icon(Icons.apps, color: colors.domainTelemetry)),
+                        title: Text(app.packageName.split('.').last, style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.w600)),
+                        subtitle: Text(app.packageName, style: TextStyle(color: colors.textSecondary, fontSize: 12)),
+                        trailing: Text('${appHours.toStringAsFixed(1)}h', style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold)),
+                      );
+                    },
+                    childCount: state.todayTopApps.length,
+                  ),
                 ),
-              ),
               const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
             ],
           );
@@ -114,9 +131,11 @@ class TelemetryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChart(List<(DateTime, int)> weeklyData) {
+  Widget _buildChart(BuildContext context, List<(DateTime, int)> weeklyData) {
+    final colors = context.appColors;
+
     if (weeklyData.isEmpty) {
-      return const Center(child: Text('No data yet', style: TextStyle(color: AppTheme.textSecondary)));
+      return Center(child: Text('No data yet', style: TextStyle(color: colors.textSecondary)));
     }
     
     // Fallback if data isn't full 7 days
@@ -138,7 +157,7 @@ class TelemetryScreen extends StatelessWidget {
               getTitlesWidget: (value, meta) {
                 const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
                 if (value.toInt() >= 0 && value.toInt() < 7) {
-                  return Text(days[value.toInt()], style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12));
+                  return Text(days[value.toInt()], style: TextStyle(color: colors.textSecondary, fontSize: 12));
                 }
                 return const Text('');
               },
@@ -157,7 +176,7 @@ class TelemetryScreen extends StatelessWidget {
             barRods: [
               BarChartRodData(
                 toY: val,
-                color: AppTheme.accentGold,
+                color: colors.domainTelemetry,
                 width: 16,
                 borderRadius: BorderRadius.circular(4),
               ),
