@@ -30,6 +30,8 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
     private var contextStartTime: Long = 0L
     private val cooldownExpiryByContext = ConcurrentHashMap<String, Long>()
     private val lastContentCheckTimeByPackage = ConcurrentHashMap<String, Long>()
+    private val appSwitchTimestamps = mutableListOf<Long>()
+    private var lastAdhdNudgeTime = 0L
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -48,6 +50,9 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
 
                 KeroSpaceForegroundService.accessibilityEventSink.safeSuccess(json)
                 KeroSpaceForegroundService.bgAccessibilityEventSink.safeSuccess(json)
+
+                // ADHD rapid app-switching loop detection (>5 switches in <60s)
+                checkAdhdRapidSwitch(packageName)
 
                 runBlockerLogic(packageName, event)
             }
@@ -121,6 +126,28 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
             sanitized = sanitized.replace(EMAIL_REGEX, "[EMAIL_REDACTED]")
         }
         return sanitized
+    }
+
+    private fun checkAdhdRapidSwitch(packageName: String) {
+        if (packageName == currentPackage || packageName == "com.example.trobio" || packageName.contains("launcher", ignoreCase = true)) {
+            return
+        }
+        val now = System.currentTimeMillis()
+        synchronized(appSwitchTimestamps) {
+            appSwitchTimestamps.add(now)
+            appSwitchTimestamps.removeAll { now - it > 60_000L }
+            if (appSwitchTimestamps.size >= 5 && now - lastAdhdNudgeTime > 180_000L) {
+                lastAdhdNudgeTime = now
+                Log.i(TAG, "ADHD rapid app switching loop detected: ${appSwitchTimestamps.size} switches in 60s")
+                val adhdJson = JSONObject().apply {
+                    put("type", "ADHD_RAPID_SWITCH_NUDGE")
+                    put("switchCount", appSwitchTimestamps.size)
+                    put("timestamp", now)
+                }.toString()
+                KeroSpaceForegroundService.accessibilityEventSink.safeSuccess(adhdJson)
+                KeroSpaceForegroundService.bgAccessibilityEventSink.safeSuccess(adhdJson)
+            }
+        }
     }
 
     private fun runBlockerLogic(packageName: String, event: AccessibilityEvent) {

@@ -40,10 +40,25 @@ class SyncWorker {
     return url;
   }
 
+  static Duration calculateBackoff(
+    int retryCount, {
+    Duration baseDelay = const Duration(seconds: 2),
+    Duration maxDelay = const Duration(minutes: 5),
+    int jitterMs = 0,
+  }) {
+    if (retryCount <= 0) return Duration.zero;
+    final shift = retryCount.clamp(0, 10);
+    final multiplier = 1 << shift;
+    final delayMs = (baseDelay.inMilliseconds * multiplier).clamp(0, maxDelay.inMilliseconds);
+    return Duration(milliseconds: delayMs + jitterMs);
+  }
+
   static Future<SyncResult> triggerSync({
     String? dbDirectory,
     String? dockerUrl,
     Dio? dioClient,
+    String? authToken,
+    int maxRetries = 5,
   }) async {
     if (!IsarService.isInitialized) {
       if (dbDirectory == null || dbDirectory.isEmpty) {
@@ -94,13 +109,18 @@ class SyncWorker {
       }).toList(),
     };
 
+    final headers = <String, dynamic>{
+      'Content-Type': 'application/json',
+    };
+    if (authToken != null && authToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $authToken';
+    }
+
     try {
       final response = await dio.post(
         targetUrl,
         data: payload,
-        options: Options(
-          headers: {'Content-Type': 'application/json'},
-        ),
+        options: Options(headers: headers),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -133,7 +153,7 @@ class SyncWorker {
         );
       } else {
         final errorMsg = 'Server returned HTTP ${response.statusCode}';
-        await _recordBatchError(batch, errorMsg);
+        await _recordBatchError(batch, errorMsg, maxRetries: maxRetries);
         final remaining = await repo.getPendingCount();
         return SyncResult(
           success: false,
@@ -145,7 +165,7 @@ class SyncWorker {
     } catch (e) {
       final errorMsg = e.toString();
       debugPrint('SyncWorker error: $errorMsg');
-      await _recordBatchError(batch, errorMsg);
+      await _recordBatchError(batch, errorMsg, maxRetries: maxRetries);
       final remaining = await repo.getPendingCount();
       return SyncResult(
         success: false,
@@ -157,11 +177,28 @@ class SyncWorker {
   }
 
   static Future<void> _recordBatchError(
-      List<SyncOutboxRecord> batch, String error) async {
+    List<SyncOutboxRecord> batch,
+    String error, {
+    int maxRetries = 5,
+  }) async {
     try {
+      final retryRegex = RegExp(r'\[RETRY:(\d+)\]');
       await IsarService.instance.writeTxn(() async {
         for (var record in batch) {
-          record.error = error;
+          int currentRetry = 0;
+          if (record.error != null) {
+            final match = retryRegex.firstMatch(record.error!);
+            if (match != null) {
+              currentRetry = int.tryParse(match.group(1) ?? '0') ?? 0;
+            }
+          }
+          final nextRetry = currentRetry + 1;
+          if (nextRetry >= maxRetries) {
+            record.status = 'FAILED';
+            record.error = '[MAX_RETRIES_EXCEEDED] $error';
+          } else {
+            record.error = '[RETRY:$nextRetry] $error';
+          }
           await IsarService.instance.syncOutboxRecords.put(record);
         }
       });

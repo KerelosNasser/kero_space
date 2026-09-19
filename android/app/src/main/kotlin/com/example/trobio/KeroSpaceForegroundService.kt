@@ -26,6 +26,8 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.Worker
+import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -157,6 +159,17 @@ class KeroSpaceForegroundService : Service() {
         } catch (e: Exception) {
             Log.w(TAG, "Could not schedule alarm restart on timeout: ${e.message}")
         }
+
+        // WorkManager fallback for Android 15/16 when exact alarms or background starts are restricted
+        try {
+            val restartRequest = androidx.work.OneTimeWorkRequestBuilder<KeroSpaceRestartWorker>()
+                .setInitialDelay(5, TimeUnit.SECONDS)
+                .build()
+            WorkManager.getInstance(applicationContext).enqueue(restartRequest)
+        } catch (we: Exception) {
+            Log.w(TAG, "WorkManager restart fallback could not be enqueued: ${we.message}")
+        }
+
         stopSelf(startId)
     }
 
@@ -195,7 +208,13 @@ class KeroSpaceForegroundService : Service() {
             .setOngoing(true)
             .build()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(
+                FGS_NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(FGS_NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         } else {
             startForeground(FGS_NOTIFICATION_ID, notification)
@@ -386,4 +405,24 @@ class KeroSpaceForegroundService : Service() {
         }
     }
 }
+
+/**
+ * Worker invoked as fallback on Android 15/16 when FGS onTimeout triggers.
+ * Safely restarts [KeroSpaceForegroundService] without violating background start restrictions.
+ */
+class KeroSpaceRestartWorker(appContext: Context, workerParams: WorkerParameters) :
+    Worker(appContext, workerParams) {
+    override fun doWork(): Result {
+        Log.d("KeroSpaceRestartWorker", "Restarting KeroSpaceForegroundService from WorkManager")
+        return try {
+            val serviceIntent = Intent(applicationContext, KeroSpaceForegroundService::class.java)
+            ContextCompat.startForegroundService(applicationContext, serviceIntent)
+            Result.success()
+        } catch (e: Exception) {
+            Log.e("KeroSpaceRestartWorker", "Failed to restart KeroSpaceForegroundService", e)
+            Result.retry()
+        }
+    }
+}
+
 

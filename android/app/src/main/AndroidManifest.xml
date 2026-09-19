@@ -68,8 +68,11 @@
         <!-- Phase 2: Omniscient Layer Agents -->
         <service
             android:name=".KeroSpaceForegroundService"
-            android:foregroundServiceType="dataSync"
-            android:exported="false" />
+            android:foregroundServiceType="specialUse|dataSync"
+            android:exported="false">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="app_telemetry_and_wellbeing"/>
+        </service>
 
         <service
             android:name=".KeroSpaceAccessibilityService"

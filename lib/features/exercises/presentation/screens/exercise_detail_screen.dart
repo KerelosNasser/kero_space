@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/core/di/injection.dart';
@@ -13,6 +15,13 @@ class ExerciseDetailScreen extends StatefulWidget {
     required this.exercise,
   });
 
+  static double calculate1RM(double weight, int reps) {
+    if (weight <= 0 || reps <= 0) return 0.0;
+    if (reps == 1) return weight;
+    // Epley formula: w * (1 + r / 30)
+    return weight * (1.0 + (reps / 30.0));
+  }
+
   @override
   State<ExerciseDetailScreen> createState() => _ExerciseDetailScreenState();
 }
@@ -21,11 +30,72 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _repsController = TextEditingController();
 
+  int _restDurationSeconds = 90;
+  int _remainingRestSeconds = 0;
+  Timer? _restTimer;
+
   @override
   void dispose() {
+    _restTimer?.cancel();
     _weightController.dispose();
     _repsController.dispose();
     super.dispose();
+  }
+
+  void _startRestTimer([int? seconds]) {
+    _restTimer?.cancel();
+    setState(() {
+      _remainingRestSeconds = seconds ?? _restDurationSeconds;
+    });
+
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_remainingRestSeconds <= 1) {
+        timer.cancel();
+        setState(() {
+          _remainingRestSeconds = 0;
+        });
+        HapticFeedback.heavyImpact();
+        SystemSound.play(SystemSoundType.alert);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Rest finished! Ready for the next set.'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _remainingRestSeconds--;
+        });
+      }
+    });
+  }
+
+  void _adjustRestTimer(int deltaSeconds) {
+    setState(() {
+      _remainingRestSeconds = (_remainingRestSeconds + deltaSeconds).clamp(0, 600);
+      if (_remainingRestSeconds == 0) {
+        _restTimer?.cancel();
+      }
+    });
+  }
+
+  void _cancelRestTimer() {
+    _restTimer?.cancel();
+    setState(() {
+      _remainingRestSeconds = 0;
+    });
+  }
+
+  String _formatRestTime(int seconds) {
+    final mins = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
   void _submitSet(BuildContext context, WorkoutExerciseViewModel exercise) {
@@ -55,9 +125,11 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     _weightController.clear();
     _repsController.clear();
 
+    _startRestTimer();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Set $nextSet logged!'),
+        content: Text('Set $nextSet logged! Rest timer started.'),
         backgroundColor: colors.accentSuccess,
       ),
     );
@@ -90,6 +162,12 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                   .map((s) => s.weight)
                   .reduce((a, b) => a > b ? a : b);
           final totalReps = exercise.loggedSets.fold<int>(0, (sum, s) => sum + s.reps);
+
+          final est1RM = exercise.loggedSets.isEmpty
+              ? 0.0
+              : exercise.loggedSets
+                  .map((s) => ExerciseDetailScreen.calculate1RM(s.weight, s.reps))
+                  .reduce((a, b) => a > b ? a : b);
 
           return Scaffold(
             backgroundColor: colors.bgBase,
@@ -146,13 +224,114 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatItem('Sets Completed', '${exercise.loggedSets.length}', colors),
+                  _buildStatItem('Sets Done', '${exercise.loggedSets.length}', colors),
                   _buildStatItem('Max Weight', '${maxWeight.toStringAsFixed(1)} kg', colors),
+                  _buildStatItem('Est. 1RM', '${est1RM.toStringAsFixed(1)} kg', colors),
                   _buildStatItem('Total Reps', '$totalReps', colors),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+
+            // Active Rest Timer Card
+            if (_remainingRestSeconds > 0) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colors.accentPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.accentPrimary.withValues(alpha: 0.4)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.timer_rounded, color: colors.accentPrimary, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'REST TIMER',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.1,
+                                color: colors.accentPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: _cancelRestTimer,
+                          child: Text(
+                            'Skip',
+                            style: TextStyle(color: colors.textSecondary, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatRestTime(_remainingRestSeconds),
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    LinearProgressIndicator(
+                      value: _restDurationSeconds > 0
+                          ? (_remainingRestSeconds / _restDurationSeconds).clamp(0.0, 1.0)
+                          : 0.0,
+                      backgroundColor: colors.borderSubtle,
+                      valueColor: AlwaysStoppedAnimation<Color>(colors.accentPrimary),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: [60, 90, 120, 180].map((sec) {
+                        final isSelected = _restDurationSeconds == sec;
+                        return ChoiceChip(
+                          label: Text('${sec}s'),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() {
+                                _restDurationSeconds = sec;
+                                _remainingRestSeconds = sec;
+                              });
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () => _adjustRestTimer(-15),
+                          child: const Text('-15s'),
+                        ),
+                        const SizedBox(width: 12),
+                        OutlinedButton(
+                          onPressed: () => _adjustRestTimer(30),
+                          child: const Text('+30s'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // Instructions card
             if (exercise.instructionsEn.isNotEmpty) ...[
