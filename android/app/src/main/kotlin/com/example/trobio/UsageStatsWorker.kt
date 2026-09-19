@@ -71,6 +71,8 @@ class UsageStatsWorker(appContext: Context, workerParams: WorkerParameters) :
         }
         applicationContext.sendBroadcast(intent)
 
+        KeroSpaceForegroundService.updateLiveTelemetryNotification(applicationContext)
+
         return Result.success()
     }
 }

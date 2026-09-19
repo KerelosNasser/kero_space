@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kero_space/core/app_theme.dart';
 
+import 'device_lockout_sheet.dart';
+
 class DeepWorkTimerWidget extends StatefulWidget {
   final VoidCallback onStartDeepWork;
 
@@ -144,7 +146,22 @@ class _DeepWorkTimerWidgetState extends State<DeepWorkTimerWidget> with SingleTi
                       ),
                     )
                   else
-                    Icon(Icons.play_circle_fill, size: 36, color: colors.domainProductivity),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: 'Keep Me Out (Lock Phone)',
+                          icon: const Icon(
+                            Icons.phonelink_lock_rounded,
+                            size: 26,
+                            color: Color(0xFFEF5350),
+                          ),
+                          onPressed: () => DeviceLockoutSheet.show(context),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.play_circle_fill, size: 36, color: colors.domainProductivity),
+                      ],
+                    ),
                 ],
               ),
             ),

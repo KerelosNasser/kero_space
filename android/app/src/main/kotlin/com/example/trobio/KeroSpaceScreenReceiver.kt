@@ -44,6 +44,24 @@ class KeroSpaceScreenReceiver : BroadcastReceiver() {
         // the background isolate (Isar writer) receive the event safely.
         KeroSpaceForegroundService.screenEventSink.safeSuccess(json)
         KeroSpaceForegroundService.bgScreenEventSink.safeSuccess(json)
+
+        if (type == "UNLOCK") {
+            try {
+                val prefs = context.getSharedPreferences("trobio_telemetry_hud", Context.MODE_PRIVATE)
+                val todayStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+                val lastDate = prefs.getString("last_date", "")
+                var count = prefs.getInt("unlock_count", 0)
+                if (lastDate != todayStr) {
+                    count = 1
+                } else {
+                    count += 1
+                }
+                prefs.edit().putString("last_date", todayStr).putInt("unlock_count", count).apply()
+            } catch (_: Exception) {}
+            KeroSpaceForegroundService.updateLiveTelemetryNotification(context)
+        } else if (type == "SLEEP") {
+            KeroSpaceForegroundService.updateLiveTelemetryNotification(context)
+        }
     }
 }
 

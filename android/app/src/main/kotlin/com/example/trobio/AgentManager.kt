@@ -167,4 +167,45 @@ object AgentManager {
     fun isDeepWorkActive(): Boolean {
         return System.currentTimeMillis() < deepWorkEndTimeMs
     }
+
+    // --- Keep Me Out (Full Device Lockout) ---
+    private const val LOCKOUT_PREFS = "trobio_lockout_prefs"
+    private const val KEY_LOCKOUT_UNTIL = "lockout_until_ms"
+
+    fun startDeviceLockout(context: Context, durationMinutes: Int, strictMode: Boolean = true) {
+        val now = System.currentTimeMillis()
+        val durationMs = durationMinutes * 60 * 1000L
+        val lockoutUntil = now + durationMs
+
+        val prefs = context.getSharedPreferences(LOCKOUT_PREFS, Context.MODE_PRIVATE)
+        prefs.edit().putLong(KEY_LOCKOUT_UNTIL, lockoutUntil).apply()
+        Log.i(TAG, "Keep Me Out: Device lockout initiated for $durationMinutes minutes (until $lockoutUntil)")
+
+        // Instantly turn screen off and lock phone
+        KeroSpaceAccessibilityService.instance?.lockScreen()
+
+        // Update live notification HUD immediately
+        KeroSpaceForegroundService.updateLiveTelemetryNotification(context)
+    }
+
+    fun cancelDeviceLockout(context: Context) {
+        val prefs = context.getSharedPreferences(LOCKOUT_PREFS, Context.MODE_PRIVATE)
+        prefs.edit().remove(KEY_LOCKOUT_UNTIL).apply()
+        OverlayManager.dismissOverlay(shouldRecordBreak = false)
+        KeroSpaceForegroundService.updateLiveTelemetryNotification(context)
+        Log.i(TAG, "Keep Me Out: Device lockout cancelled")
+    }
+
+    fun isDeviceLockoutActive(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(LOCKOUT_PREFS, Context.MODE_PRIVATE)
+        val lockoutUntil = prefs.getLong(KEY_LOCKOUT_UNTIL, 0L)
+        return System.currentTimeMillis() < lockoutUntil
+    }
+
+    fun getRemainingLockoutSeconds(context: Context): Long {
+        val prefs = context.getSharedPreferences(LOCKOUT_PREFS, Context.MODE_PRIVATE)
+        val lockoutUntil = prefs.getLong(KEY_LOCKOUT_UNTIL, 0L)
+        val diff = lockoutUntil - System.currentTimeMillis()
+        return (diff / 1000L).coerceAtLeast(0L)
+    }
 }

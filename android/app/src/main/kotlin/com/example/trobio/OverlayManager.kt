@@ -64,8 +64,9 @@ object OverlayManager {
         subtitle: String = "Take a deep breath... Inhale...",
         shouldRecordBreakOnDismiss: Boolean = true,
         isHardBlock: Boolean = false,
+        isEmergencyLockout: Boolean = false,
     ) {
-        if (!isHardBlock && durationSeconds <= 0) {
+        if (!isHardBlock && !isEmergencyLockout && durationSeconds <= 0) {
             Log.w(TAG, "showOverlay called with durationSeconds=$durationSeconds — ignoring")
             return
         }
@@ -230,7 +231,27 @@ object OverlayManager {
             titleTextView?.text = title
             subtitleTextView?.text = subtitle
 
-            if (isHardBlock) {
+            if (isEmergencyLockout) {
+                closeButton?.text = "🔒 Turn Screen Off (Sleep)"
+                closeButton?.setOnClickListener {
+                    KeroSpaceAccessibilityService.instance?.lockScreen()
+                }
+                habitsButton?.text = "📞 Emergency Dialer"
+                habitsButton?.setBackgroundColor(Color.parseColor("#B71C1C"))
+                habitsButton?.setOnClickListener {
+                    try {
+                        val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        appContext.startActivity(dialIntent)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to open emergency dialer: ${e.message}")
+                    }
+                    dismissOverlay(shouldRecordBreak = false)
+                }
+                countdownTextView?.setTextColor(Color.parseColor("#FFA726"))
+                startTimer(durationSeconds, packageName)
+            } else if (isHardBlock) {
                 countDownTimer?.cancel()
                 countDownTimer = null
                 countdownTextView?.text = "🔒 HARD LOCK"
@@ -239,7 +260,7 @@ object OverlayManager {
                 countdownTextView?.setTextColor(Color.WHITE)
                 startTimer(durationSeconds, packageName)
             }
-            Log.d(TAG, "Overlay shown for $packageName (duration=${durationSeconds}s, isHardBlock=$isHardBlock)")
+            Log.d(TAG, "Overlay shown for $packageName (duration=${durationSeconds}s, isHardBlock=$isHardBlock, isEmergencyLockout=$isEmergencyLockout)")
         }
     }
 

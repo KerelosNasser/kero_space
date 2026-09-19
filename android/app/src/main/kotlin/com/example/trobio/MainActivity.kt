@@ -306,6 +306,26 @@ class MainActivity : FlutterFragmentActivity() {
                         result.success(null)
                     }
 
+                    "startDeviceLockout" -> {
+                        val durationMinutes = call.argument<Int>("durationMinutes") ?: 15
+                        AgentManager.startDeviceLockout(applicationContext, durationMinutes)
+                        result.success(null)
+                    }
+
+                    "cancelDeviceLockout" -> {
+                        AgentManager.cancelDeviceLockout(applicationContext)
+                        result.success(null)
+                    }
+
+                    "getDeviceLockoutStatus" -> {
+                        val active = AgentManager.isDeviceLockoutActive(applicationContext)
+                        val remaining = AgentManager.getRemainingLockoutSeconds(applicationContext)
+                        result.success(mapOf(
+                            "isActive" to active,
+                            "remainingSeconds" to remaining
+                        ))
+                    }
+
                     else -> result.notImplemented()
                 }
             }

@@ -77,6 +77,125 @@ class KeroSpaceForegroundService : Service() {
         @Volatile var accessibilityEventSink: EventChannel.EventSink? = null
         @Volatile var wakeWordEventSink: EventChannel.EventSink? = null
         @Volatile var usageStatsEventSink: EventChannel.EventSink? = null
+
+        fun buildTelemetryHudNotification(context: Context): Notification {
+            var unlocks = 0
+            var timeStr = "0m"
+            var content = "Tap to open Telemetry Dashboard"
+
+            try {
+                val prefs = context.getSharedPreferences("trobio_telemetry_hud", Context.MODE_PRIVATE)
+                val todayStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+                val lastDate = prefs.getString("last_date", "")
+                unlocks = prefs.getInt("unlock_count", 0)
+
+                if (lastDate != todayStr) {
+                    unlocks = 0
+                    prefs.edit().putString("last_date", todayStr).putInt("unlock_count", 0).apply()
+                }
+
+                val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? android.app.usage.UsageStatsManager
+                val calendar = java.util.Calendar.getInstance().apply {
+                    set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    set(java.util.Calendar.MINUTE, 0)
+                    set(java.util.Calendar.SECOND, 0)
+                    set(java.util.Calendar.MILLISECOND, 0)
+                }
+                val startTime = calendar.timeInMillis
+                val endTime = System.currentTimeMillis()
+
+                var totalScreenTimeMs = 0L
+                var topAppName = ""
+                var topAppDurationMs = 0L
+
+                val statsList = usageStatsManager?.queryUsageStats(
+                    android.app.usage.UsageStatsManager.INTERVAL_DAILY,
+                    startTime,
+                    endTime
+                )
+
+                if (!statsList.isNullOrEmpty()) {
+                    val pm = context.packageManager
+                    val validStats = statsList.filter {
+                        it.packageName != context.packageName &&
+                        !it.packageName.contains("launcher") &&
+                        !it.packageName.contains("systemui") &&
+                        it.totalTimeInForeground > 30000L
+                    }
+
+                    for (stat in statsList) {
+                        if (stat.packageName != context.packageName && !stat.packageName.contains("systemui")) {
+                            totalScreenTimeMs += stat.totalTimeInForeground
+                        }
+                    }
+
+                    val topStat = validStats.maxByOrNull { it.totalTimeInForeground }
+                    if (topStat != null) {
+                        topAppDurationMs = topStat.totalTimeInForeground
+                        topAppName = try {
+                            val appInfo = pm.getApplicationInfo(topStat.packageName, 0)
+                            pm.getApplicationLabel(appInfo).toString()
+                        } catch (_: Exception) {
+                            topStat.packageName.substringAfterLast('.')
+                        }
+                    }
+                }
+
+                val hours = (totalScreenTimeMs / (1000 * 60 * 60)).toInt()
+                val minutes = ((totalScreenTimeMs / (1000 * 60)) % 60).toInt()
+                timeStr = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+
+                val topAppMin = (topAppDurationMs / (1000 * 60)).toInt()
+                val topAppHours = topAppMin / 60
+                val topAppRemMin = topAppMin % 60
+                val topAppTimeStr = if (topAppHours > 0) "${topAppHours}h ${topAppRemMin}m" else "${topAppMin}m"
+
+                content = if (topAppName.isNotEmpty()) "Top: $topAppName ($topAppTimeStr)" else "Monitoring digital wellbeing"
+            } catch (e: Exception) {
+                Log.w(TAG, "Error building HUD notification: ${e.message}")
+            }
+
+            val title = "📱 $unlocks Unlocks Today • $timeStr Screen Time"
+
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
+                putExtra("NAVIGATE_TO", "telemetry")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val pendingIntent = if (launchIntent != null) {
+                PendingIntent.getActivity(
+                    context, 0, launchIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            } else null
+
+            val builder = androidx.core.app.NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setOngoing(true)
+                .setPriority(androidx.core.app.NotificationCompat.PRIORITY_LOW)
+                .setStyle(
+                    androidx.core.app.NotificationCompat.BigTextStyle()
+                        .setBigContentTitle(title)
+                        .bigText("$content\nTap to open Recovery & Telemetry Dashboard")
+                )
+
+            if (pendingIntent != null) {
+                builder.setContentIntent(pendingIntent)
+            }
+
+            return builder.build()
+        }
+
+        fun updateLiveTelemetryNotification(context: Context) {
+            try {
+                val notification = buildTelemetryHudNotification(context)
+                val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+                nm?.notify(FGS_NOTIFICATION_ID, notification)
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to update HUD notification: ${e.message}")
+            }
+        }
     }
 
     private var flutterEngine: FlutterEngine? = null
@@ -87,7 +206,6 @@ class KeroSpaceForegroundService : Service() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val payload = intent?.getStringExtra("payload") ?: return
             Log.d(TAG, "USAGE_STATS_READY — forwarding to Dart sinks")
-            // Push to both engines so the UI TelemetryBloc and the Isar background writer both get it.
             usageStatsEventSink.safeSuccess(payload)
             bgUsageStatsEventSink.safeSuccess(payload)
         }
@@ -102,9 +220,6 @@ class KeroSpaceForegroundService : Service() {
         createNotificationChannel()
         startForegroundWithNotification()
         registerReceivers()
-        // Staggered init: Flutter engine (heavy) first, then WakeWordService
-        // after the background engine is ready — prevents boot contention on
-        // the main thread from simultaneous Service + FlutterLoader init.
         startFlutterEngine()
     }
 
@@ -113,8 +228,6 @@ class KeroSpaceForegroundService : Service() {
     override fun onDestroy() {
         isRunning = false
         Log.d(TAG, "onDestroy")
-        // Null all event sinks to prevent leaks when the service is torn down
-        // without a clean StreamHandler.onCancel cycle (e.g. system force-stop).
         screenEventSink = null
         accessibilityEventSink = null
         wakeWordEventSink = null
@@ -147,11 +260,7 @@ class KeroSpaceForegroundService : Service() {
                         pendingIntent
                     )
                 } else {
-                    alarmManager.set(
-                        AlarmManager.RTC_WAKEUP,
-                        System.currentTimeMillis() + 5000,
-                        pendingIntent
-                    )
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
                 }
             } else {
                 alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
@@ -160,7 +269,6 @@ class KeroSpaceForegroundService : Service() {
             Log.w(TAG, "Could not schedule alarm restart on timeout: ${e.message}")
         }
 
-        // WorkManager fallback for Android 15/16 when exact alarms or background starts are restricted
         try {
             val restartRequest = androidx.work.OneTimeWorkRequestBuilder<KeroSpaceRestartWorker>()
                 .setInitialDelay(5, TimeUnit.SECONDS)
@@ -201,12 +309,7 @@ class KeroSpaceForegroundService : Service() {
     }
 
     private fun startForegroundWithNotification() {
-        val notification: Notification = androidx.core.app.NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Trobio Active")
-            .setContentText("Omniscient layer is monitoring...")
-            .setSmallIcon(android.R.drawable.ic_menu_view)
-            .setOngoing(true)
-            .build()
+        val notification: Notification = buildTelemetryHudNotification(this)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(

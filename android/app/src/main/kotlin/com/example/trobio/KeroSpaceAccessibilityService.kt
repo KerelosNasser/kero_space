@@ -23,6 +23,21 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
         private val CARD_REGEX = Regex("\\b\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b")
         private val EMAIL_REGEX = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
         private const val CONTENT_CHANGE_DEBOUNCE_MS = 300L
+
+        @Volatile var instance: KeroSpaceAccessibilityService? = null
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        instance = this
+        Log.i(TAG, "KeroSpaceAccessibilityService connected")
+    }
+
+    fun lockScreen(): Boolean {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            return performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+        }
+        return false
     }
 
     private var currentContext: String = SubAppDetector.CONTEXT_NORMAL
@@ -50,6 +65,37 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
 
                 KeroSpaceForegroundService.accessibilityEventSink.safeSuccess(json)
                 KeroSpaceForegroundService.bgAccessibilityEventSink.safeSuccess(json)
+
+                // 0. Keep Me Out / Device Lockout Mode check
+                if (AgentManager.isDeviceLockoutActive(applicationContext)) {
+                    val isEmergencyOrDialer = packageName.contains("dialer", ignoreCase = true) ||
+                        packageName.contains("telecom", ignoreCase = true) ||
+                        packageName.contains("emergency", ignoreCase = true) ||
+                        packageName == "com.android.phone"
+
+                    if (isEmergencyOrDialer) {
+                        OverlayManager.dismissOverlay(shouldRecordBreak = false)
+                        return
+                    }
+
+                    if (packageName.contains("settings", ignoreCase = true)) {
+                        lockScreen()
+                        return
+                    }
+
+                    val remainingSec = AgentManager.getRemainingLockoutSeconds(applicationContext).toInt()
+                    OverlayManager.showOverlay(
+                        context = applicationContext,
+                        packageName = packageName,
+                        durationSeconds = remainingSec,
+                        title = "📵 Device Locked (Keep Me Out)",
+                        subtitle = "Digital detox session active. Only emergency calls allowed.",
+                        shouldRecordBreakOnDismiss = false,
+                        isHardBlock = true,
+                        isEmergencyLockout = true,
+                    )
+                    return
+                }
 
                 // ADHD rapid app-switching loop detection (>5 switches in <60s)
                 checkAdhdRapidSwitch(packageName)
@@ -181,6 +227,23 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                 return
             }
 
+            // Task-gated mode or Deep Work lock
+            if (AgentManager.hasPendingHighPriorityTask || AgentManager.isDeepWorkActive()) {
+                val reason = if (AgentManager.isDeepWorkActive()) "Deep Work Session Active" else "Pending High-Priority Task"
+                CounterOverlayManager.dismissCounter()
+                OverlayManager.showOverlay(
+                    context = applicationContext,
+                    packageName = packageName,
+                    durationSeconds = 60,
+                    title = "🔒 Focus Lock",
+                    subtitle = "$reason. Complete your tasks before opening distracted apps!",
+                    shouldRecordBreakOnDismiss = false,
+                    isHardBlock = true,
+                )
+                recordBlockerDecision(packageName, "blocked_by_task_gate")
+                return
+            }
+
             // Cooldown check
             val cooldownUntil = cooldownExpiryByContext[contextKey] ?: 0L
             if (cooldownUntil > now) {
@@ -272,6 +335,7 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        if (instance === this) instance = null
         serviceScope.cancel()
         super.onDestroy()
     }

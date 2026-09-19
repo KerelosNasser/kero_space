@@ -12,6 +12,7 @@ import '../../features/voice/presentation/bloc/voice_event.dart';
 import '../../features/church/presentation/bloc/church_bloc.dart';
 import '../../features/church/data/models/mass_attendance.dart';
 import '../../shared/widgets/navigation/ai_quick_answer_sheet.dart';
+import '../../features/productivity/presentation/widgets/device_lockout_sheet.dart';
 
 enum CommandCategory {
   all,
@@ -330,6 +331,18 @@ class CommandRegistry {
       onExecute: (ctx, {required onSelectBranch}) {
         HapticFeedback.mediumImpact();
         onSelectBranch(5);
+      },
+    ),
+    CommandItem(
+      id: 'action_device_lockout',
+      title: 'Keep Me Out • Lock Device',
+      subtitle: 'Turn screen off and lock phone for distraction-free detox',
+      category: CommandCategory.action,
+      icon: Icons.phonelink_lock_rounded,
+      badge: 'LOCKOUT',
+      keywords: ['lock phone', 'keep me out', 'brick', 'detox', 'turn off', 'screen off', 'lockout'],
+      onExecute: (ctx, {required onSelectBranch}) {
+        DeviceLockoutSheet.show(ctx);
       },
     ),
     CommandItem(

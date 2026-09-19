@@ -10,6 +10,7 @@ import 'package:kero_space/core/di/injection.dart';
 import 'package:kero_space/core/permissions/permission_item.dart';
 import 'package:kero_space/core/permissions/permission_tile.dart';
 import 'package:kero_space/core/permissions/permission_repository.dart';
+import '../../../productivity/presentation/widgets/device_lockout_sheet.dart';
 
 class OmniscientControlCenterScreen extends StatefulWidget {
   const OmniscientControlCenterScreen({super.key});
@@ -162,6 +163,38 @@ class _State extends State<OmniscientControlCenterScreen> {
                 child: const Text('Override'),
               ),
             ]),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colors.bgSurface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFEF5350).withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.phonelink_lock_rounded, color: Color(0xFFEF5350)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Keep Me Out (Lock Phone)', style: Theme.of(context).textTheme.headlineMedium),
+                      Text(
+                        'Turn screen off & lock phone for digital detox.',
+                        style: Theme.of(context).textTheme.labelSmall!.copyWith(color: colors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => DeviceLockoutSheet.show(context),
+                  style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF5350)),
+                  child: const Text('Lock Now'),
+                ),
+              ],
+            ),
           ),
         ]),
       );
