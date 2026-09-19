@@ -95,7 +95,7 @@ class WakeWordService : Service() {
         val notification: Notification = androidx.core.app.NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Trobio Listening")
             .setContentText("Wake word detection active")
-            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .build()
 
