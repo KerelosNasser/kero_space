@@ -234,9 +234,9 @@ class VoiceBloc extends Bloc<VoiceEvent, VoiceState> {
           targetRoute = '/health';
         } else if (dest.contains('finance') || dest.contains('money') || dest.contains('budget')) {
           targetRoute = '/finance';
-        } else if (dest.contains('productivity') || dest.contains('task') || dest.contains('todo')) {
+        } else if (dest.contains('productivity') || dest.contains('task') || dest.contains('todo') || dest.contains('habit')) {
           targetRoute = '/productivity';
-        } else if (dest.contains('telemetry') || dest.contains('screen time') || dest.contains('usage')) {
+        } else if (dest.contains('telemetry') || dest.contains('screen time') || dest.contains('usage') || dest.contains('resistance') || dest.contains('recovery')) {
           targetRoute = '/telemetry';
         } else if (dest.contains('setting')) {
           targetRoute = '/settings';

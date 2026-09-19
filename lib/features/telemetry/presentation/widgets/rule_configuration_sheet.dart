@@ -32,6 +32,7 @@ class _State extends State<RuleConfigurationSheet> {
   String? _subAppTarget;
   int? _sessionLimit;
   int? _cooldown;
+  int _dailyQuota = 0;
   bool _strictMode = true;
 
   @override
@@ -41,6 +42,7 @@ class _State extends State<RuleConfigurationSheet> {
       _subAppTarget = widget.existingRule!.subAppTarget;
       _sessionLimit = widget.existingRule!.sessionLimitMinutes;
       _cooldown = widget.existingRule!.cooldownMinutes;
+      _dailyQuota = widget.existingRule!.dailyQuotaMinutes;
       _strictMode = widget.existingRule!.strictMode;
     }
   }
@@ -90,6 +92,32 @@ class _State extends State<RuleConfigurationSheet> {
           
           const SizedBox(height: 24),
           Text(
+            'Daily Quota Limit',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colors.textPrimary,
+                ),
+          ),
+          const SizedBox(height: 8),
+          SegmentedButton<int>(
+            segments: const [
+              ButtonSegment(value: 0, label: Text('None')),
+              ButtonSegment(value: 15, label: Text('15m')),
+              ButtonSegment(value: 30, label: Text('30m')),
+              ButtonSegment(value: 60, label: Text('1h')),
+            ],
+            selected: {_dailyQuota},
+            onSelectionChanged: (set) => setState(() => _dailyQuota = set.first),
+            style: SegmentedButton.styleFrom(
+              backgroundColor: colors.bgElevated,
+              foregroundColor: colors.textPrimary,
+              selectedForegroundColor: colors.bgSurface,
+              selectedBackgroundColor: primaryAccent,
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          Text(
             'Session Limit (Minutes)',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -114,7 +142,7 @@ class _State extends State<RuleConfigurationSheet> {
             ),
           ),
           
-          if (_sessionLimit != null) ...[
+          if (_sessionLimit != null || _dailyQuota > 0) ...[
             const SizedBox(height: 24),
             Text(
               'Cooldown Period',
@@ -142,8 +170,8 @@ class _State extends State<RuleConfigurationSheet> {
             
             const SizedBox(height: 24),
             SwitchListTile(
-              title: Text('Strict Block', style: TextStyle(color: colors.textPrimary)),
-              subtitle: Text('No bypass during cooldown', style: TextStyle(color: colors.textSecondary, fontSize: 12)),
+              title: Text('Strict Hard Lock', style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold)),
+              subtitle: Text('No bypass allowed once limit reached', style: TextStyle(color: colors.textSecondary, fontSize: 12)),
               value: _strictMode,
               onChanged: (val) => setState(() => _strictMode = val),
               activeTrackColor: primaryAccent,
@@ -165,8 +193,9 @@ class _State extends State<RuleConfigurationSheet> {
                 final rule = BlacklistRule(
                   packageName: widget.packageName,
                   subAppTarget: _subAppTarget,
+                  dailyQuotaMinutes: _dailyQuota,
                   sessionLimitMinutes: _sessionLimit,
-                  cooldownMinutes: _sessionLimit != null ? (_cooldown ?? 60) : null,
+                  cooldownMinutes: (_sessionLimit != null || _dailyQuota > 0) ? (_cooldown ?? 60) : null,
                   strictMode: _strictMode,
                   decisionBreakSeconds: 30,
                 );

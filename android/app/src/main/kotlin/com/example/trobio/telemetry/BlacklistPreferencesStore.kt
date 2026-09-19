@@ -22,6 +22,8 @@ data class ParsedRule(
     val cooldownMinutes: Int? = null,
     val subAppTarget: String? = null,
     val allowedWindows: List<AllowedWindow> = emptyList(),
+    val dailyQuotaMinutes: Int = 0,
+    val strictMode: Boolean = true,
 ) {
     fun isAllowedAt(hour: Int): Boolean {
         if (allowedWindows.isEmpty()) return false
@@ -174,6 +176,9 @@ object BlacklistPreferencesStore {
                     }
                 }
 
+                val dailyQuota = obj.optInt("dailyQuotaMinutes", 0)
+                val strict = obj.optBoolean("strictMode", true)
+
                 result[pkg] = ParsedRule(
                     packageName = pkg,
                     decisionBreakSeconds = breakSeconds,
@@ -181,6 +186,8 @@ object BlacklistPreferencesStore {
                     cooldownMinutes = cooldown,
                     subAppTarget = subApp,
                     allowedWindows = allowedWindows,
+                    dailyQuotaMinutes = dailyQuota,
+                    strictMode = strict,
                 )
             }
         } catch (e: Exception) {

@@ -11,6 +11,8 @@ import '../widgets/calendar_tab_view.dart';
 import '../../data/models/productivity_collections.dart';
 
 import 'package:flutter/services.dart';
+import 'package:kero_space/features/habits/presentation/screens/habits_screen.dart';
+import 'package:kero_space/features/habits/presentation/cubit/habit_cubit.dart';
 
 import 'package:kero_space/core/app_theme.dart';
 import 'package:kero_space/core/di/injection.dart';
@@ -51,15 +53,18 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
       providers: [
         BlocProvider.value(value: getIt<ProductivityBloc>()..add(const ProductivityEvent.loadData())),
         BlocProvider.value(value: getIt<CalendarBloc>()..add(const CalendarEventBlocEvent.loadEvents())),
+        BlocProvider.value(value: getIt<HabitCubit>()..loadHabits()),
       ],
       child: DefaultTabController(
-        length: 4,
+        length: 5,
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Productivity'),
             bottom: const TabBar(
+              isScrollable: true,
               tabs: [
                 Tab(text: "Today"),
+                Tab(text: "Habits"),
                 Tab(text: "Projects"),
                 Tab(text: "Notes"),
                 Tab(text: "Calendar"),
@@ -183,13 +188,16 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
                         ],
                       ),
                       
-                      // Tab 2: Projects Hub
+                      // Tab 2: Habits Hub
+                      const HabitsScreen(),
+
+                      // Tab 3: Projects Hub
                       ProjectCardsView(allTasks: allTasks),
 
-                      // Tab 3: Notes
+                      // Tab 4: Notes
                       NotesMasonryGrid(notes: allNotes),
 
-                      // Tab 4: Calendar
+                      // Tab 5: Calendar
                       CalendarTabView(allTasks: allTasks),
                     ],
                   );
@@ -202,7 +210,7 @@ class _ProductivityScreenState extends State<ProductivityScreen> {
               onPressed: () {
                 final tabController = DefaultTabController.of(fabContext);
                 final bloc = fabContext.read<ProductivityBloc>();
-                if (tabController.index == 2) {
+                if (tabController.index == 3) {
                   // Notes tab
                   fabContext.push('/note_editor', extra: {'bloc': bloc});
                 } else {

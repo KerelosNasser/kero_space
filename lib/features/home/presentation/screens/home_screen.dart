@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:kero_space/core/app_theme.dart';
 
 import 'package:kero_space/features/productivity/presentation/bloc/productivity_bloc.dart';
+import 'package:kero_space/features/habits/presentation/cubit/habit_cubit.dart';
 import 'package:kero_space/features/health/presentation/bloc/health_bloc.dart';
 import 'package:kero_space/features/finance/presentation/bloc/finance_bloc.dart';
 import 'package:kero_space/features/church/presentation/bloc/church_bloc.dart';
@@ -72,7 +73,14 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _buildProductivityCard(context),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildProductivityCard(context)),
+                    const SizedBox(width: 14),
+                    Expanded(child: _buildHabitsCard(context)),
+                  ],
+                ),
                 const SizedBox(height: 24),
 
                 Text(
@@ -164,6 +172,49 @@ class HomeScreen extends StatelessWidget {
           accentColor: context.appColors.domainProductivity,
           route: '/productivity',
           heroTag: 'hero-productivity',
+        );
+      },
+    );
+  }
+
+  Widget _buildHabitsCard(BuildContext context) {
+    HabitCubit? cubit;
+    try {
+      cubit = context.read<HabitCubit>();
+    } catch (_) {}
+
+    if (cubit == null) {
+      return _buildSnapshotCard(
+        context: context,
+        domainLabel: 'HABITS',
+        heroMetric: 'Daily Matrix',
+        accentColor: const Color(0xFFFFA726),
+        route: '/productivity',
+        heroTag: 'hero-habits',
+      );
+    }
+
+    return BlocBuilder<HabitCubit, HabitState>(
+      bloc: cubit,
+      builder: (context, state) {
+        final completed = state.habits.where((h) => h.isCompletedToday).length;
+        final total = state.habits.length;
+        final maxStreak = state.habits.isEmpty
+            ? 0
+            : state.habits.map((h) => h.streakCount).fold<int>(0, (a, b) => a > b ? a : b);
+
+        final label = total > 0 ? '$completed/$total HABITS' : 'HABITS';
+        final metric = maxStreak > 0
+            ? '🔥 ${maxStreak}d Streak'
+            : (completed > 0 ? '$completed Done' : 'Start Today');
+
+        return _buildSnapshotCard(
+          context: context,
+          domainLabel: label,
+          heroMetric: metric,
+          accentColor: const Color(0xFFFFA726),
+          route: '/productivity',
+          heroTag: 'hero-habits',
         );
       },
     );

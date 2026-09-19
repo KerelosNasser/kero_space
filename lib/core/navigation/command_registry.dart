@@ -307,6 +307,32 @@ class CommandRegistry {
 
     // --- In-Place Direct Actions ---
     CommandItem(
+      id: 'action_open_habits',
+      title: 'Habit Tracker',
+      subtitle: 'Atomic habits, daily streaks & phone detox matrix',
+      category: CommandCategory.action,
+      icon: Icons.local_fire_department_rounded,
+      badge: 'STREAK',
+      keywords: ['habit', 'habits', 'streak', 'streaks', 'detox', 'atomic', 'routine'],
+      onExecute: (ctx, {required onSelectBranch}) {
+        HapticFeedback.mediumImpact();
+        onSelectBranch(1);
+      },
+    ),
+    CommandItem(
+      id: 'action_blocker_effectiveness',
+      title: 'Blocker Effectiveness & Recovery',
+      subtitle: 'Impulse intercepts, screen time reclaimed & recovery metrics',
+      category: CommandCategory.action,
+      icon: Icons.shield_rounded,
+      badge: 'RECOVERY',
+      keywords: ['blocker', 'resistance', 'recovery', 'reclaimed', 'effectiveness', 'intercepts'],
+      onExecute: (ctx, {required onSelectBranch}) {
+        HapticFeedback.mediumImpact();
+        onSelectBranch(5);
+      },
+    ),
+    CommandItem(
       id: 'action_toggle_theme_mode',
       title: 'Toggle Dark / Light Mode',
       subtitle: 'Instant switch between dark and light palette',

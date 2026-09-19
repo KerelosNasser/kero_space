@@ -12,6 +12,8 @@ import 'package:kero_space/features/productivity/data/repositories/local_calenda
 import 'package:kero_space/features/productivity/presentation/bloc/productivity_bloc.dart';
 import 'package:kero_space/features/productivity/presentation/bloc/calendar_bloc.dart';
 import 'package:kero_space/features/productivity/data/services/ai_service.dart';
+import 'package:kero_space/features/habits/data/repositories/habit_repository.dart';
+import 'package:kero_space/features/habits/presentation/cubit/habit_cubit.dart';
 
 // Church module
 import 'package:kero_space/features/church/data/repositories/church_repository.dart';
@@ -79,6 +81,10 @@ void setupLocator() {
     () => CalendarBloc(getIt<LocalCalendarRepository>()),
   );
   getIt.registerLazySingleton<AIService>(() => AIService());
+  getIt.registerLazySingleton<HabitRepository>(() => HabitRepository());
+  getIt.registerLazySingleton<HabitCubit>(
+    () => HabitCubit(repository: getIt<HabitRepository>()),
+  );
 
   // Health
   getIt.registerLazySingleton<HealthConnectRepository>(

@@ -1,6 +1,7 @@
 package com.example.trobio
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
@@ -11,6 +12,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import java.util.concurrent.ConcurrentHashMap
@@ -31,6 +33,8 @@ object OverlayManager {
     private var titleTextView: TextView? = null
     private var subtitleTextView: TextView? = null
     private var countdownTextView: TextView? = null
+    private var closeButton: Button? = null
+    private var habitsButton: Button? = null
     private var countDownTimer: CountDownTimer? = null
 
     private val overlayShowing = AtomicBoolean(false)
@@ -57,10 +61,11 @@ object OverlayManager {
         packageName: String,
         durationSeconds: Int,
         title: String = "Decision Break",
-        subtitle: String = packageName,
+        subtitle: String = "Take a deep breath... Inhale...",
         shouldRecordBreakOnDismiss: Boolean = true,
+        isHardBlock: Boolean = false,
     ) {
-        if (durationSeconds <= 0) {
+        if (!isHardBlock && durationSeconds <= 0) {
             Log.w(TAG, "showOverlay called with durationSeconds=$durationSeconds — ignoring")
             return
         }
@@ -75,7 +80,7 @@ object OverlayManager {
             }
 
             // 2. CRITICAL BUG FIX: If overlay is already active for this package, DO NOT restart the timer!
-            if (overlayShowing.get() && activePackageName == packageName && countDownTimer != null) {
+            if (overlayShowing.get() && activePackageName == packageName && (countDownTimer != null || isHardBlock)) {
                 return@post
             }
 
@@ -96,34 +101,103 @@ object OverlayManager {
 
                 val layout = LinearLayout(appContext).apply {
                     orientation = LinearLayout.VERTICAL
-                    setBackgroundColor(Color.parseColor("#E6000000"))
+                    setBackgroundColor(Color.parseColor("#F2000000"))
                     gravity = Gravity.CENTER
-                    setPadding(64, 96, 64, 96)
                     isClickable = true
                     isFocusable = true
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        setOnApplyWindowInsetsListener { view, insets ->
+                            val systemBars = insets.getInsets(
+                                android.view.WindowInsets.Type.systemBars() or
+                                android.view.WindowInsets.Type.displayCutout()
+                            )
+                            view.setPadding(
+                                48 + systemBars.left,
+                                80 + systemBars.top,
+                                48 + systemBars.right,
+                                80 + systemBars.bottom,
+                            )
+                            insets
+                        }
+                    } else {
+                        setPadding(48, 100, 48, 100)
+                    }
                 }
 
                 titleTextView = TextView(appContext).apply {
                     setTextColor(Color.WHITE)
-                    textSize = 28f
+                    textSize = 26f
                     gravity = Gravity.CENTER
                     setTypeface(typeface, android.graphics.Typeface.BOLD)
                 }
                 subtitleTextView = TextView(appContext).apply {
-                    setTextColor(Color.parseColor("#CCFFFFFF"))
-                    textSize = 18f
+                    setTextColor(Color.parseColor("#B3FFFFFF"))
+                    textSize = 16f
                     gravity = Gravity.CENTER
+                    setPadding(0, 12, 0, 24)
                 }
                 countdownTextView = TextView(appContext).apply {
                     setTextColor(Color.WHITE)
-                    textSize = 42f
+                    textSize = 40f
                     gravity = Gravity.CENTER
                     setTypeface(typeface, android.graphics.Typeface.BOLD)
+                    setPadding(0, 0, 0, 32)
+                }
+
+                closeButton = Button(appContext).apply {
+                    text = "❌ Close App & Return Home"
+                    setTextColor(Color.WHITE)
+                    textSize = 15f
+                    setBackgroundColor(Color.parseColor("#C62828"))
+                    setPadding(32, 16, 32, 16)
+                    setOnClickListener {
+                        try {
+                            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                                addCategory(Intent.CATEGORY_HOME)
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            appContext.startActivity(homeIntent)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to launch home intent: ${e.message}")
+                        }
+                        dismissOverlay(activePackageName, shouldRecordBreak = true)
+                    }
+                }
+
+                habitsButton = Button(appContext).apply {
+                    text = "🌱 Do a Healthy Habit Instead"
+                    setTextColor(Color.WHITE)
+                    textSize = 14f
+                    setBackgroundColor(Color.parseColor("#2E7D32"))
+                    setPadding(32, 14, 32, 14)
+                    setOnClickListener {
+                        try {
+                            val launchIntent = appContext.packageManager.getLaunchIntentForPackage(appContext.packageName)?.apply {
+                                putExtra("NAVIGATE_TO", "habits")
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            }
+                            if (launchIntent != null) {
+                                appContext.startActivity(launchIntent)
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to launch habits: ${e.message}")
+                        }
+                        dismissOverlay(activePackageName, shouldRecordBreak = true)
+                    }
+                }
+
+                val buttonSpacer = LinearLayout(appContext).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, 24
+                    )
                 }
 
                 layout.addView(titleTextView)
                 layout.addView(subtitleTextView)
                 layout.addView(countdownTextView)
+                layout.addView(closeButton)
+                layout.addView(buttonSpacer)
+                layout.addView(habitsButton)
 
                 val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -155,8 +229,17 @@ object OverlayManager {
             recordBreakOnDismiss = shouldRecordBreakOnDismiss
             titleTextView?.text = title
             subtitleTextView?.text = subtitle
-            startTimer(durationSeconds, packageName)
-            Log.d(TAG, "Overlay shown for $packageName (${durationSeconds}s)")
+
+            if (isHardBlock) {
+                countDownTimer?.cancel()
+                countDownTimer = null
+                countdownTextView?.text = "🔒 HARD LOCK"
+                countdownTextView?.setTextColor(Color.parseColor("#EF5350"))
+            } else {
+                countdownTextView?.setTextColor(Color.WHITE)
+                startTimer(durationSeconds, packageName)
+            }
+            Log.d(TAG, "Overlay shown for $packageName (duration=${durationSeconds}s, isHardBlock=$isHardBlock)")
         }
     }
 

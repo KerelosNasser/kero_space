@@ -11,6 +11,7 @@ import '../features/settings/presentation/screens/custom_theme_studio_screen.dar
 import '../features/settings/presentation/screens/navigation_settings_screen.dart';
 import '../features/settings/presentation/screens/voice_assistant_settings_screen.dart';
 import '../features/productivity/data/models/productivity_collections.dart';
+import '../features/habits/presentation/cubit/habit_cubit.dart';
 
 import '../features/health/presentation/screens/health_dashboard_screen.dart';
 import '../features/health/presentation/screens/calorie_config_screen.dart';
@@ -175,6 +176,7 @@ final router = GoRouter(
               builder: (context, state) => MultiBlocProvider(
                 providers: [
                   BlocProvider.value(value: GetIt.I<ProductivityBloc>()),
+                  BlocProvider.value(value: GetIt.I<HabitCubit>()..loadHabits()),
                   BlocProvider.value(value: GetIt.I<HealthBloc>()),
                   BlocProvider.value(value: GetIt.I<FinanceBloc>()),
                   BlocProvider.value(value: GetIt.I<ChurchBloc>()),

@@ -191,8 +191,9 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                     packageName = packageName,
                     durationSeconds = remainingSeconds,
                     title = "Cooldown Active",
-                    subtitle = "Blocked until cooldown ends",
+                    subtitle = "Blocked until cooldown ends. Do a habit instead!",
                     shouldRecordBreakOnDismiss = false,
+                    isHardBlock = rule.strictMode,
                 )
                 return
             } else if (cooldownUntil != 0L) {
@@ -215,9 +216,10 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                         context = applicationContext,
                         packageName = packageName,
                         durationSeconds = (cooldownMs / 1000L).toInt(),
-                        title = "Cooldown Active",
-                        subtitle = "Take a break before reopening",
+                        title = "Session Limit Reached",
+                        subtitle = "Time to step away and reset your focus.",
                         shouldRecordBreakOnDismiss = false,
+                        isHardBlock = rule.strictMode,
                     )
                     recordBlockerDecision(packageName, "blocked_by_cooldown")
                     return
@@ -255,8 +257,9 @@ class KeroSpaceAccessibilityService : AccessibilityService() {
                 packageName = packageName,
                 durationSeconds = rule.decisionBreakSeconds,
                 title = "Decision Break",
-                subtitle = "Pause before jumping back in",
+                subtitle = "Take a deep breath... Inhale...",
                 shouldRecordBreakOnDismiss = true,
+                isHardBlock = false,
             )
             recordBlockerDecision(packageName, "blocked")
         } catch (e: Exception) {
